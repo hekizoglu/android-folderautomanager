@@ -747,6 +747,7 @@
     <string name="mission_daily_morning_calm">Güne sosyal medya açmadan başla (ilk 30 dk)</string>
     <string name="mission_daily_focus_session">Bugün Odak Modu\'nda en az 30 dk geçir</string>
     <string name="mission_discover_weekly">Haftalık raporunu incele</string>
+    <string name="mission_weekly_category_balance">Kategori hedeflerinde planında kal</string>
     <!-- Dongu G3b: uygulama-spesifik gorev - %1$s uygulama adi (PackageManager'dan cozulur), %2$s hedef sure metni -->
     <string name="mission_daily_app_limit">Bugün %1$s\'ı %2$s altında tut</string>
     <string name="mission_daily_app_limit_fallback">Bugün en çok kullandığın uygulamayı sınırla</string>
@@ -914,6 +915,61 @@
     <string name="home_section_clock">Saat</string>
     <string name="home_section_missions_score">Görevler ve puan</string>
     <string name="home_section_missions">Günlük Görevler</string>
+    <string name="home_section_today_card">Bugün Kartı</string>
+
+    <!-- P5 — Akıllı Kategori Hedefleri (Dashboard) -->
+    <string name="dashboard_smart_category_goals_title">Akıllı Kategori Hedefleri</string>
+    <string name="dashboard_smart_category_goals_subtitle">Geçen haftaki kullanımına göre hedeflerin her hafta otomatik güncellenir.</string>
+    <string name="dashboard_smart_category_goals_learning_mode">Alışkanlıklarını tanıyoruz. İlk kişisel hedeflerin yeterli kullanım verisi oluşunca hazırlanacak.</string>
+    <string name="dashboard_smart_category_goals_empty">Henüz aktif bir kategori hedefi yok.</string>
+    <string name="dashboard_smart_category_goals_loading">Yükleniyor…</string>
+    <string name="dashboard_category_goal_data_unavailable">Bu hafta için kullanım verisi yok.</string>
+    <string name="dashboard_category_goal_remaining">Kalan: %1$s</string>
+    <string name="dashboard_category_goal_exceeded_by">Hedef %1$s aşıldı</string>
+    <string name="dashboard_category_goal_previous_week">Geçen hafta: %1$s</string>
+    <string name="dashboard_category_goal_switch_to_manual">Manuel hedefe geç</string>
+    <string name="dashboard_category_goal_switch_to_auto">Otomatik hedefe dön</string>
+    <string name="dashboard_category_goal_delete">Sil</string>
+    <string name="dashboard_category_goal_mode_auto">Otomatik</string>
+    <string name="dashboard_category_goal_mode_manual">Manuel</string>
+    <string name="dashboard_category_goal_status_on_track">Planında</string>
+    <string name="dashboard_category_goal_status_at_risk">Risk altında</string>
+    <string name="dashboard_category_goal_status_exceeded">Aşıldı</string>
+    <string name="dashboard_category_goal_status_completed">Tamamlandı</string>
+    <string name="dashboard_category_goal_status_data_unavailable">Veri yok</string>
+
+    <!-- P7 — DigitalAdviceEngine tavsiye kartı -->
+    <string name="advice_permission_issue_title">Kullanım verisi eksik</string>
+    <string name="advice_permission_issue_message">Kullanım erişimi izni verilmediği için hedefler ve tavsiyeler hesaplanamıyor.</string>
+    <string name="advice_goal_exceeded_title">Hedef aşıldı</string>
+    <string name="advice_goal_exceeded_message">%1$d kategori hedefini bu hafta aştın.</string>
+    <string name="advice_projected_overage_title">Bu tempoyla hedefi aşabilirsin</string>
+    <string name="advice_projected_overage_message">%1$d kategori şu anki tempoyla hafta sonunda hedefi aşabilir.</string>
+    <string name="advice_usage_increase_title">Kullanım arttı</string>
+    <string name="advice_usage_increase_message">%1$s kullanımın geçen haftaya göre arttı.</string>
+    <string name="advice_usage_increase_generic_category">Bir kategoride</string>
+    <string name="advice_usage_increase_evidence">%%%1$d artış</string>
+    <string name="advice_notification_noise_title">Bildirim gürültüsü</string>
+    <string name="advice_notification_noise_message">Bildirimlerinin %%%1$d\'i tek bir kaynaktan geliyor.</string>
+    <string name="advice_pattern_morning_title">Sabah rutini</string>
+    <string name="advice_pattern_morning_message">Sabah ilk kullanımında sosyal uygulamalar %1$d gün açıldı.</string>
+    <string name="advice_pattern_night_title">Gece kullanımı</string>
+    <string name="advice_pattern_night_message">Gece 23.00 sonrasında %1$d gün telefon kullandın.</string>
+    <string name="advice_unused_apps_title">Kullanılmayan uygulamalar</string>
+    <string name="advice_unused_apps_message">%1$d uygulama 30 günden uzun süredir açılmadı.</string>
+    <string name="advice_uncategorized_apps_title">Kategorisiz uygulamalar</string>
+    <string name="advice_uncategorized_apps_message">%1$d uygulama hâlâ kategorisiz.</string>
+    <string name="advice_positive_all_on_track_title">Bu hafta iyi gidiyorsun</string>
+    <string name="advice_positive_all_on_track_message">Bu hafta tüm kategori hedeflerinde planındasın.</string>
+    <string name="advice_action_grant_access">İzin ver</string>
+    <string name="advice_action_open_category_goals">Kategori hedeflerini aç</string>
+    <string name="advice_action_open_report">Raporu aç</string>
+    <string name="advice_action_open_focus_settings">Odak modunu aç</string>
+    <string name="advice_action_review">İncele</string>
+    <string name="missions_advice_section_title">Bugünün Tavsiyesi</string>
+    <string name="settings_adaptive_goals_section_title">Adaptif Kategori Hedefleri</string>
+    <string name="settings_adaptive_goals_toggle_title">Otomatik Kategori Hedefleri</string>
+    <string name="settings_adaptive_goals_toggle_subtitle">Sosyal, oyun ve video kategorilerinde geçen haftaki kullanımına göre haftalık hedefler otomatik oluşturulur. Kapatırsan mevcut hedeflerin (varsa) korunur ama yeni otomatik hedef üretilmez.</string>
     <string name="home_section_main_search">Ana arama</string>
     <string name="home_section_google_search">Google arama</string>
     <string name="home_section_favorites">Favoriler</string>

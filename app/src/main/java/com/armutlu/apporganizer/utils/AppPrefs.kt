@@ -1207,6 +1207,39 @@ object AppPrefs {
     fun isGoalsEnabled(context: Context) = prefs(context).getBoolean(KEY_GOALS_ENABLED, true)
     fun setGoalsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_GOALS_ENABLED, v).apply()
 
+    // P3/P4/P10 — Adaptif Kategori Hedefleri (roadmap §9 karar 3/6). Yeni kullanıcıda varsayılan
+    // AÇIK; mevcut manuel hedefi olan kullanıcı bu ayardan bağımsız olarak MANUAL modda kalır —
+    // hiçbir mevcut WeeklyGoal satırı bu flag yüzünden AUTO'ya geçirilmez (EnsureCurrentWeekAdaptiveGoalsUseCase
+    // her zaman goal.mode'a bakar, bu flag'e değil; flag sadece YENİ kategoriler için hedef
+    // üretilip üretilmeyeceğini kontrol eder).
+    const val KEY_ADAPTIVE_GOALS_ENABLED = "adaptive_goals_enabled"
+    fun isAdaptiveGoalsEnabled(context: Context) = prefs(context).getBoolean(KEY_ADAPTIVE_GOALS_ENABLED, true)
+    fun setAdaptiveGoalsEnabled(context: Context, v: Boolean) =
+        prefs(context).edit().putBoolean(KEY_ADAPTIVE_GOALS_ENABLED, v).apply()
+
+    // Tempo ayarı (§9 karar 6) — kullanıcıya TEK "tempo" ayarı olarak sunulur, mevcut
+    // MissionTempo ile aynı 3 isim (RAHAT/DENGELI/IDDIALI) kullanılır ama AdaptiveGoalPace kendi
+    // katsayılarını (0.95/0.90/0.85) taşır — AdaptiveGoalPace.fromMissionTempo() ile eşlenir.
+    const val KEY_ADAPTIVE_GOAL_PACE = "adaptive_goal_pace"
+    fun getAdaptiveGoalPaceTempo(context: Context): MissionTempo = getMissionTempo(context)
+
+    /** Otomatik hedef üretiminden kalıcı olarak hariç tutulan kategori ID'leri (kullanıcı elle çıkarır). */
+    const val KEY_ADAPTIVE_GOALS_EXCLUDED_CATEGORIES = "adaptive_goals_excluded_categories"
+    fun getAdaptiveGoalsExcludedCategories(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_ADAPTIVE_GOALS_EXCLUDED_CATEGORIES, emptySet()) ?: emptySet()
+    fun setAdaptiveGoalsExcludedCategories(context: Context, categoryIds: Set<String>) =
+        prefs(context).edit().putStringSet(KEY_ADAPTIVE_GOALS_EXCLUDED_CATEGORIES, categoryIds).apply()
+
+    /** Kullanıcının otomatik hedef kapsamına elle eklediği ek kategoriler (roadmap §4.2 son cümle). */
+    const val KEY_ADAPTIVE_GOALS_INCLUDED_CATEGORIES = "adaptive_goals_included_categories"
+    fun getAdaptiveGoalsIncludedCategories(context: Context): Set<String> =
+        prefs(context).getStringSet(KEY_ADAPTIVE_GOALS_INCLUDED_CATEGORIES, emptySet()) ?: emptySet()
+    fun setAdaptiveGoalsIncludedCategories(context: Context, categoryIds: Set<String>) =
+        prefs(context).edit().putStringSet(KEY_ADAPTIVE_GOALS_INCLUDED_CATEGORIES, categoryIds).apply()
+
+    const val KEY_ADAPTIVE_GOALS_MAX_ACTIVE = "adaptive_goals_max_active"
+    fun getAdaptiveGoalsMaxActive(context: Context): Int = prefs(context).getInt(KEY_ADAPTIVE_GOALS_MAX_ACTIVE, 3)
+
     // Gizlilik Analizi — Rapor Merkezi'nde hangi uygulamanın hassas izinlere (kamera,
     // mikrofon, konum vb.) erişebildiğini gösteren rapor. Tüm analiz cihazda yapılır,
     // hiçbir veri dışarı gönderilmez. Varsayılan açık.

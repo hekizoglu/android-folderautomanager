@@ -3,12 +3,20 @@ package com.armutlu.apporganizer.domain.home
 import android.content.Context
 import android.os.Environment
 import android.os.StatFs
+import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.MissionsRepository
+import com.armutlu.apporganizer.domain.advice.CategoryGoalForAdvice
+import com.armutlu.apporganizer.domain.advice.DigitalAdviceTickerFactory
+import com.armutlu.apporganizer.domain.advice.computeDigitalAdvice
 import com.armutlu.apporganizer.domain.common.valueOrNull
 import com.armutlu.apporganizer.domain.models.Category
+import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
+import com.armutlu.apporganizer.domain.usecase.goals.CategoryUsageSnapshotProvider
 import com.armutlu.apporganizer.domain.usecase.insight.DeviceTidinessInsights
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -24,6 +32,7 @@ import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.TickerComposer
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Clock
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -65,6 +74,12 @@ class RealSmartTickerSource @Inject constructor(
     private val digitalPulseRepository: DigitalPulseRepository,
     private val notificationEventDao: NotificationEventDao,
     private val missionsRepository: MissionsRepository,
+    // P9 — DigitalAdvice → CONTEXTUAL_SUGGESTION ticker adayı için (roadmap §9/§11.3).
+    private val weeklyGoalDao: WeeklyGoalDao,
+    private val categoryUsageSnapshotProvider: CategoryUsageSnapshotProvider,
+    private val periodBoundaryResolver: PeriodBoundaryResolver,
+    private val appDao: AppDao,
+    private val clock: Clock,
 ) : SmartTickerEngine {
 
     private val _state = MutableStateFlow(TickerSourceState())
@@ -197,7 +212,15 @@ class RealSmartTickerSource @Inject constructor(
                 emptyList()
             }
 
-            val allCandidates = composed + missionItems + pulseItems + streakItems + levelUpItems + morningItems + tidinessItems
+            // P9 — DigitalAdvice ticker adayı. Adaptif hedefler kapalıyken (AppPrefs.isGoalsEnabled)
+            // hesaplanmaz — Dashboard/Görevler'deki aynı toggle'a saygı duyar.
+            val adviceItems = if (AppPrefs.isGoalsEnabled(context)) {
+                runCatching { buildAdviceCandidates(nowMillis) }.getOrDefault(emptyList())
+            } else {
+                emptyList()
+            }
+
+            val allCandidates = composed + missionItems + pulseItems + streakItems + levelUpItems + morningItems + tidinessItems + adviceItems
 
             // Döngü T02: en fazla 3 yüksek değerli öğe + tekrar/suistimal önleme (roadmap 2.7).
             // Suppression mevcut SuggestionCoordinator/SharedPrefsSuggestionHistoryStore üzerinden
@@ -235,6 +258,30 @@ class RealSmartTickerSource @Inject constructor(
                 // digerleri gibi kendi refreshSource try/catch'inde yapar).
             },
         )
+    }
+
+    /**
+     * P9 — [computeDigitalAdvice] ile Dashboard/Görevler ekranıyla AYNI hesaplama yolunu
+     * kullanır (roadmap §11.3: aynı tavsiye birden fazla yerde farklı hesaplanmasın). Sadece
+     * mevcut ISO haftanın hedeflerini okur — yeni bir yazma/settlement TETİKLEMEZ (o iş
+     * DashboardViewModel/WeeklyDigestWorker'ın sorumluluğu, burada sadece OKUMA yapılır).
+     */
+    private suspend fun buildAdviceCandidates(nowMillis: Long): List<SmartTickerItem> {
+        val currentWeekStart = periodBoundaryResolver.currentIsoWeek().weekStartEpochDay ?: return emptyList()
+        val snapshot = categoryUsageSnapshotProvider.capture()
+        val goals = weeklyGoalDao.getGoalsForWeek(currentWeekStart)
+        val goalsUi = goals.map { goal ->
+            CategoryGoalForAdvice(
+                categoryId = goal.categoryId,
+                goal = goal,
+                previousWeekMinutes = snapshot.previousWeekMinutes(goal.categoryId),
+                currentWeekMinutesSoFar = snapshot.currentWeekMinutes(goal.categoryId),
+            )
+        }
+        val advice = computeDigitalAdvice(snapshot, goalsUi, appDao, clock) ?: return emptyList()
+        val title = context.getString(advice.titleRes)
+        val subtitle = context.getString(advice.messageRes, *advice.messageArgs.toTypedArray())
+        return DigitalAdviceTickerFactory.candidate(advice, title, subtitle, nowMillis)
     }
 
     /**

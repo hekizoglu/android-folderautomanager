@@ -65,6 +65,21 @@ object MissionEngine {
         // GIRMEZ (isEligible() bu bayragi kontrol eder). Varsayilan false: AppPrefs varsayilaniyla
         // TUTARLI, caller enjekte etmezse gorev sessizce devre disi kalir (yanlisliqla acilmaz).
         val timeWindowMissionEnabled: Boolean = false,
+        // P6 — WEEKLY_CATEGORY_BALANCE girdisi. null = aktif AUTO kategori hedefi yok (görev
+        // isEligible() tarafından havuza alınmaz). Kategori adları/paket verisi TAŞINMAZ (U02) —
+        // sadece "hepsi hedefte mi" özet bayrağı.
+        val categoryGoalsBalance: CategoryGoalsBalanceInput? = null,
+    )
+
+    /**
+     * P6 — [WEEKLY_CATEGORY_BALANCE] için özet girdi. Kategori kimlikleri taşınmaz, sadece
+     * sayaçlar (roadmap §10: "kategori başına ayrı yıldız verme", tek birleşik görev).
+     */
+    data class CategoryGoalsBalanceInput(
+        val activeAutoGoalCount: Int,
+        val goalsWithinTargetCount: Int,
+        val goalsExceededCount: Int,
+        val goalsWithUnavailableDataCount: Int,
     )
 
     data class TaskEventInput(
@@ -96,6 +111,12 @@ object MissionEngine {
     const val DAILY_VIEW_NOTIF_REPORT = "daily_view_notif_report"
     const val WEEKLY_SCREEN_LESS = "weekly_screen_less"
     const val WEEKLY_POSITIVE_ACTIONS = "weekly_positive_actions"
+
+    // P6 — roadmap §10. Aktif adaptif kategori hedeflerinin (WeeklyGoal, mode=AUTO) hepsi
+    // hafta içinde kaldıysa tamamlanır; biri aşıldıysa başarısız; hiç aktif AUTO hedef yoksa
+    // isEligible() bu görevi havuza almaz (WEEKLY_SCREEN_LESS'in eligibility desenini taklit
+    // eder, ama farklı sinyal: toplam ekran süresi DEĞİL, kategori hedefleri özeti).
+    const val WEEKLY_CATEGORY_BALANCE = "weekly_category_balance"
 
     // Dongu G3a — yeni cekirdek gorevler (uygulama-spesifik DEGIL, G3b'ye kadar isimsiz).
     const val DAILY_ORGANIZE_UNCATEGORIZED = "daily_organize_uncategorized"
@@ -180,6 +201,9 @@ object MissionEngine {
         Mission(WEEKLY_SCREEN_LESS, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
         Mission(WEEKLY_POSITIVE_ACTIONS, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
         Mission(DISCOVER_WEEKLY, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
+        // P6 — roadmap §10: en fazla 2 yıldız (WEEKLY_STAR=2 zaten uygun, kategori başına ayrı
+        // ödül YOK — tek birleşik görev).
+        Mission(WEEKLY_CATEGORY_BALANCE, MissionType.WEEKLY, WEEKLY_STAR, autoCheckable = true),
     )
 
     /** Gunun 3 gorevi - seed epochDay oldugundan ayni gun hep ayni set doner. */
@@ -261,6 +285,9 @@ object MissionEngine {
         DAILY_APP_LIMIT -> MissionProgressKind.UPPER_LIMIT
         // Zaman-Kisitli Gorev — DAILY_NO_LATE_NIGHT ile ayni gorsel dil (kacinma esigi).
         TYPE_NO_USAGE_IN_TIME_WINDOW -> MissionProgressKind.AVOID_AFTER_TIME
+        // P6 — "kac hedef hedef icinde kaldi / toplam aktif hedef" gorseli, ACTION_COUNT ile
+        // ayni dil (WEEKLY_POSITIVE_ACTIONS gibi).
+        WEEKLY_CATEGORY_BALANCE -> MissionProgressKind.ACTION_COUNT
         else -> MissionProgressKind.ACTION_COUNT
     }
 
@@ -346,6 +373,9 @@ object MissionEngine {
         // Zaman-Kisitli Gorev — kullanici-tanimli saat araligi (sabit 23:00 yerine now/dayEnded
         // ile ayni "gece" degerlendirme mantigi, sadece pencere parametrik).
         TYPE_NO_USAGE_IN_TIME_WINDOW -> evaluateNoUsageInWindow(input, now, dayEnded)
+        // P6 — roadmap §10: hafta bitmeden erken basari/basarisizlik YOK (evaluateWeeklyComparison
+        // deseniyle ayni sozlesme).
+        WEEKLY_CATEGORY_BALANCE -> evaluateCategoryGoalsBalance(input.categoryGoalsBalance, weekEnded)
         else -> MissionEvaluation(
             status = MissionStatus.DATA_UNAVAILABLE,
             currentValue = null,
@@ -538,6 +568,43 @@ object MissionEngine {
         }
     }
 
+    /**
+     * P6 — roadmap §10. Veri yoksa (aktif AUTO hedef yok) DATA_UNAVAILABLE; hafta bitmeden
+     * IN_PROGRESS (erken basari/basarisizlik YOK); hafta bittiginde: hepsi hedef icinde kaldiysa
+     * COMPLETED, biri asildiysa FAILED. Veri-yok-olan tekil hedefler basarisizlik SAYILMAZ
+     * (roadmap: "veri unavailable ise basarisiz sayilmaz").
+     */
+    private fun evaluateCategoryGoalsBalance(
+        balance: CategoryGoalsBalanceInput?,
+        weekEnded: Boolean,
+    ): MissionEvaluation {
+        if (balance == null || balance.activeAutoGoalCount == 0) {
+            return MissionEvaluation(MissionStatus.DATA_UNAVAILABLE, null, null, null)
+        }
+        val total = balance.activeAutoGoalCount.toLong()
+        val exceeded = balance.goalsExceededCount.toLong()
+        val remaining = exceeded.coerceAtLeast(0L)
+        if (!weekEnded) {
+            return MissionEvaluation(
+                status = MissionStatus.IN_PROGRESS,
+                currentValue = (total - exceeded).coerceAtLeast(0L),
+                targetValue = total,
+                remainingValue = remaining,
+            )
+        }
+        return if (balance.goalsExceededCount == 0) {
+            MissionEvaluation(MissionStatus.COMPLETED, total, total, 0L)
+        } else {
+            MissionEvaluation(
+                status = MissionStatus.FAILED,
+                currentValue = (total - exceeded).coerceAtLeast(0L),
+                targetValue = total,
+                remainingValue = 0L,
+                failureReasonCode = "CATEGORY_GOAL_EXCEEDED",
+            )
+        }
+    }
+
     private fun shuffledDailyPool(epochDay: Long): List<Mission> {
         val order = DAILY_POOL.indices.toMutableList()
         val rnd = Random(epochDay)
@@ -585,6 +652,9 @@ object MissionEngine {
         DAILY_APP_LIMIT -> input.appLimitTargetMinutes != null
         // Zaman-Kisitli Gorev — kapaliyken (varsayilan) havuza HIC girmez.
         TYPE_NO_USAGE_IN_TIME_WINDOW -> input.timeWindowMissionEnabled && input.usedDuringTimeWindowToday != null
+        // P6 — en az 1 aktif AUTO kategori hedefi yoksa (roadmap §10 "eligible ⟺ en az bir
+        // aktif adaptif kategori hedefi") havuza hic girmez.
+        WEEKLY_CATEGORY_BALANCE -> (input.categoryGoalsBalance?.activeAutoGoalCount ?: 0) > 0
         else -> false
     }
 

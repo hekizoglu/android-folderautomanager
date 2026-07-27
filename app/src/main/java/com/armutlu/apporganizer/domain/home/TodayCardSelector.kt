@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.domain.home
 
+import com.armutlu.apporganizer.domain.advice.DigitalAdvice
 import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseReasonId
 import com.armutlu.apporganizer.R
@@ -20,7 +21,7 @@ import com.armutlu.apporganizer.R
  *   `tickerItems.any { it.type == SmartTickerType.WEEKLY_REPORT }` ile türetilir — çağıran taraf
  *   bunu hesaplar, bu obje SmartTickerItem'a bağımlı olmaz (yalnızca Boolean alır).
  *
- * Öncelik sırası (S1 görev tanımı + Görev 3 eklentisi):
+ * Öncelik sırası (S1 görev tanımı + Görev 3 eklentisi + P7b tavsiye entegrasyonu):
  * 1. CRITICAL_PERMISSION — kritik izin/veri eksik (pulse veri-yok/izin-yok sinyali)
  * 2. RISKY_MISSION — riskli görev (mission.urgent, yani birincil görev AT_RISK)
  * 3. FOLDER_REVIEW — klasör/sınıflandırma incelemesi gerekiyor
@@ -30,9 +31,12 @@ import com.armutlu.apporganizer.R
  *    günde (acil/riskli görev yok, rapor hazır değil) görev/yıldız ilerlemesi ana ekranda hiç
  *    görünmüyordu — bu adım BALANCE_SUMMARY'den ÖNCE devreye girer.
  * 6. BALANCE_SUMMARY — hiçbiri yoksa, pulse'ın normal denge özeti (veri varsa)
+ * 7. ADVICE — P7b: [DigitalAdviceEngine][com.armutlu.apporganizer.domain.advice.DigitalAdviceEngine]
+ *    tarafından üretilen tek ana tavsiye varsa, yukarıdakilerin HİÇBİRİ eşleşmediyse gösterilir
+ *    (en düşük öncelik — kritik/acil sinyaller her zaman öne geçer).
  *
- * Hiçbir girdi (mission/pulse) yoksa veya hiçbir öncelik eşleşmezse `null` döner — kart hiç
- * çizilmez (SmartDashboardPage bu durumda eski davranışa döner ya da hiçbir şey göstermez).
+ * Hiçbir girdi (mission/pulse/advice) yoksa veya hiçbir öncelik eşleşmezse `null` döner — kart
+ * hiç çizilmez (SmartDashboardPage bu durumda eski davranışa döner ya da hiçbir şey göstermez).
  */
 object TodayCardSelector {
 
@@ -40,6 +44,7 @@ object TodayCardSelector {
         mission: HomeMissionSummary?,
         pulse: HomePulseSummary?,
         weeklyReportReady: Boolean = false,
+        advice: DigitalAdvice? = null,
     ): TodayCardSpec? {
         // 1. Kritik izin/veri eksikliği — Dijital Yaşam kartının hiç hesaplanamadığı durum.
         if (pulse != null && pulse.freshness == DataFreshness.UNAVAILABLE) {
@@ -106,6 +111,16 @@ object TodayCardSelector {
             )
         }
 
+        // 7. Tavsiye — P7b: en düşük öncelik, yukarıdakilerin hiçbiri eşleşmediyse.
+        if (advice != null) {
+            return TodayCardSpec(
+                kind = TodayCardKind.ADVICE,
+                titleRes = advice.titleRes,
+                subtitleRes = advice.messageRes,
+                advice = advice,
+            )
+        }
+
         return null
     }
 }
@@ -126,6 +141,9 @@ data class TodayCardSpec(
     val missionCompletedCount: Int? = null,
     val missionTotalCount: Int? = null,
     val missionTotalStars: Int? = null,
+    // ADVICE için (P7b) — DigitalAdvice'ın tam kendisi taşınır, TodayCard composable'ı
+    // messageArgs/evidenceRes/action/actionLabelRes gibi ADVICE'a özel alanlara buradan erişir.
+    val advice: DigitalAdvice? = null,
 )
 
 /** Tek "BUGÜN" kartının gösterebileceği bağlamsal içerik türleri — öncelik sırasıyla aynı sırada. */
@@ -136,4 +154,5 @@ enum class TodayCardKind {
     REPORT_READY,
     DAILY_MISSIONS,
     BALANCE_SUMMARY,
+    ADVICE,
 }

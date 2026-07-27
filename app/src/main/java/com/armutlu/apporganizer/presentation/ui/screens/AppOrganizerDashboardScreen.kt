@@ -27,15 +27,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.armutlu.apporganizer.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.models.WeeklyGoal
+import com.armutlu.apporganizer.domain.models.WeeklyGoalMode
+import com.armutlu.apporganizer.domain.models.WeeklyGoalStatus
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
+import com.armutlu.apporganizer.presentation.viewmodel.DashboardViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.UsageStatsHelper
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import java.util.concurrent.TimeUnit
@@ -45,13 +50,14 @@ import java.util.concurrent.TimeUnit
 fun AppOrganizerDashboardScreen(
     viewModel: AppListViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToUsageReport: () -> Unit = {}
+    onNavigateToUsageReport: () -> Unit = {},
+    dashboardViewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val screenState by viewModel.screenState.collectAsState()
     val allApps = screenState.apps
     val categories = screenState.categories
-    val weeklyGoals by viewModel.weeklyGoals.collectAsState()
+    val goalsUiState by dashboardViewModel.uiState.collectAsState()
     var goalsEnabled by remember { mutableStateOf(AppPrefs.isGoalsEnabled(context)) }
 
     var hasUsagePermission by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
@@ -123,14 +129,14 @@ fun AppOrganizerDashboardScreen(
             item { UsageMetricToggleRow(usageMetric) { usageMetric = it } }
             item { TopAppsCard(topAppsForMetric, hasUsagePermission, usageMetric) }
             if (goalsEnabled) {
-                item { DashSectionHeader("Haftalik Hedefler") }
+                item { DashSectionHeader(stringResource(R.string.dashboard_smart_category_goals_title)) }
                 item {
-                    WeeklyGoalsCard(
-                        goals = weeklyGoals,
+                    SmartCategoryGoalsCard(
+                        uiState = goalsUiState,
                         categories = categories,
-                        categoryUsageMinutes = stats.categoryUsageMinutes,
-                        onSaveGoal = viewModel::setWeeklyGoal,
-                        onDeleteGoal = viewModel::deleteWeeklyGoal,
+                        onSwitchToManual = dashboardViewModel::switchToManual,
+                        onSwitchToAuto = dashboardViewModel::switchToAuto,
+                        onDeleteGoal = dashboardViewModel::deleteWeeklyGoal,
                     )
                 }
             }
@@ -167,7 +173,6 @@ private data class DashboardStats(
     val hiddenApps: Int,
     val topApps: List<Pair<AppInfo, Long>>,
     val categoryBreakdown: List<Pair<String, Int>>,
-    val categoryUsageMinutes: Map<String, Long>,
     val unusedCount: Int,
     val neverUsedCount: Int,
     val totalUsageMinutesThisWeek: Long,
@@ -211,11 +216,6 @@ private data class DashboardStats(
 
             val totalMs = usageTimes.values.sumOf { it }
             val totalMinutes = totalMs / 60_000
-            val categoryUsageMinutes = visible
-                .groupBy { it.categoryId }
-                .mapValues { (_, list) ->
-                    list.sumOf { app -> (usageTimes[app.packageName] ?: app.usageCount) / 60_000 }
-                }
 
             val organizedPercent = if (visible.isEmpty()) 0
             else (
@@ -229,7 +229,6 @@ private data class DashboardStats(
                 hiddenApps = apps.count { it.isHidden },
                 topApps = topApps,
                 categoryBreakdown = catBreakdown,
-                categoryUsageMinutes = categoryUsageMinutes,
                 unusedCount = unusedCount,
                 neverUsedCount = neverUsedCount,
                 totalUsageMinutesThisWeek = totalMinutes,
@@ -243,19 +242,22 @@ private data class DashboardStats(
 
 // ── Bilesenler ───────────────────────────────────────────────────────────────
 
+/**
+ * P5 — roadmap §9. Eski "kategori seç + dakika yaz + Kaydet" akışı KALDIRILDI (S2 fix).
+ * Her satır: geçen hafta / bu haftaki hedef / şu ana kadar / kalan / yüzde / trend / durum /
+ * mod gösterir. Hedef aşıldığında ilerleme %100'de KESİLMEZ — gerçek aşım metinle gösterilir
+ * (roadmap §9 "Hedef 35 dakika aşıldı" örneği). Renk tek başına anlam taşımaz, metin+ikon da var.
+ */
 @Composable
-private fun WeeklyGoalsCard(
-    goals: List<WeeklyGoal>,
+private fun SmartCategoryGoalsCard(
+    uiState: DashboardViewModel.DashboardGoalsUiState,
     categories: List<Category>,
-    categoryUsageMinutes: Map<String, Long>,
-    onSaveGoal: (String, Int) -> Unit,
+    onSwitchToManual: (String) -> Unit,
+    onSwitchToAuto: (String) -> Unit,
     onDeleteGoal: (String) -> Unit,
 ) {
-    if (categories.isEmpty()) return
-    var selectedIndex by remember(categories) { mutableStateOf(0) }
-    var targetText by remember { mutableStateOf("120") }
-    val selectedCategory = categories[selectedIndex.coerceIn(0, categories.lastIndex)]
     val categoryNames = remember(categories) { categories.associate { it.categoryId to it.categoryName } }
+    val categoryEmojis = remember(categories) { categories.associate { it.categoryId to it.iconEmoji } }
 
     Surface(
         shape = RoundedCornerShape(22.dp),
@@ -263,58 +265,175 @@ private fun WeeklyGoalsCard(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Bu hafta bir kategori hedefi koy", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                AssistChip(
-                    onClick = { selectedIndex = (selectedIndex + 1) % categories.size },
-                    label = { Text(categoryNames[selectedCategory.categoryId] ?: selectedCategory.categoryName) },
-                )
-                OutlinedTextField(
-                    value = targetText,
-                    onValueChange = { targetText = it.filter(Char::isDigit).take(4) },
-                    label = { Text("Dakika") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f),
-                )
-                Button(
-                    onClick = {
-                        val minutes = targetText.toIntOrNull() ?: return@Button
-                        onSaveGoal(selectedCategory.categoryId, minutes)
-                    },
-                    enabled = (targetText.toIntOrNull() ?: 0) > 0,
-                ) { Text("Kaydet") }
-            }
+            Text(
+                stringResource(R.string.dashboard_smart_category_goals_subtitle),
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-            if (goals.isEmpty()) {
-                Text(
-                    "Hedef ekleyince bu kart haftalik ilerlemeyi yuzde olarak gosterecek.",
+            when {
+                uiState.isLoading -> Text(
+                    stringResource(R.string.dashboard_smart_category_goals_loading),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            } else {
-                goals.forEach { goal ->
-                    val used = categoryUsageMinutes[goal.categoryId] ?: 0L
-                    val progress = (used.toFloat() / goal.targetMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(categoryNames[goal.categoryId] ?: goal.categoryId, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                            TextButton(onClick = { onDeleteGoal(goal.categoryId) }) { Text("Sil") }
-                        }
-                        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
-                        Text(
-                            "${used.coerceAtMost(goal.targetMinutes.toLong())}/${goal.targetMinutes} dk (${(progress * 100).toInt()}%)",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                uiState.isLearningMode -> Text(
+                    stringResource(R.string.dashboard_smart_category_goals_learning_mode),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                uiState.goals.isEmpty() -> Text(
+                    stringResource(R.string.dashboard_smart_category_goals_empty),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                else -> uiState.goals.forEach { goalUi ->
+                    CategoryGoalRow(
+                        goalUi = goalUi,
+                        categoryName = categoryNames[goalUi.categoryId] ?: goalUi.categoryId,
+                        categoryEmoji = categoryEmojis[goalUi.categoryId] ?: "📱",
+                        onSwitchToManual = onSwitchToManual,
+                        onSwitchToAuto = onSwitchToAuto,
+                        onDeleteGoal = onDeleteGoal,
+                    )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun CategoryGoalRow(
+    goalUi: com.armutlu.apporganizer.domain.advice.CategoryGoalForAdvice,
+    categoryName: String,
+    categoryEmoji: String,
+    onSwitchToManual: (String) -> Unit,
+    onSwitchToAuto: (String) -> Unit,
+    onDeleteGoal: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val goal = goalUi.goal
+    val usedSoFar = goalUi.currentWeekMinutesSoFar
+    val target = goal.targetMinutes
+    val progress = usedSoFar?.let { (it.toFloat() / target.coerceAtLeast(1)).coerceIn(0f, 1f) } ?: 0f
+    val isExceeded = usedSoFar != null && usedSoFar > target
+    val exceededBy = if (isExceeded) usedSoFar!! - target else 0L
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = !expanded },
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(categoryEmoji, fontSize = 14.sp)
+                Text(categoryName, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                ModeBadge(mode = goal.mode)
+            }
+            StatusBadge(status = goal.status, isExceeded = isExceeded)
+        }
+
+        if (usedSoFar == null) {
+            Text(
+                stringResource(R.string.dashboard_category_goal_data_unavailable),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth(),
+                color = if (isExceeded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+            )
+            val usedText = formatMinutes(usedSoFar)
+            val targetText = formatMinutes(target.toLong())
+            if (isExceeded) {
+                Text(
+                    "$usedText / $targetText — " +
+                        stringResource(R.string.dashboard_category_goal_exceeded_by, formatMinutes(exceededBy)),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            } else {
+                val remaining = (target - usedSoFar).coerceAtLeast(0L)
+                Text(
+                    "$usedText / $targetText — " +
+                        stringResource(R.string.dashboard_category_goal_remaining, formatMinutes(remaining)),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        goalUi.previousWeekMinutes?.let { previous ->
+            Text(
+                stringResource(R.string.dashboard_category_goal_previous_week, formatMinutes(previous)),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        if (expanded) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (goal.mode == WeeklyGoalMode.AUTO) {
+                    TextButton(onClick = { onSwitchToManual(goalUi.categoryId) }) {
+                        Text(stringResource(R.string.dashboard_category_goal_switch_to_manual))
+                    }
+                } else {
+                    TextButton(onClick = { onSwitchToAuto(goalUi.categoryId) }) {
+                        Text(stringResource(R.string.dashboard_category_goal_switch_to_auto))
+                    }
+                }
+                TextButton(onClick = { onDeleteGoal(goalUi.categoryId) }) {
+                    Text(stringResource(R.string.dashboard_category_goal_delete))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModeBadge(mode: WeeklyGoalMode) {
+    val label = if (mode == WeeklyGoalMode.AUTO) {
+        stringResource(R.string.dashboard_category_goal_mode_auto)
+    } else {
+        stringResource(R.string.dashboard_category_goal_mode_manual)
+    }
+    Text(
+        label,
+        fontSize = 9.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+    )
+}
+
+@Composable
+private fun StatusBadge(status: WeeklyGoalStatus, isExceeded: Boolean) {
+    val (labelRes, color) = when {
+        isExceeded -> R.string.dashboard_category_goal_status_at_risk to MaterialTheme.colorScheme.error
+        status == WeeklyGoalStatus.COMPLETED ->
+            R.string.dashboard_category_goal_status_completed to MaterialTheme.colorScheme.primary
+        status == WeeklyGoalStatus.EXCEEDED ->
+            R.string.dashboard_category_goal_status_exceeded to MaterialTheme.colorScheme.error
+        status == WeeklyGoalStatus.DATA_UNAVAILABLE ->
+            R.string.dashboard_category_goal_status_data_unavailable to MaterialTheme.colorScheme.onSurfaceVariant
+        else -> R.string.dashboard_category_goal_status_on_track to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Text(stringResource(labelRes), fontSize = 11.sp, color = color, fontWeight = FontWeight.Medium)
+}
+
+private fun formatMinutes(minutes: Long): String {
+    val hours = minutes / 60
+    val mins = minutes % 60
+    return if (hours > 0) "${hours} sa. ${mins} dk." else "${mins} dk."
 }
 
 @Composable

@@ -807,6 +807,26 @@ fun SettingsHomeScreenSection(
         }
     }
 
+    // ── P10 — Adaptif Kategori Hedefleri ────────────────────────────────────
+    // Tempo ayarı YUKARIDAKİ "Görev Temposu" ile PAYLAŞILIR (AdaptiveGoalPace.fromMissionTempo,
+    // roadmap §9 karar 6) — burada ikinci bir tempo seçici YAZILMAZ, sadece açık/kapalı gösterilir.
+    SettingsSectionTitle(stringResource(R.string.settings_adaptive_goals_section_title))
+    var adaptiveGoalsEnabled by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAdaptiveGoalsEnabled(context))
+    }
+    SettingsCard {
+        SettingsSwitchRow(
+            icon = Icons.Default.TrendingDown,
+            title = stringResource(R.string.settings_adaptive_goals_toggle_title),
+            subtitle = stringResource(R.string.settings_adaptive_goals_toggle_subtitle),
+            checked = adaptiveGoalsEnabled,
+            onCheckedChange = {
+                adaptiveGoalsEnabled = it
+                com.armutlu.apporganizer.utils.AppPrefs.setAdaptiveGoalsEnabled(context, it)
+            },
+        )
+    }
+
     // ── İkon Paketi ───────────────────────────────────────────────────────
     // Tek sahip: Görünüm ekranı (SettingsAppearanceSection.kt) — burada sadece yönlendirme kartı gösterilir.
     SettingsSectionTitle("İkon Paketi")

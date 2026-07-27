@@ -14,13 +14,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.armutlu.apporganizer.R
-import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.data.repository.AppRepository
+import com.armutlu.apporganizer.domain.usecase.goals.EnsureCurrentWeekAdaptiveGoalsUseCase
+import com.armutlu.apporganizer.domain.usecase.goals.SettlePreviousWeekAdaptiveGoalsUseCase
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.UsageStatsHelper
-import com.armutlu.apporganizer.utils.WeekUtils
 import com.armutlu.apporganizer.utils.WorkerTelemetryPrefs
 import com.armutlu.apporganizer.utils.WrappedSnapshotPrefs
 import dagger.hilt.EntryPoint
@@ -38,7 +38,8 @@ class WeeklyDigestWorker(
     @dagger.hilt.InstallIn(SingletonComponent::class)
     interface DigestEntryPoint {
         fun appRepository(): AppRepository
-        fun weeklyGoalDao(): WeeklyGoalDao
+        fun ensureCurrentWeekAdaptiveGoalsUseCase(): EnsureCurrentWeekAdaptiveGoalsUseCase
+        fun settlePreviousWeekAdaptiveGoalsUseCase(): SettlePreviousWeekAdaptiveGoalsUseCase
     }
 
     override suspend fun doWork(): Result {
@@ -55,7 +56,6 @@ class WeeklyDigestWorker(
                 DigestEntryPoint::class.java,
             )
             val repo = entryPoint.appRepository()
-            val weeklyGoalDao = entryPoint.weeklyGoalDao()
 
             val apps = repo.getAllApps().filter { !it.isHidden && !it.isSystemApp }
             val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
@@ -84,8 +84,18 @@ class WeeklyDigestWorker(
                     apps.size,
                     UsageStatsHelper.getUnlockCount(ctx, days = 7, nowMillis = now),
                 )
-                checkWeeklyGoals(weeklyGoalDao, categoryUsage.mapValues { it.value / 60_000 }, now)
             }.onFailure { e -> Timber.e(e, "Wrapped snapshot save failed") }
+
+            // P4 — adaptif kategori hedefi güvenlik ağı (roadmap §6). Asıl idempotent tetikleme
+            // app açılışı/Dashboard/Görevler açılışında da olur (P5/P6); worker sadece bunları
+            // hiç görmeyen (uygulamayı hiç açmayan) kullanıcılar için yedek tetikleyicidir.
+            runCatching {
+                if (AppPrefs.isGoalsEnabled(ctx)) {
+                    val completedCount = entryPoint.settlePreviousWeekAdaptiveGoalsUseCase().execute()
+                    entryPoint.ensureCurrentWeekAdaptiveGoalsUseCase().execute()
+                    if (completedCount > 0) sendGoalNotification(completedCount)
+                }
+            }.onFailure { e -> Timber.e(e, "Adaptive goals settlement/generation failed") }
 
             WorkerTelemetryPrefs.markSucceeded(ctx, WORK_NAME, startedAt)
             Result.success()
@@ -99,20 +109,6 @@ class WeeklyDigestWorker(
             Timber.e(e, "WeeklyDigest error")
             Result.retry()
         }
-    }
-
-    private suspend fun checkWeeklyGoals(
-        weeklyGoalDao: WeeklyGoalDao,
-        categoryUsageMinutes: Map<String, Long>,
-        now: Long,
-    ) {
-        if (!AppPrefs.isGoalsEnabled(applicationContext)) return
-        val weekStart = WeekUtils.currentWeekStartEpochDay(now)
-        val achieved = weeklyGoalDao.getGoalsForWeek(weekStart).filter { goal ->
-            goal.achievedAt == 0L && (categoryUsageMinutes[goal.categoryId] ?: 0L) >= goal.targetMinutes
-        }
-        achieved.forEach { goal -> weeklyGoalDao.markAchieved(goal.categoryId, weekStart, now) }
-        if (achieved.isNotEmpty()) sendGoalNotification(achieved.size)
     }
 
     private fun sendGoalNotification(count: Int) {

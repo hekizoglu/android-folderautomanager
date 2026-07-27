@@ -185,14 +185,14 @@ class HomeLayoutPrefsTest {
         val restoredContent = restored.config.items.filter { it.zone == HomeLayoutZone.CONTENT }
             .sortedBy { it.order }.map { it.sectionId }
         // Supplied order is honored first; sections absent from contentOrder (MISSIONS,
-        // GOOGLE_SEARCH, ANDROID_WIDGETS, ASSISTANT_INSIGHTS, TICKER_OR_STATS) are appended in
-        // default order — same "old layout appends new sections" contract as HEADER/FOOTER.
+        // TODAY_CARD, GOOGLE_SEARCH, ANDROID_WIDGETS, ASSISTANT_INSIGHTS, TICKER_OR_STATS) are
+        // appended in default order — same "old layout appends new sections" contract as HEADER/FOOTER.
         assertEquals(
             listOf(HomeSectionId.SUGGESTIONS, HomeSectionId.FAVORITES, HomeSectionId.CLOCK,
                 HomeSectionId.RECENT_APPS, HomeSectionId.RECENT_NOTIFICATIONS,
                 HomeSectionId.MISSIONS_AND_SCORE, HomeSectionId.FOLDER_GRID,
-                HomeSectionId.MISSIONS, HomeSectionId.GOOGLE_SEARCH, HomeSectionId.ANDROID_WIDGETS,
-                HomeSectionId.ASSISTANT_INSIGHTS, HomeSectionId.TICKER_OR_STATS),
+                HomeSectionId.MISSIONS, HomeSectionId.TODAY_CARD, HomeSectionId.GOOGLE_SEARCH,
+                HomeSectionId.ANDROID_WIDGETS, HomeSectionId.ASSISTANT_INSIGHTS, HomeSectionId.TICKER_OR_STATS),
             restoredContent,
         )
     }

@@ -36,8 +36,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.advice.DigitalAdviceAction
+import com.armutlu.apporganizer.domain.home.TodayCardKind
+import com.armutlu.apporganizer.domain.home.TodayCardSpec
 import com.armutlu.apporganizer.domain.usecase.missions.MasterRewardPolicy
 import com.armutlu.apporganizer.domain.usecase.missions.MissionActionRouter
+import com.armutlu.apporganizer.presentation.ui.launcher.TodayCard
 import com.armutlu.apporganizer.presentation.viewmodel.MissionsViewModel
 import kotlinx.coroutines.delay
 
@@ -60,6 +64,7 @@ fun MissionsScreen(
     viewModel: MissionsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val advice by viewModel.advice.collectAsState()
     val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.refresh() }
 
@@ -95,6 +100,33 @@ fun MissionsScreen(
                 exit = fadeOut(),
             ) {
                 CelebrationCard(stars = uiState.celebrateStars ?: 0)
+            }
+        }
+
+        // P8 — "Bugünün Tavsiyesi": yıldız alanının hemen altında, TodayCard'ın (P7b) kompakt
+        // kullanımı — ikinci bir kart deseni YAZILMADI, aynı composable/spec kullanılır.
+        advice?.let { digitalAdvice ->
+            item {
+                SettingsSectionTitle(stringResource(R.string.missions_advice_section_title))
+            }
+            item {
+                TodayCard(
+                    spec = TodayCardSpec(
+                        kind = TodayCardKind.ADVICE,
+                        titleRes = digitalAdvice.titleRes,
+                        subtitleRes = digitalAdvice.messageRes,
+                        advice = digitalAdvice,
+                    ),
+                    onMissionClick = {},
+                    onPulseClick = {
+                        handleDigitalAdviceAction(digitalAdvice.action, context, onNavigateToRoute)
+                    },
+                    onFolderReviewClick = {},
+                    onReportReadyClick = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                )
             }
         }
 
@@ -369,6 +401,33 @@ private fun handleMissionAction(
             }
         }
         MissionActionRouter.RouteTarget.None -> Unit
+    }
+}
+
+/**
+ * P8 — [DigitalAdviceAction] için route çözümü. [MissionActionRouter]'a benzer ama ayrı bir
+ * enum ailesi olduğundan (roadmap görev ile tavsiye AYRI kavramlar) küçük, tek fonksiyonlu bir
+ * eşleme yeterli — MissionActionRouter'ı DigitalAdviceAction'ı da kapsayacak şekilde genişletmek
+ * iki farklı sorumluluğu birleştirir, bu yüzden BİLİNÇLİ olarak ayrı tutuldu.
+ */
+private fun handleDigitalAdviceAction(
+    action: DigitalAdviceAction,
+    context: android.content.Context,
+    onNavigateToRoute: (String) -> Unit,
+) {
+    when (action) {
+        DigitalAdviceAction.OpenCategoryGoals -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD)
+        DigitalAdviceAction.OpenMissions -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.MISSIONS)
+        DigitalAdviceAction.OpenNotificationReport -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT)
+        DigitalAdviceAction.OpenUsageReport -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT)
+        DigitalAdviceAction.OpenClassificationReview -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.CLASSIFICATION_REVIEW)
+        DigitalAdviceAction.OpenFocusSettings -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS)
+        DigitalAdviceAction.OpenUsageAccessSettings -> {
+            val intent = android.content.Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            runCatching { context.startActivity(intent) }
+        }
+        DigitalAdviceAction.None -> Unit
     }
 }
 

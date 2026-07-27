@@ -735,6 +735,7 @@
     <string name="mission_daily_morning_calm">Start your day without social media (first 30 min)</string>
     <string name="mission_daily_focus_session">Spend at least 30 min in Focus Mode today</string>
     <string name="mission_discover_weekly">Check out your weekly report</string>
+    <string name="mission_weekly_category_balance">Stay on track with your category goals</string>
     <!-- Cycle G3b: app-specific mission - %1$s app name (resolved from PackageManager), %2$s target duration text -->
     <string name="mission_daily_app_limit">Keep %1$s under %2$s today</string>
     <string name="mission_daily_app_limit_fallback">Limit your most-used app today</string>
@@ -898,6 +899,61 @@
     <string name="home_section_clock">Clock</string>
     <string name="home_section_missions_score">Missions and score</string>
     <string name="home_section_missions">Daily Missions</string>
+    <string name="home_section_today_card">Today Card</string>
+
+    <!-- P5 — Smart Category Goals (Dashboard) -->
+    <string name="dashboard_smart_category_goals_title">Smart Category Goals</string>
+    <string name="dashboard_smart_category_goals_subtitle">Your goals auto-update each week based on last week\'s usage.</string>
+    <string name="dashboard_smart_category_goals_learning_mode">Learning your habits. Your first personal goals will be ready once there\'s enough usage data.</string>
+    <string name="dashboard_smart_category_goals_empty">No active category goals yet.</string>
+    <string name="dashboard_smart_category_goals_loading">Loading…</string>
+    <string name="dashboard_category_goal_data_unavailable">No usage data for this week.</string>
+    <string name="dashboard_category_goal_remaining">Remaining: %1$s</string>
+    <string name="dashboard_category_goal_exceeded_by">Exceeded goal by %1$s</string>
+    <string name="dashboard_category_goal_previous_week">Last week: %1$s</string>
+    <string name="dashboard_category_goal_switch_to_manual">Switch to manual goal</string>
+    <string name="dashboard_category_goal_switch_to_auto">Switch back to automatic</string>
+    <string name="dashboard_category_goal_delete">Delete</string>
+    <string name="dashboard_category_goal_mode_auto">Auto</string>
+    <string name="dashboard_category_goal_mode_manual">Manual</string>
+    <string name="dashboard_category_goal_status_on_track">On track</string>
+    <string name="dashboard_category_goal_status_at_risk">At risk</string>
+    <string name="dashboard_category_goal_status_exceeded">Exceeded</string>
+    <string name="dashboard_category_goal_status_completed">Completed</string>
+    <string name="dashboard_category_goal_status_data_unavailable">No data</string>
+
+    <!-- P7 — DigitalAdviceEngine advice card -->
+    <string name="advice_permission_issue_title">Usage data missing</string>
+    <string name="advice_permission_issue_message">Goals and advice can\'t be calculated without usage access permission.</string>
+    <string name="advice_goal_exceeded_title">Goal exceeded</string>
+    <string name="advice_goal_exceeded_message">You exceeded %1$d category goal(s) this week.</string>
+    <string name="advice_projected_overage_title">You might exceed this goal</string>
+    <string name="advice_projected_overage_message">%1$d category goal(s) may be exceeded by week\'s end at this pace.</string>
+    <string name="advice_usage_increase_title">Usage increased</string>
+    <string name="advice_usage_increase_message">Your %1$s usage increased compared to last week.</string>
+    <string name="advice_usage_increase_generic_category">a category</string>
+    <string name="advice_usage_increase_evidence">up %%%1$d</string>
+    <string name="advice_notification_noise_title">Notification noise</string>
+    <string name="advice_notification_noise_message">%%%1$d of your notifications come from a single source.</string>
+    <string name="advice_pattern_morning_title">Morning routine</string>
+    <string name="advice_pattern_morning_message">Social apps were your first open on %1$d days.</string>
+    <string name="advice_pattern_night_title">Late-night usage</string>
+    <string name="advice_pattern_night_message">You used your phone after 11 PM on %1$d days.</string>
+    <string name="advice_unused_apps_title">Unused apps</string>
+    <string name="advice_unused_apps_message">%1$d apps haven\'t been opened in over 30 days.</string>
+    <string name="advice_uncategorized_apps_title">Uncategorized apps</string>
+    <string name="advice_uncategorized_apps_message">%1$d apps are still uncategorized.</string>
+    <string name="advice_positive_all_on_track_title">You\'re doing well this week</string>
+    <string name="advice_positive_all_on_track_message">You\'re on track with all category goals this week.</string>
+    <string name="advice_action_grant_access">Grant access</string>
+    <string name="advice_action_open_category_goals">Open category goals</string>
+    <string name="advice_action_open_report">Open report</string>
+    <string name="advice_action_open_focus_settings">Open focus mode</string>
+    <string name="advice_action_review">Review</string>
+    <string name="missions_advice_section_title">Today\'s Advice</string>
+    <string name="settings_adaptive_goals_section_title">Adaptive Category Goals</string>
+    <string name="settings_adaptive_goals_toggle_title">Automatic Category Goals</string>
+    <string name="settings_adaptive_goals_toggle_subtitle">Weekly goals for Social, Games, and Video categories are auto-generated based on last week\'s usage. Turning this off keeps any existing goals but stops generating new automatic ones.</string>
     <string name="home_section_main_search">Main search</string>
     <string name="home_section_google_search">Google search</string>
     <string name="home_section_favorites">Favorites</string>

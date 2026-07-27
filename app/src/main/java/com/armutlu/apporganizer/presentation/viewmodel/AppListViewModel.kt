@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
@@ -13,10 +12,8 @@ import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import com.armutlu.apporganizer.utils.WidgetSuggestion
 import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
-import com.armutlu.apporganizer.utils.WeekUtils
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.models.WeeklyGoal
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
 import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VERSION
@@ -52,7 +49,6 @@ class AppListViewModel @Inject constructor(
     private val searchRepository: SearchRepository,
     private val classifier: AppClassifier,
     private val llmFallback: CategoryLLMFallback,
-    private val weeklyGoalDao: WeeklyGoalDao,
     private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
 ) : AndroidViewModel(application) {
 
@@ -93,10 +89,6 @@ class AppListViewModel @Inject constructor(
     val showSystemApps: StateFlow<Boolean> = _showSystemApps.asStateFlow()
     val showUncertainOnly: StateFlow<Boolean> = _showUncertainOnly.asStateFlow()
     val selectedApps: StateFlow<Set<String>> = _selectedApps.asStateFlow()
-    val weeklyGoals: StateFlow<List<WeeklyGoal>> =
-        weeklyGoalDao.observeGoals(WeekUtils.currentWeekStartEpochDay())
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
     // Widget öneri listesi - en çok kullanılan ve widget'ı olan uygulamalar
     // P1-19 FIX: getSuggestions() suspend fun oldu, flatMapLatest + flow() ile ViewModel scope'ta çalıştır
     val widgetSuggestions: StateFlow<List<WidgetSuggestion>> = repository.getAllAppsFlow()
@@ -529,25 +521,6 @@ class AppListViewModel @Inject constructor(
         _folderSuggestionsInfoDismissed.value = true
     }
 
-    fun setWeeklyGoal(categoryId: String, targetMinutes: Int) {
-        if (categoryId.isBlank()) return
-        viewModelScope.launch {
-            weeklyGoalDao.upsert(
-                WeeklyGoal(
-                    categoryId = categoryId,
-                    targetMinutes = targetMinutes.coerceIn(1, 7 * 24 * 60),
-                    weekStartEpochDay = WeekUtils.currentWeekStartEpochDay(),
-                )
-            )
-        }
-    }
-
-    fun deleteWeeklyGoal(categoryId: String) {
-        viewModelScope.launch {
-            weeklyGoalDao.delete(categoryId, WeekUtils.currentWeekStartEpochDay())
-        }
-    }
-    
     /**
      * Change selected category filter
      */

@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
+import com.armutlu.apporganizer.domain.home.TodayCardSpec
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 
@@ -25,6 +26,9 @@ data class DashboardUiState(
     // bu listeye göre CLOCK/MISSIONS_AND_SCORE'u sıralar ve SmartAccessCard grubunu gizler/gösterir.
     val contentOrder: List<HomeSectionId> = HomeSectionId.entries,
     val missionSummary: HomeMissionSummary? = null,
+    // P7b — TodayCardSelector.select() çıktısı, HomeScreen'de mevcut mission/pulse/weeklyReportReady
+    // state'lerinden + DigitalAdviceEngine tavsiyesinden türetilir.
+    val todayCardSpec: TodayCardSpec? = null,
 )
 
 /** `SmartDashboardPage` içindeki tıklama/eylem callback'leri — tek yerde toplanır. */
@@ -38,4 +42,5 @@ data class DashboardActions(
     val onAppLongClick: (String) -> Unit,
     val onOpenClassificationReview: () -> Unit = {},  // P1.2: Sınıflandırma inceleme ekranı
     val onOpenMissions: () -> Unit = {},
+    val onOpenFolderReview: () -> Unit = {},
 )

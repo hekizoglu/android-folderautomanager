@@ -1,7 +1,6 @@
 package com.armutlu.apporganizer
 
 import android.app.Application
-import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
 import com.armutlu.apporganizer.data.remote.FetchResult
 import com.armutlu.apporganizer.data.repository.AppRepository
@@ -50,7 +49,6 @@ class AppListViewModelTest {
     private lateinit var mockSearchRepository: SearchRepository
     private lateinit var mockClassifier: AppClassifier
     private lateinit var mockLlmFallback: CategoryLLMFallback
-    private lateinit var mockWeeklyGoalDao: WeeklyGoalDao
     private lateinit var mockDbService: AppDatabaseService
 
     /** Flow that the fake repository emits apps through. */
@@ -68,13 +66,11 @@ class AppListViewModelTest {
         mockSearchRepository = mockk(relaxed = true)
         mockClassifier   = mockk(relaxed = true)
         mockLlmFallback  = mockk(relaxed = true)
-        mockWeeklyGoalDao = mockk(relaxed = true)
         mockDbService    = mockk(relaxed = true)
 
         // Repository returns our controllable flow
         every { mockRepository.getAllAppsFlow() } returns appsFlow
         every { mockRepository.getAllCategoriesFlow() } returns categoriesFlow
-        every { mockWeeklyGoalDao.observeGoals(any()) } returns MutableStateFlow(emptyList())
         coEvery { mockRepository.ensureDefaultCategories() } returns Unit
 
         // AppDatabaseService returns a quick success so init does not block
@@ -86,7 +82,6 @@ class AppListViewModelTest {
             searchRepository   = mockSearchRepository,
             classifier         = mockClassifier,
             llmFallback        = mockLlmFallback,
-            weeklyGoalDao      = mockWeeklyGoalDao,
             appDatabaseService = mockDbService
         )
     }

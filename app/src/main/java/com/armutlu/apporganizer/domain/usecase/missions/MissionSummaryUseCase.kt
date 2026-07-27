@@ -2,11 +2,13 @@ package com.armutlu.apporganizer.domain.usecase.missions
 
 import android.content.Context
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.data.local.WeeklyGoalDao
 import com.armutlu.apporganizer.data.repository.MissionsRepository
 import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.time.PeriodBoundary
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.utils.MissionStreakPrefs
+import com.armutlu.apporganizer.utils.WeekUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Clock
 import java.time.LocalDate
@@ -35,6 +37,8 @@ class MissionSummaryUseCase @Inject constructor(
     private val missionsRepository: MissionsRepository,
     private val missionMetricSnapshotProvider: MissionMetricSnapshotProvider,
     private val settleMissionInstancesUseCase: SettleMissionInstancesUseCase,
+    private val weeklyGoalDao: WeeklyGoalDao,
+    private val categoryUsageSnapshotProvider: com.armutlu.apporganizer.domain.usecase.goals.CategoryUsageSnapshotProvider,
 ) {
 
     /** [MissionsViewModel.MissionUi] ile alan alan ayni — domain katmaninda, Android View bagimliligi yok (String'ler zaten cozulmus). */
@@ -169,11 +173,42 @@ class MissionSummaryUseCase @Inject constructor(
             }
         }
 
+        // P6 — WEEKLY_CATEGORY_BALANCE girdisi: aktif AUTO kategori hedeflerinin GERÇEK ZAMANLI
+        // aşım durumu (WeeklyGoal.status DB alanı yalnız hafta sonunda SettlePreviousWeekAdaptiveGoalsUseCase
+        // tarafından güncellenir — hafta içinde hep ACTIVE kalır, bu yüzden anlık aşımı
+        // CategoryUsageSnapshotProvider'dan taze okumak gerekir). Kategori kimlikleri
+        // MissionCheckInput'a TAŞINMAZ (U02) — sadece sayaç.
+        val categoryGoalsBalance = runCatching {
+            val currentWeekStart = weekBoundary.weekStartEpochDay ?: WeekUtils.currentWeekStartEpochDay()
+            val autoGoals = weeklyGoalDao.getAutoGoalsForWeek(currentWeekStart)
+            if (autoGoals.isEmpty()) {
+                null
+            } else {
+                val usageSnapshot = categoryUsageSnapshotProvider.capture()
+                var exceeded = 0
+                var unavailable = 0
+                autoGoals.forEach { goal ->
+                    val used = usageSnapshot.currentWeekMinutes(goal.categoryId)
+                    when {
+                        used == null -> unavailable++
+                        used > goal.targetMinutes -> exceeded++
+                    }
+                }
+                MissionEngine.CategoryGoalsBalanceInput(
+                    activeAutoGoalCount = autoGoals.size,
+                    goalsWithinTargetCount = autoGoals.size - exceeded - unavailable,
+                    goalsExceededCount = exceeded,
+                    goalsWithUnavailableDataCount = unavailable,
+                )
+            }
+        }.getOrNull()
+
         val input = snapshot.toMissionCheckInput().copy(
             personalScreenTargetMinutes = personalScreenTarget,
             personalUnlockTarget = personalUnlockTarget,
             appLimitUsageMinutesToday = appLimitUsageMinutesToday,
             appLimitTargetMinutes = appLimitTargetMinutes,
+            categoryGoalsBalance = categoryGoalsBalance,
         )
         val appLimitTargetPackageName = pinnedAppLimitPackage
         val dailyCooldownIds = missionsRepository.getRecentlyCompletedDailyIds(
@@ -366,6 +401,8 @@ class MissionSummaryUseCase @Inject constructor(
         } else {
             MissionAction.None
         }
+        // P6 — WEEKLY_POSITIVE_ACTIONS ile ayni desen: ozet gorev, dedike bir eylem ekrani yok.
+        MissionEngine.WEEKLY_CATEGORY_BALANCE -> MissionAction.None
         else -> MissionAction.None
     }
 
@@ -400,6 +437,7 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.DAILY_MORNING_CALM -> R.string.mission_daily_morning_calm
         MissionEngine.DAILY_FOCUS_SESSION -> R.string.mission_daily_focus_session
         MissionEngine.DISCOVER_WEEKLY -> R.string.mission_discover_weekly
+        MissionEngine.WEEKLY_CATEGORY_BALANCE -> R.string.mission_weekly_category_balance
         else -> R.string.mission_unknown
     }
 

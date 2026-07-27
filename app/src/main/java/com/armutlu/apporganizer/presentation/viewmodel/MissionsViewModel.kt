@@ -3,10 +3,18 @@ package com.armutlu.apporganizer.presentation.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.WeeklyGoalDao
+import com.armutlu.apporganizer.domain.advice.CategoryGoalForAdvice
+import com.armutlu.apporganizer.domain.advice.DigitalAdvice
+import com.armutlu.apporganizer.domain.advice.computeDigitalAdvice
+import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
+import com.armutlu.apporganizer.domain.usecase.goals.CategoryUsageSnapshotProvider
 import com.armutlu.apporganizer.domain.usecase.missions.MissionAction
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.missions.MissionSummaryUseCase
 import com.armutlu.apporganizer.utils.TaskScoreManager
+import java.time.Clock
 import java.time.LocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,6 +35,13 @@ import timber.log.Timber
 class MissionsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val missionSummaryUseCase: MissionSummaryUseCase,
+    // P8 — "Bugünün Tavsiyesi" kartı için, Dashboard'daki TodayCard ADVICE'ıyla AYNI hesaplama
+    // yolu (computeDigitalAdvice ortak fonksiyonu) kullanılır.
+    private val weeklyGoalDao: WeeklyGoalDao,
+    private val categoryUsageSnapshotProvider: CategoryUsageSnapshotProvider,
+    private val periodBoundaryResolver: PeriodBoundaryResolver,
+    private val appDao: AppDao,
+    private val clock: Clock,
 ) : ViewModel() {
 
     data class MissionUi(
@@ -85,6 +100,10 @@ class MissionsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MissionsUiState())
     val uiState: StateFlow<MissionsUiState> = _uiState.asStateFlow()
 
+    // P8 — "Bugünün Tavsiyesi" kartı için.
+    private val _advice = MutableStateFlow<DigitalAdvice?>(null)
+    val advice: StateFlow<DigitalAdvice?> = _advice.asStateFlow()
+
     /** Ekran acilisinda cagrilir — otomatik gorevleri dogrular, yeni tamamlananlara yildiz yazar. */
     fun refresh() {
         viewModelScope.launch {
@@ -95,7 +114,28 @@ class MissionsViewModel @Inject constructor(
             }
             if (state != null) _uiState.value = state
             else _uiState.value = _uiState.value.copy(loading = false)
+
+            withContext(Dispatchers.IO) {
+                runCatching { computeAdvice() }
+                    .onFailure { e -> Timber.w(e, "Tavsiye hesaplanamadi") }
+                    .getOrNull()
+            }?.let { _advice.value = it }
         }
+    }
+
+    private suspend fun computeAdvice(): DigitalAdvice? {
+        val currentWeekStart = periodBoundaryResolver.currentIsoWeek().weekStartEpochDay ?: return null
+        val snapshot = categoryUsageSnapshotProvider.capture()
+        val goals = weeklyGoalDao.getGoalsForWeek(currentWeekStart)
+        val goalsUi = goals.map { goal ->
+            CategoryGoalForAdvice(
+                categoryId = goal.categoryId,
+                goal = goal,
+                previousWeekMinutes = snapshot.previousWeekMinutes(goal.categoryId),
+                currentWeekMinutesSoFar = snapshot.currentWeekMinutes(goal.categoryId),
+            )
+        }
+        return computeDigitalAdvice(snapshot, goalsUi, appDao, clock)
     }
 
     fun dismissCelebration() {

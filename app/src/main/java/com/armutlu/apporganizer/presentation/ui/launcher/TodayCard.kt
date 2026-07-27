@@ -48,18 +48,24 @@ internal fun TodayCard(
         TodayCardKind.REPORT_READY -> onReportReadyClick
         TodayCardKind.DAILY_MISSIONS -> onMissionClick
         TodayCardKind.BALANCE_SUMMARY -> onPulseClick
+        // P7b — ADVICE'ın kendi eylemi TickerActionRouter/MissionActionRouter benzeri bir
+        // çözümleme gerektirir; bu composable domain aksiyonlarını Intent'e çevirmez (mevcut
+        // TodayCard deseniyle tutarlı — çağıran taraf zaten callback'leri kendi çözer). ADVICE
+        // için de en yakın karşılık onPulseClick (Dashboard benzeri genel ekrana yönlendirme).
+        TodayCardKind.ADVICE -> onPulseClick
     }
 
     val title = stringResource(spec.titleRes)
-    val subtitle = if (spec.kind == TodayCardKind.DAILY_MISSIONS) {
-        stringResource(
+    val subtitle = when {
+        spec.kind == TodayCardKind.DAILY_MISSIONS -> stringResource(
             spec.subtitleRes,
             spec.missionCompletedCount ?: 0,
             spec.missionTotalCount ?: 0,
             spec.missionTotalStars ?: 0,
         )
-    } else {
-        stringResource(spec.subtitleRes)
+        spec.kind == TodayCardKind.ADVICE && spec.advice != null ->
+            stringResource(spec.subtitleRes, *spec.advice.messageArgs.toTypedArray())
+        else -> stringResource(spec.subtitleRes)
     }
 
     GlassCard(

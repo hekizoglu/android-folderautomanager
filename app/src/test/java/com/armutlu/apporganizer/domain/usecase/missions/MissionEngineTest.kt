@@ -463,6 +463,117 @@ class MissionEngineTest {
         assertEquals(MissionStatus.COMPLETED, settled.status)
     }
 
+    // ── P6: WEEKLY_CATEGORY_BALANCE ──────────────────────────────────────────
+
+    @Test
+    fun `category balance is not eligible without any active auto goal`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+        )
+        val noGoalsInput = MissionEngine.MissionCheckInput(categoryGoalsBalance = null)
+        val weekly = MissionEngine.generateWeekly(
+            epochWeek = 100L,
+            selection = MissionEngine.MissionSelectionInput(checkInput = noGoalsInput),
+        )
+        assertFalse(
+            "En az 1 aktif AUTO hedef yoksa WEEKLY_CATEGORY_BALANCE havuza girmemeli",
+            weekly.any { it.id == MissionEngine.WEEKLY_CATEGORY_BALANCE },
+        )
+        // isEligible() dogrudan da dogrulanir (mission null degilse evaluate default DATA_UNAVAILABLE doner)
+        val result = MissionEngine.evaluate(mission, noGoalsInput, weekEnded = true)
+        assertEquals(MissionStatus.DATA_UNAVAILABLE, result.status)
+    }
+
+    @Test
+    fun `category balance mid week stays in progress even if a category is exceeded`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+        )
+        val input = MissionEngine.MissionCheckInput(
+            categoryGoalsBalance = MissionEngine.CategoryGoalsBalanceInput(
+                activeAutoGoalCount = 2,
+                goalsWithinTargetCount = 1,
+                goalsExceededCount = 1,
+                goalsWithUnavailableDataCount = 0,
+            ),
+        )
+        val result = MissionEngine.evaluate(mission, input, weekEnded = false)
+        assertEquals(MissionStatus.IN_PROGRESS, result.status)
+    }
+
+    @Test
+    fun `category balance completes at week end when none exceeded`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+        )
+        val input = MissionEngine.MissionCheckInput(
+            categoryGoalsBalance = MissionEngine.CategoryGoalsBalanceInput(
+                activeAutoGoalCount = 3,
+                goalsWithinTargetCount = 3,
+                goalsExceededCount = 0,
+                goalsWithUnavailableDataCount = 0,
+            ),
+        )
+        val result = MissionEngine.evaluate(mission, input, weekEnded = true)
+        assertEquals(MissionStatus.COMPLETED, result.status)
+    }
+
+    @Test
+    fun `category balance fails at week end when at least one category exceeded`() {
+        val mission = MissionEngine.Mission(
+            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+        )
+        val input = MissionEngine.MissionCheckInput(
+            categoryGoalsBalance = MissionEngine.CategoryGoalsBalanceInput(
+                activeAutoGoalCount = 2,
+                goalsWithinTargetCount = 1,
+                goalsExceededCount = 1,
+                goalsWithUnavailableDataCount = 0,
+            ),
+        )
+        val result = MissionEngine.evaluate(mission, input, weekEnded = true)
+        assertEquals(MissionStatus.FAILED, result.status)
+        assertEquals("CATEGORY_GOAL_EXCEEDED", result.failureReasonCode)
+    }
+
+    @Test
+    fun `category balance is single combined mission worth at most WEEKLY_STAR regardless of goal count`() {
+        // roadmap §10: kategori basina ayri yildiz YOK — tek gorev, tek WEEKLY_STAR odulu.
+        assertEquals(
+            MissionEngine.WEEKLY_STAR,
+            MissionEngine.starRewardForMission(MissionEngine.WEEKLY_CATEGORY_BALANCE),
+        )
+    }
+
+    @Test
+    fun `category balance and weekly screen less can both be eligible in the same week`() {
+        // roadmap §9 karar 2: ikisi de gosterilir, farkli odul kaynaklari.
+        val input = MissionEngine.MissionCheckInput(
+            weeklyScreenTimeMinutes = 500L,
+            previousWeeklyScreenTimeMinutes = 700L,
+            categoryGoalsBalance = MissionEngine.CategoryGoalsBalanceInput(
+                activeAutoGoalCount = 1,
+                goalsWithinTargetCount = 1,
+                goalsExceededCount = 0,
+                goalsWithUnavailableDataCount = 0,
+            ),
+        )
+        val weekly = MissionEngine.generateWeekly(
+            epochWeek = 200L,
+            selection = MissionEngine.MissionSelectionInput(checkInput = input),
+        )
+        val ids = weekly.map { it.id }.toSet()
+        assertTrue(
+            "WEEKLY_SCREEN_LESS ve WEEKLY_CATEGORY_BALANCE ayni havuzdan (2 elemanlik pencere) " +
+                "gelebilir, cakisma OLMAMALI",
+            MissionEngine.WEEKLY_SCREEN_LESS in ids || MissionEngine.WEEKLY_CATEGORY_BALANCE in ids,
+        )
+    }
+
     @Test
     fun `checkProgress bridge only returns true when evaluate resolves to COMPLETED`() {
         // Kopru sozlesmesi: donemsel gorev donem surerken artik true DONMEMELI (P0 2.4 fix).

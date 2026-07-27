@@ -24,7 +24,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class, UndoMergeEntity::class],
-    version = 24,
+    version = 25,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -369,6 +369,25 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        internal val MIGRATION_24_25 = object : Migration(24, 25) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // P3 — Adaptif kategori hedefleri (roadmap §6). Additive migration, veri kaybı
+                // yok. Mevcut satırlar mode='MANUAL' alır — açık rıza olmadan otomatik moda
+                // GEÇİRİLMEZ (roadmap §3 ürün kararı).
+                db.addColumnIfNotExists("weekly_goals", "mode", "TEXT NOT NULL DEFAULT 'MANUAL'")
+                db.addColumnIfNotExists("weekly_goals", "baselineMinutes", "INTEGER")
+                db.addColumnIfNotExists("weekly_goals", "previousWeekActualMinutes", "INTEGER")
+                db.addColumnIfNotExists("weekly_goals", "pace", "TEXT NOT NULL DEFAULT 'DENGELI'")
+                db.addColumnIfNotExists("weekly_goals", "status", "TEXT NOT NULL DEFAULT 'ACTIVE'")
+                db.addColumnIfNotExists("weekly_goals", "generatedAt", "INTEGER")
+                db.addColumnIfNotExists("weekly_goals", "settledAt", "INTEGER")
+                db.addColumnIfNotExists("weekly_goals", "algorithmVersion", "INTEGER NOT NULL DEFAULT 1")
+                // Mevcut satırlarda achievedAt>0 ise status'u COMPLETED'e türet — eski
+                // "başarıldı" bilgisini yeni status alanına kaybetmeden taşır.
+                db.execSQL("UPDATE weekly_goals SET status = 'COMPLETED' WHERE achievedAt > 0")
+            }
+        }
+
         internal fun SupportSQLiteDatabase.addColumnIfNotExists(
             table: String,
             column: String,
@@ -477,6 +496,7 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_21_22,
                         MIGRATION_22_23,
                         MIGRATION_23_24,
+                        MIGRATION_24_25,
                     )
                     .build()
 

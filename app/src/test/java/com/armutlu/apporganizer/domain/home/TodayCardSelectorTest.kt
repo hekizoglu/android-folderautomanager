@@ -1,5 +1,9 @@
 package com.armutlu.apporganizer.domain.home
 
+import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.advice.DigitalAdvice
+import com.armutlu.apporganizer.domain.advice.DigitalAdviceAction
+import com.armutlu.apporganizer.domain.advice.DigitalAdviceType
 import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
@@ -10,11 +14,22 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 /**
- * [TodayCardSelector] testleri (Görev S1 + Görev 3). Saf Kotlin — Android bağımlılığı yok.
- * Öncelik sırası: CRITICAL_PERMISSION > RISKY_MISSION > FOLDER_REVIEW > REPORT_READY >
- * DAILY_MISSIONS > BALANCE_SUMMARY > null (hiçbir girdi/öncelik yok).
+ * [TodayCardSelector] testleri (Görev S1 + Görev 3 + P7b tavsiye entegrasyonu). Saf Kotlin —
+ * Android bağımlılığı yok. Öncelik sırası: CRITICAL_PERMISSION > RISKY_MISSION > FOLDER_REVIEW >
+ * REPORT_READY > DAILY_MISSIONS > BALANCE_SUMMARY > ADVICE > null (hiçbir girdi/öncelik yok).
  */
 class TodayCardSelectorTest {
+
+    private fun advice(id: String = "test_advice") = DigitalAdvice(
+        id = id,
+        type = DigitalAdviceType.POSITIVE_REINFORCEMENT,
+        priority = 8,
+        titleRes = R.string.advice_positive_all_on_track_title,
+        messageRes = R.string.advice_positive_all_on_track_message,
+        action = DigitalAdviceAction.OpenCategoryGoals,
+        suggestionKey = id,
+        createdAt = 0L,
+    )
 
     private fun mission(
         urgent: Boolean,
@@ -166,6 +181,52 @@ class TodayCardSelectorTest {
         assertNull(spec)
     }
 
+    // ── Öncelik 7: ADVICE (P7b) ──────────────────────────────────────────────
+
+    @Test
+    fun `advice shown when nothing else applies`() {
+        val spec = TodayCardSelector.select(
+            mission = null,
+            pulse = null,
+            weeklyReportReady = false,
+            advice = advice(),
+        )
+        assertEquals(TodayCardKind.ADVICE, spec?.kind)
+    }
+
+    @Test
+    fun `advice stays behind balance summary priority`() {
+        val spec = TodayCardSelector.select(
+            mission = null,
+            pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
+            weeklyReportReady = false,
+            advice = advice(),
+        )
+        assertEquals(TodayCardKind.BALANCE_SUMMARY, spec?.kind)
+    }
+
+    @Test
+    fun `advice stays behind daily missions priority`() {
+        val spec = TodayCardSelector.select(
+            mission = mission(urgent = false, totalCount = 3, completedCount = 1),
+            pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
+            weeklyReportReady = false,
+            advice = advice(),
+        )
+        assertEquals(TodayCardKind.DAILY_MISSIONS, spec?.kind)
+    }
+
+    @Test
+    fun `advice stays behind critical permission priority`() {
+        val spec = TodayCardSelector.select(
+            mission = null,
+            pulse = pulse(freshness = DataFreshness.UNAVAILABLE),
+            weeklyReportReady = false,
+            advice = advice(),
+        )
+        assertEquals(TodayCardKind.CRITICAL_PERMISSION, spec?.kind)
+    }
+
     // ── Hiçbir girdi yok ─────────────────────────────────────────────────────
 
     @Test
@@ -175,7 +236,7 @@ class TodayCardSelectorTest {
     }
 
     @Test
-    fun `mission with empty list and no pulse returns null`() {
+    fun `mission with empty list and no pulse and no advice returns null`() {
         val spec = TodayCardSelector.select(mission = mission(urgent = false, totalCount = 0, completedCount = 0), pulse = null, weeklyReportReady = false)
         assertNull(spec)
     }

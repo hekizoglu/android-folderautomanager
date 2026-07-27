@@ -3,6 +3,9 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.armutlu.apporganizer.domain.home.TodayCardSelector
+import com.armutlu.apporganizer.presentation.viewmodel.DashboardViewModel
 import androidx.compose.foundation.pager.rememberPagerState
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec.FolderPage
@@ -150,6 +153,16 @@ fun HomeScreen(
     val todayInstalledApps by vm.todayInstalledApps.collectAsState()
     val homePulseSummary by vm.homePulseSummary.collectAsState()
     val homeMissionSummary by vm.homeMissionSummary.collectAsState()
+    // P7b — TodayCard entegrasyonu: ayrı DashboardViewModel'den advice okunur (yeni bir
+    // LauncherViewModel bağımlılığı eklenmez, mevcut Dashboard business logic'i yeniden kullanılır).
+    val dashboardViewModel: DashboardViewModel = hiltViewModel()
+    val digitalAdvice by dashboardViewModel.advice.collectAsState()
+    val todayCardSpec = TodayCardSelector.select(
+        mission = homeMissionSummary,
+        pulse = homePulseSummary,
+        weeklyReportReady = false,
+        advice = digitalAdvice,
+    )
     val recentNotificationCounts by vm.recentNotificationCounts.collectAsState()
     val recentNotificationApps by vm.recentNotificationApps.collectAsState()
     val favoriteApps by vm.favoriteApps.collectAsState()
@@ -1313,6 +1326,7 @@ fun HomeScreen(
                             // DisposableEffect), yeni statik okuma eklenmedi.
                             contentOrder = dashboardContentOrder(homeLayoutConfig),
                             missionSummary = homeMissionSummary,
+                            todayCardSpec = todayCardSpec,
                         ),
                         actions = DashboardActions(
                             onOpenWeeklyReport = {
@@ -1326,6 +1340,13 @@ fun HomeScreen(
                             onOpenMissions = {
                                 val intent = Intent(context, MainActivity::class.java).apply {
                                     putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
+                            onOpenFolderReview = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.CLASSIFICATION_REVIEW)
                                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                                 runCatching { context.startActivity(intent) }
