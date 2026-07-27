@@ -1,3 +1,8 @@
+## Döngü — 2026-07-28 (Pil throttle commit eksikliği kapatıldı + APK teslimi)
+**Yapılanlar:** `AppPrefs.kt` USAGE_SYNC_INTERVAL_MS (30dk→2 saat) değişikliği önceki turda commit edilmediği fark edildi, commit `60a8efe5` ile kapatıldı. Kart genişliği hizalama + klasör karartma güçlendirme (Antigravity'nin `42739147` commit'iyle zaten birleşmişti) doğrulandı, temiz build+test PASS, `v1.4.35 (159)` Telegram'a gönderildi.
+**Bug:** Yok. Önceki turun "throttle commit edildi" iddiası hatalıydı — çalışma ağacında uncommitted kalmış, bu döngüde düzeltildi (D240 disiplini: rapor edilen commit'in gerçekten var olduğu doğrulanmalı).
+**Sonraki:** Antigravity'nin 2026-07-28 doğrulama raporu bekleniyor.
+
 ## Antigravity Bağımsız Doğrulama — 2026-07-28
 **Yapılanlar:** Emülatörde `app-debug.apk` testi ile Onboarding ve Hero Dashboard görsel analizi tamamlandı. Arama çubuğu ve dock genişlik hizalaması teyit edildi. Pil throttle, kart genişlikleri ve adaptif hedefler denetim raporu (`ANTIGRAVITY_DOGRULAMA_RAPORU_2026-07-28.md`) oluşturuldu.
 **Bug:** Yok (tüm görsel ve mantıksal kontroller YEŞİL).
