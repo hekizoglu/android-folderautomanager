@@ -41,6 +41,8 @@ chroma.sqlite3
 !.claude/agents/
 !.claude/skills/
 .env
+*firebase-adminsdk*.json
+firebase-service-account.json
 
 nul
 
