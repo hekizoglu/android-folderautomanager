@@ -91,10 +91,12 @@ internal fun HomeMissionCard(
     }
 
     GlassCard(
-        modifier = modifier.clickable(onClick = {
-            TelemetryManager.log(TelemetryEvent.HomeMissionCardOpened(TelemetryEvent.HomeMissionType.NONE, wireStatus))
-            onClick()
-        }),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = {
+                TelemetryManager.log(TelemetryEvent.HomeMissionCardOpened(TelemetryEvent.HomeMissionType.NONE, wireStatus))
+                onClick()
+            }),
         cornerRadius = 18.dp,
         backgroundAlpha = 0.10f,
         borderAlpha = 0.18f,

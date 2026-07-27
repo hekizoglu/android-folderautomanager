@@ -70,6 +70,7 @@ internal fun TodayCard(
 
     GlassCard(
         modifier = modifier
+            .fillMaxWidth()
             .clickable(onClick = onClick)
             .semantics(mergeDescendants = true) {
                 contentDescription = "$title, $subtitle"
