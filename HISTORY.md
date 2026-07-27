@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-07-27 (Build + Telegram APK teslimi)
+**Yapılanlar:** Yeni kod değişikliği yok — mevcut commit `2766f786`'dan `assembleDebug`+`testDebugUnitTest` alındı (bir build kilidi temizlik sonrası çözüldü), APK Telegram'a gönderildi (v1.4.33/157, ~27.8 MB, `"ok":true` doğrulandı).
+**Bug:** Build kilidi (`transformDebugUnitTestClassesWithAsm` klasör silme hatası) — `app\build` tam temizlik ile çözüldü, bilinen ortam sorunu.
+**Sonraki:** Yok — roadmap kapsamında planlı iş kalmadı, kullanıcı APK'yı deneyecek.
+
 ## Döngü — 2026-07-27 (Emülatör smoke test + WeeklyGoalMigrationTest gerçek cihazda geçti)
 **Yapılanlar:** Pixel6_AOSP33 emülatöründe (Android 13) APK kuruldu, crash-free çalıştığı doğrulandı; Ayarlar > Adaptif Kategori Hedefleri toggle'ı gerçekten ekranda görülüp test edildi. `WeeklyGoalMigrationTest` (instrumented, Room migration 24→25) `connectedDebugAndroidTest` ile gerçek cihazda koşuldu — `1 test, 0 failures`. Roadmap'in son açık ucu (emülatör doğrulaması) kapandı.
 **Bug:** Yok — ilk emülatör raporu belirsizdi (kod taraması gibiydi), agent'a netleştirme isteği gönderilip ikinci, daha net rapor alındı. D240 disiplini: "kod var" ≠ "ekranda görüldü", ayrım korundu.
