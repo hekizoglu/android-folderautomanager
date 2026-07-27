@@ -35,10 +35,12 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import com.armutlu.apporganizer.domain.models.HomeSectionId
+import com.armutlu.apporganizer.presentation.ui.launcher.HomeMissionCard
 
 /**
  * D240 — SmartAccessCard tek bir sekmeli (NOW/RECENT/NOTIFICATIONS) birim olduğu için editördeki
@@ -62,7 +64,7 @@ private val SMART_ACCESS_GROUP = setOf(
 )
 
 /** Hero'nun render edebildiği "sanal" bloklar — contentOrder içindeki gerçek section'lardan türetilir. */
-private enum class HeroBlock { CLOCK, MISSIONS_AND_SCORE, SMART_ACCESS }
+private enum class HeroBlock { CLOCK, MISSIONS_AND_SCORE, MISSIONS, SMART_ACCESS }
 
 /**
  * Editörün gerçek `contentOrder`'ından (dashboardContentOrder(config)) Hero'nun render edebileceği
@@ -76,6 +78,7 @@ private fun heroBlockOrder(contentOrder: List<HomeSectionId>): List<HeroBlock> {
         val block = when {
             sectionId == HomeSectionId.CLOCK -> HeroBlock.CLOCK
             sectionId == HomeSectionId.MISSIONS_AND_SCORE -> HeroBlock.MISSIONS_AND_SCORE
+            sectionId == HomeSectionId.MISSIONS -> HeroBlock.MISSIONS
             sectionId in SMART_ACCESS_GROUP -> HeroBlock.SMART_ACCESS
             else -> null
         } ?: continue
@@ -90,12 +93,14 @@ internal fun HeroDashboardPage(
     smartAccess: SmartAccessUiState,
     pendingClassificationCount: Int = 0,
     contentOrder: List<HomeSectionId> = HomeSectionId.entries,
+    missionSummary: HomeMissionSummary? = null,
     onOpenWeeklyReport: () -> Unit,
     onClockLongPress: () -> Unit,
     onOpenPulse: () -> Unit,
     onOpenUsageAccessSettings: () -> Unit,
     onOpenNotificationAccessSettings: () -> Unit,
     onOpenClassificationReview: () -> Unit = {},
+    onOpenMissions: () -> Unit = {},
     onLaunchApp: (String) -> Unit,
     onAppLongClick: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -134,6 +139,10 @@ internal fun HeroDashboardPage(
                         summary = pulse,
                         spec = spec,
                         onClick = onOpenPulse,
+                    )
+                    HeroBlock.MISSIONS -> HomeMissionCard(
+                        summary = missionSummary,
+                        onClick = onOpenMissions,
                     )
                     HeroBlock.SMART_ACCESS -> SmartAccessCard(
                         state = smartAccess,

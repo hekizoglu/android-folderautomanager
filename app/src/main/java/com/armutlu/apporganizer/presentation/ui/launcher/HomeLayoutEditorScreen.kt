@@ -770,6 +770,7 @@ private fun HiddenHomeSection(item: HomeLayoutItem, onShow: () -> Unit) {
 private fun sectionName(id: HomeSectionId): Int = when (id) {
     HomeSectionId.CLOCK -> R.string.home_section_clock
     HomeSectionId.MISSIONS_AND_SCORE -> R.string.home_section_missions_score
+    HomeSectionId.MISSIONS -> R.string.home_section_missions
     HomeSectionId.MAIN_SEARCH -> R.string.home_section_main_search
     HomeSectionId.GOOGLE_SEARCH -> R.string.home_section_google_search
     HomeSectionId.FAVORITES -> R.string.home_section_favorites

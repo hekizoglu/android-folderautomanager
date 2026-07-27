@@ -897,6 +897,7 @@
     <string name="home_layout_small_device_warning">Your screen looks small â€” keeping many sections on may require scrolling on the Home screen.</string>
     <string name="home_section_clock">Clock</string>
     <string name="home_section_missions_score">Missions and score</string>
+    <string name="home_section_missions">Daily Missions</string>
     <string name="home_section_main_search">Main search</string>
     <string name="home_section_google_search">Google search</string>
     <string name="home_section_favorites">Favorites</string>

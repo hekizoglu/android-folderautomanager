@@ -3,6 +3,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.AppDao
+import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.UndoMergeDao
 import com.armutlu.apporganizer.data.local.UndoMergeEntity
 import com.armutlu.apporganizer.domain.models.AppInfo
@@ -25,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FolderMergeViewModel @Inject constructor(
     private val appDao: AppDao,
+    private val categoryDao: CategoryDao,
     private val undoMergeDao: UndoMergeDao
 ) : ViewModel() {
 
@@ -39,7 +41,22 @@ class FolderMergeViewModel @Inject constructor(
     private val _canUndo = MutableStateFlow(false)
     val canUndo: StateFlow<Boolean> = _canUndo.asStateFlow()
 
+    private val _categories = MutableStateFlow<List<Category>>(emptyList())
+    val categories: StateFlow<List<Category>> = _categories.asStateFlow()
+
+    private var allApps: List<AppInfo> = emptyList()
+
+    init {
+        viewModelScope.launch {
+            val apps = appDao.getAllApps()
+            val categories = categoryDao.getAllCategories()
+            _categories.value = categories
+            loadSuggestions(apps, categories)
+        }
+    }
+
     fun loadSuggestions(apps: List<AppInfo>, categories: List<Category>) {
+        allApps = apps
         viewModelScope.launch {
             try {
                 val plans = FolderMergeCandidateScorer.score(apps)
@@ -74,10 +91,12 @@ class FolderMergeViewModel @Inject constructor(
     fun selectSuggestion(suggestionId: String) {
         val suggestion = _uiState.value.suggestions.find { it.id == suggestionId }
         if (suggestion != null) {
-            val sourceFolderApps = _uiState.value.sourceFolderApps.filter {
+            val sourceFolderApps = allApps.filter {
                 it.categoryId == suggestion.sourceCategoryId
             }
-            val selectableApps = sourceFolderApps.filter { !it.isCategoryLocked }
+            val selectableApps = sourceFolderApps.filter {
+                !it.isCategoryLocked && it.packageName in suggestion.packageNames
+            }
 
             _uiState.update { state ->
                 state.copy(

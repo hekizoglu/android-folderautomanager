@@ -149,6 +149,7 @@ fun HomeScreen(
     var recentInstallsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentInstallsEnabled(context)) }
     val todayInstalledApps by vm.todayInstalledApps.collectAsState()
     val homePulseSummary by vm.homePulseSummary.collectAsState()
+    val homeMissionSummary by vm.homeMissionSummary.collectAsState()
     val recentNotificationCounts by vm.recentNotificationCounts.collectAsState()
     val recentNotificationApps by vm.recentNotificationApps.collectAsState()
     val favoriteApps by vm.favoriteApps.collectAsState()
@@ -1265,7 +1266,7 @@ fun HomeScreen(
                     },
                     onNavigateToFolderMerge = {
                         val intent = Intent(context, MainActivity::class.java).apply {
-                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.FOLDER_SUGGESTIONS)
+                            putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.FOLDER_MERGE)
                             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
                         runCatching { context.startActivity(intent) }
@@ -1311,6 +1312,7 @@ fun HomeScreen(
                             // tercihi; homeLayoutConfig zaten reaktif (bkz. üstteki remember/
                             // DisposableEffect), yeni statik okuma eklenmedi.
                             contentOrder = dashboardContentOrder(homeLayoutConfig),
+                            missionSummary = homeMissionSummary,
                         ),
                         actions = DashboardActions(
                             onOpenWeeklyReport = {
@@ -1321,6 +1323,13 @@ fun HomeScreen(
                                 runCatching { context.startActivity(intent) }
                             },
                             onClockLongPress = { vm.openManager(context) },
+                            onOpenMissions = {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.MISSIONS)
+                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                runCatching { context.startActivity(intent) }
+                            },
                             onPulseClick = {
                                 val intent = Intent(context, MainActivity::class.java).apply {
                                     putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.WRAPPED_REPORT)

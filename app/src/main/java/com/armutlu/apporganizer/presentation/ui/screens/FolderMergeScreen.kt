@@ -38,11 +38,11 @@ import com.armutlu.apporganizer.presentation.ui.launcher.FolderMergeViewModel
 @Composable
 fun FolderMergeScreen(
     viewModel: FolderMergeViewModel = hiltViewModel(),
-    categories: List<Category> = emptyList(),
     onClose: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val canUndo by viewModel.canUndo.collectAsState()
+    val categories by viewModel.categories.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),

@@ -913,6 +913,7 @@
     <string name="home_layout_small_device_warning">Ekranın küçük olduğu görünüyor — çok sayıda bölüm açık kalırsa Ana Ekran kaydırma gerektirebilir.</string>
     <string name="home_section_clock">Saat</string>
     <string name="home_section_missions_score">Görevler ve puan</string>
+    <string name="home_section_missions">Günlük Görevler</string>
     <string name="home_section_main_search">Ana arama</string>
     <string name="home_section_google_search">Google arama</string>
     <string name="home_section_favorites">Favoriler</string>

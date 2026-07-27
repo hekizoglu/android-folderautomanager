@@ -19,7 +19,7 @@ class HomeLayoutTest {
                 .sortedBy { it.order }.map { it.sectionId },
         )
         assertEquals(
-            listOf(HomeSectionId.CLOCK, HomeSectionId.MISSIONS_AND_SCORE,
+            listOf(HomeSectionId.CLOCK, HomeSectionId.MISSIONS_AND_SCORE, HomeSectionId.MISSIONS,
                 HomeSectionId.FAVORITES, HomeSectionId.SUGGESTIONS,
                 HomeSectionId.RECENT_NOTIFICATIONS, HomeSectionId.RECENT_APPS,
                 HomeSectionId.FOLDER_GRID),
