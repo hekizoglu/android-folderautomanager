@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-07-27 (Emülatör smoke test + WeeklyGoalMigrationTest gerçek cihazda geçti)
+**Yapılanlar:** Pixel6_AOSP33 emülatöründe (Android 13) APK kuruldu, crash-free çalıştığı doğrulandı; Ayarlar > Adaptif Kategori Hedefleri toggle'ı gerçekten ekranda görülüp test edildi. `WeeklyGoalMigrationTest` (instrumented, Room migration 24→25) `connectedDebugAndroidTest` ile gerçek cihazda koşuldu — `1 test, 0 failures`. Roadmap'in son açık ucu (emülatör doğrulaması) kapandı.
+**Bug:** Yok — ilk emülatör raporu belirsizdi (kod taraması gibiydi), agent'a netleştirme isteği gönderilip ikinci, daha net rapor alındı. D240 disiplini: "kod var" ≠ "ekranda görüldü", ayrım korundu.
+**Sonraki:** Roadmap kapsamında planlı iş kalmadı. Tek düşük riskli açık madde: Ana Ekranı Düzenle > Bugün Kartı ve Görevler ekranı > Bugünün Tavsiyesi kartının gerçek görsel render'ı hâlâ teyit edilmedi (agent navigasyon sorunu yaşadı, muhtemelen veri yetersizliğinde hiç görünmemesi zaten beklenen davranış).
+
 ## Döngü — 2026-07-27 (Tavsiye motoruna bildirim gürültüsü + kullanım paterni sinyalleri bağlandı)
 **Yapılanlar:** Önceki dönğüde `null` bırakılan iki bilinçli kapsam daraltması kapatıldı — `computeDigitalAdvice` artık opsiyonel `context`/`usageStatsSource`/`notificationEventDao` parametreleriyle bildirim gürültüsü payını (`NotificationEventDao.countsSince`, son 7 gün) ve sabah/gece kullanım paternini (`MissionUsageStatsSource.getDailySessionUsage`, son 7 TAMAMLANMIŞ gün — bugün hariç, G1 sabitlik ilkesiyle aynı) gerçek veriden hesaplıyor. `DashboardViewModel`, `MissionsViewModel`, `RealSmartTickerSource` üçü de yeni parametreleri geçiriyor.
 **Bug:** Kendi yazdığım testte yanlış eşik verisi (`70/100=%70` iken "eşik altı" bekliyordum) — düzeltildi, tüm testler yeşil.
