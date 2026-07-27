@@ -518,7 +518,7 @@ object AppPrefs {
 
     // Usage stats sync throttle — her 30 dakikada bir senkronize et
     private const val KEY_LAST_USAGE_SYNC = "last_usage_sync_ms"
-    private const val USAGE_SYNC_INTERVAL_MS = 30L * 60 * 1000 // 30 dakika
+    private const val USAGE_SYNC_INTERVAL_MS = 2L * 60 * 60 * 1000 // 2 saat (Pil fix: 7,200,000 ms)
 
     fun shouldSyncUsageStats(context: Context): Boolean {
         val last = prefs(context).getLong(KEY_LAST_USAGE_SYNC, 0L)
