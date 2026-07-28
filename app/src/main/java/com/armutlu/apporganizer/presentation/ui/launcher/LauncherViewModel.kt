@@ -1194,18 +1194,25 @@ class LauncherViewModel @Inject constructor(
 
     private val _smartAccessPermissionTick = MutableStateFlow(0)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val latestNotificationSummaries = combine(
-        _suggestionTick,
-        _smartAccessPermissionTick,
-    ) { now, _ ->
-        now - RECENT_NOTIFICATIONS_WINDOW_MS
-    }.flatMapLatest { windowStart ->
-        notificationEventDao.observeLatestSummaries(
-            since = windowStart,
-            limit = SmartAccessRanker.MAX_ITEMS,
-        )
-    }
+    // D242d: Room'daki tarihsel notification_events özeti yerine, AllAppsDrawer/AppIconView
+    // rozetinin de kullandığı AYNI anlık aktif bildirim snapshot'ı (smartNotifications) kullanılır.
+    // Önceden ikisi farklı kaynaktan besleniyordu (Hero kartı "son 24 saat geçmişi", drawer rozeti
+    // "şu an aktif bildirim") — kullanıcı bildirim panelini temizleyince drawer sıfırlanıyor ama
+    // Hero kartı 24 saat boyunca göstermeye devam ediyordu. Artık ikisi de aynı anlık veriyi kullanır.
+    private val latestNotificationSummaries = com.armutlu.apporganizer.service.AppNotificationListenerService
+        .smartNotifications
+        .map { active ->
+            active
+                .filterNot { it.shouldSuppress }
+                .groupBy { it.packageName }
+                .map { (pkg, items) ->
+                    com.armutlu.apporganizer.data.local.PackageNotificationSummary(
+                        packageName = pkg,
+                        count = items.size,
+                        lastPostedAt = items.maxOf { it.timestamp },
+                    )
+                }
+        }
 
     // Loading ve izin refresh sinyalleri doğrudan ana combine girdisidir. `.value` okuyarak
     // emisyon kaçırılmaz; Room ilk yükü tamamlandığında Hero her durumda yeniden hesaplanır.
