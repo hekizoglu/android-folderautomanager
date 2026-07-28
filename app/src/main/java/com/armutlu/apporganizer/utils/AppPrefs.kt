@@ -75,22 +75,30 @@ object AppPrefs {
         return flagDone && hasInstallMarker(context)
     }
 
-    /** Onboarding tamamlaninca hem flag'i hem cihaza-ozel marker'i yazar. */
+    /**
+     * Onboarding tamamlaninca hem flag'i hem cihaza-ozel marker'i yazar.
+     * D242e fix: marker dosyasi once senkron (commit) yazilir, flag SADECE marker basariyla
+     * yazildiysa true yapilir — onceden marker yazimi (writeInstallMarker) runCatching ile
+     * sessizce yutulup flag yine de true yapiliyordu; Activity yeniden baslatma/process kill
+     * gibi timing durumlarinda marker diske yazilamadan flag true kalinca isOnboardingDone()
+     * bir sonraki acilista (flagDone=true && hasInstallMarker=false) hep false donup onboarding
+     * sonsuz donguye giriyordu (emulator + gercek cihaz testinde dogrulandi).
+     */
     fun markOnboardingDone(context: Context) {
-        prefs(context).edit().putBoolean(KEY_ONBOARDING_DONE, true).apply()
-        writeInstallMarker(context)
+        val markerWritten = writeInstallMarker(context)
+        prefs(context).edit().putBoolean(KEY_ONBOARDING_DONE, markerWritten).commit()
     }
 
     private fun hasInstallMarker(context: Context): Boolean =
         java.io.File(context.filesDir, INSTALL_MARKER_FILE).exists()
 
-    private fun writeInstallMarker(context: Context) {
+    private fun writeInstallMarker(context: Context): Boolean =
         runCatching {
             java.io.File(context.filesDir, INSTALL_MARKER_FILE).writeText(
                 System.currentTimeMillis().toString()
             )
-        }
-    }
+            true
+        }.getOrDefault(false)
 
     /** Ayarlar > "Kurulum Sihirbazı"nı sıfırla — hem flag hem marker temizlenir. */
     fun resetOnboarding(context: Context) {
