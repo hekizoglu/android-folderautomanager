@@ -711,6 +711,31 @@ private fun DrawerAppList(
         }
     } else {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
+            // D242-DENETIM FINDING-001 fix: bu iki blok eskiden yalnızca gruplu (A-Z) dalda vardı —
+            // kullanıcı sıralamayı Akıllı/Kullanım/Boyut/Yükleme'ye değiştirince (düz dal devreye
+            // girince) hızlı erişim bölümleri ayar kapatılmış gibi kayboluyordu.
+            if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
+                item(key = "recent_fav_section_flat") {
+                    DrawerRecentFavSection(
+                        recentApps = if (recentAppsEnabled) recentApps.take(4) else emptyList(),
+                        favoriteApps = if (favoritesEnabled) favoriteApps.take(4) else emptyList(),
+                        iconPackPkg = state.iconPackPkg,
+                        onRecentAppClick = onRecentAppClick,
+                        onFavoriteAppClick = onFavoriteAppClick,
+                        onAppLongClick = onAppLongClick,
+                    )
+                }
+            }
+            if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
+                item(key = "recent_notification_apps_section_flat") {
+                    DrawerRecentNotificationSection(
+                        apps = recentNotificationApps.take(4),
+                        iconPackPkg = state.iconPackPkg,
+                        onAppClick = onAppClick,
+                        onAppLongClick = onAppLongClick,
+                    )
+                }
+            }
             if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
                 item(key = "today_installed_apps_section_flat") {
                     DrawerTodayInstalledSection(

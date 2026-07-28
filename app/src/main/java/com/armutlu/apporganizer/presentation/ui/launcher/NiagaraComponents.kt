@@ -61,7 +61,7 @@ fun NiagaraAppRow(
     val onSurface     = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
     val rowHover      = onSurface.copy(alpha = 0.08f)
-    val icon = rememberAppIcon(app.packageName, iconPackPkg)
+    val icon = rememberAppIcon(app.packageName, app.lastUpdatedTime, iconPackPkg)
     val notifColor = when {
         app.notificationCount == 0 -> null
         app.notificationImportance >= 4 -> BadgeRed

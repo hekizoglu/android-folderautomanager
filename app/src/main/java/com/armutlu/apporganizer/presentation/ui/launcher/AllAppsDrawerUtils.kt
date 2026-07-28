@@ -112,11 +112,19 @@ internal fun formatUsageMs(ms: Long): String = when {
 }
 
 // ── Async ikon yükleme — global LRU cache paylaşılır ─────────────────────────
+// D242-DENETIM FINDING-002 fix: cacheKey artık lastUpdatedTime içeriyor — önceden yalnızca
+// packageName+iconPackPkg kullanıldığı için uygulama güncellenip ikonu değişse bile aynı anahtar
+// eski bitmap'i döndürüyordu (repo standardı: diğer ikon composable'ları zaten lastUpdatedTime
+// kullanıyor, bkz. LEARNINGS.md).
 @Composable
-internal fun rememberAppIcon(packageName: String, iconPackPkg: String = ""): ImageBitmap? {
+internal fun rememberAppIcon(packageName: String, lastUpdatedTime: Long, iconPackPkg: String = ""): ImageBitmap? {
     val context = LocalContext.current
-    val cacheKey = if (iconPackPkg.isEmpty()) "${packageName}_96" else "${packageName}_96_$iconPackPkg"
-    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], packageName, iconPackPkg) {
+    val cacheKey = if (iconPackPkg.isEmpty()) {
+        "${packageName}_96_${lastUpdatedTime}"
+    } else {
+        "${packageName}_96_${lastUpdatedTime}_$iconPackPkg"
+    }
+    return produceState<ImageBitmap?>(initialValue = iconCacheInternal[cacheKey], cacheKey) {
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
