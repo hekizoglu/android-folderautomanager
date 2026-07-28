@@ -924,7 +924,7 @@ private fun DrawerRecentFavSection(
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                repeat(4 - recentApps.size) { Spacer(Modifier.weight(1f)) }
+                repeat(maxOf(0, 4 - recentApps.size)) { Spacer(Modifier.weight(1f)) }
             }
         }
         if (favoriteApps.isNotEmpty()) {
@@ -969,7 +969,7 @@ private fun DrawerRecentFavSection(
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                repeat(4 - favoriteApps.size) { Spacer(Modifier.weight(1f)) }
+                repeat(maxOf(0, 4 - favoriteApps.size)) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
@@ -1082,7 +1082,7 @@ private fun DrawerAppIconRowSection(
                     )
                 }
             }
-            repeat(4 - apps.size) { Spacer(Modifier.weight(1f)) }
+            repeat(maxOf(0, 4 - apps.size)) { Spacer(Modifier.weight(1f)) }
         }
     }
 }
