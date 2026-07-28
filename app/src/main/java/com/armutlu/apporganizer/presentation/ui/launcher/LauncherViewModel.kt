@@ -372,13 +372,24 @@ class LauncherViewModel @Inject constructor(
     ) { apps, q -> filterAllAppsByQuery(buildAllApps(apps), q) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    // P1.1: Düzenleme/Öneri Merkezi — Ana ekrana kart formatında gösteri
-    // pendingClassificationsCount (satır 341, repository.observePendingClassificationCount()) tek
-    // gerçek sinyal kaynağı — klasör birleşimi/yanlış konumlandırma/izin/durgun uygulama için henüz
-    // ayrı bir tespit motoru yok, o alanlar 0 kalır (kart yalnızca gerçek uyarı varken görünür).
-    val editingCenterState: StateFlow<EditingCenterState> = pendingClassificationsCount
-        .map { pendingCount -> EditingCenterState(pendingClassificationCount = pendingCount) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, EditingCenterState())
+    // P1.1: Düzenleme/Öneri Merkezi — Ana ekrana kart formatında gösteri.
+    // D242: folderMergeCandidates artık FolderMergeCandidateScorer.score() ile gerçek hesaplanıyor
+    // (FolderMergeViewModel'in kullandığı aynı saf fonksiyon) — önceden hep 0 kaldığı için kart hiç
+    // görünmüyordu (kullanıcı: "klasör birleştirme önerisine basınca hiçbir şey olmuyor" — aslında
+    // buton doğru route'a bağlıydı, kart kendisi hiç render edilmiyordu). Yanlış konumlandırma/izin/
+    // durgun uygulama tespiti için hâlâ ayrı motor yok, o alanlar 0 kalır.
+    val editingCenterState: StateFlow<EditingCenterState> = combine(
+        pendingClassificationsCount,
+        allAppsSource,
+    ) { pendingCount, apps ->
+        val mergeCandidates = com.armutlu.apporganizer.domain.usecase.folder.FolderMergeCandidateScorer
+            .score(apps)
+            .size
+        EditingCenterState(
+            pendingClassificationCount = pendingCount,
+            folderMergeCandidates = mergeCandidates,
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, EditingCenterState())
 
     init {
         viewModelScope.launch(Dispatchers.IO) {

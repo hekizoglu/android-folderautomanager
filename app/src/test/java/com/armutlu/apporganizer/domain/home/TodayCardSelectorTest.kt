@@ -14,9 +14,9 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 /**
- * [TodayCardSelector] testleri (Görev S1 + Görev 3 + P7b tavsiye entegrasyonu). Saf Kotlin —
- * Android bağımlılığı yok. Öncelik sırası: CRITICAL_PERMISSION > RISKY_MISSION > FOLDER_REVIEW >
- * REPORT_READY > DAILY_MISSIONS > BALANCE_SUMMARY > ADVICE > null (hiçbir girdi/öncelik yok).
+ * [TodayCardSelector] testleri (Görev S1 + P7b tavsiye entegrasyonu, D242'de DAILY_MISSIONS
+ * kaldırıldı). Saf Kotlin — Android bağımlılığı yok. Öncelik sırası: CRITICAL_PERMISSION >
+ * RISKY_MISSION > FOLDER_REVIEW > REPORT_READY > BALANCE_SUMMARY > ADVICE > null.
  */
 class TodayCardSelectorTest {
 
@@ -113,23 +113,22 @@ class TodayCardSelectorTest {
         assertEquals(TodayCardKind.REPORT_READY, spec?.kind)
     }
 
-    // ── Öncelik 5: DAILY_MISSIONS (Görev 3) ──────────────────────────────────
+    // D242: DAILY_MISSIONS önceliği kaldırıldı — HomeMissionCard'ın gösterdiği aynı veriyi
+    // (HomeMissionSummary) tekrar gösteriyordu, kullanıcı iki kartın çakıştığını bildirdi.
+    // "mission dolu ama urgent değil" artık BALANCE_SUMMARY'ye düşer (aşağıdaki testler).
 
     @Test
-    fun `daily missions shown on a normal day when balance would otherwise win`() {
+    fun `non-urgent mission with items falls through to balance summary`() {
         val spec = TodayCardSelector.select(
             mission = mission(urgent = false, totalCount = 3, completedCount = 1, totalStars = 12),
             pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
             weeklyReportReady = false,
         )
-        assertEquals(TodayCardKind.DAILY_MISSIONS, spec?.kind)
-        assertEquals(1, spec?.missionCompletedCount)
-        assertEquals(3, spec?.missionTotalCount)
-        assertEquals(12, spec?.missionTotalStars)
+        assertEquals(TodayCardKind.BALANCE_SUMMARY, spec?.kind)
     }
 
     @Test
-    fun `daily missions stays behind urgent mission priority`() {
+    fun `urgent mission still wins risky mission priority`() {
         val spec = TodayCardSelector.select(
             mission = mission(urgent = true, totalCount = 3, completedCount = 1),
             pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
@@ -139,7 +138,7 @@ class TodayCardSelectorTest {
     }
 
     @Test
-    fun `daily missions stays behind report ready priority`() {
+    fun `report ready still wins over non-urgent mission`() {
         val spec = TodayCardSelector.select(
             mission = mission(urgent = false, totalCount = 3, completedCount = 1),
             pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
@@ -149,7 +148,7 @@ class TodayCardSelectorTest {
     }
 
     @Test
-    fun `daily missions not shown when mission list is empty`() {
+    fun `empty mission list falls through to balance summary`() {
         val spec = TodayCardSelector.select(
             mission = mission(urgent = false, totalCount = 0, completedCount = 0),
             pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
@@ -158,7 +157,7 @@ class TodayCardSelectorTest {
         assertEquals(TodayCardKind.BALANCE_SUMMARY, spec?.kind)
     }
 
-    // ── Öncelik 6: BALANCE_SUMMARY ──────────────────────────────────────────
+    // ── Öncelik 5: BALANCE_SUMMARY ──────────────────────────────────────────
 
     @Test
     fun `balance summary shown when nothing else applies`() {
@@ -181,7 +180,7 @@ class TodayCardSelectorTest {
         assertNull(spec)
     }
 
-    // ── Öncelik 7: ADVICE (P7b) ──────────────────────────────────────────────
+    // ── Öncelik 6: ADVICE (P7b) ──────────────────────────────────────────────
 
     @Test
     fun `advice shown when nothing else applies`() {
@@ -206,14 +205,14 @@ class TodayCardSelectorTest {
     }
 
     @Test
-    fun `advice stays behind daily missions priority`() {
+    fun `advice stays behind balance summary when non-urgent mission present`() {
         val spec = TodayCardSelector.select(
             mission = mission(urgent = false, totalCount = 3, completedCount = 1),
             pulse = pulse(topReasonId = PulseReasonId.ATTENTION_CALM),
             weeklyReportReady = false,
             advice = advice(),
         )
-        assertEquals(TodayCardKind.DAILY_MISSIONS, spec?.kind)
+        assertEquals(TodayCardKind.BALANCE_SUMMARY, spec?.kind)
     }
 
     @Test

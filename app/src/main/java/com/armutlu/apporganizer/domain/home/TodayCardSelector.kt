@@ -21,19 +21,20 @@ import com.armutlu.apporganizer.R
  *   `tickerItems.any { it.type == SmartTickerType.WEEKLY_REPORT }` ile türetilir — çağıran taraf
  *   bunu hesaplar, bu obje SmartTickerItem'a bağımlı olmaz (yalnızca Boolean alır).
  *
- * Öncelik sırası (S1 görev tanımı + Görev 3 eklentisi + P7b tavsiye entegrasyonu):
+ * Öncelik sırası (S1 görev tanımı + P7b tavsiye entegrasyonu, D242'de DAILY_MISSIONS kaldırıldı):
  * 1. CRITICAL_PERMISSION — kritik izin/veri eksik (pulse veri-yok/izin-yok sinyali)
  * 2. RISKY_MISSION — riskli görev (mission.urgent, yani birincil görev AT_RISK)
  * 3. FOLDER_REVIEW — klasör/sınıflandırma incelemesi gerekiyor
  * 4. REPORT_READY — haftalık rapor hazır
- * 5. DAILY_MISSIONS — mission != null (görev listesi aktif) ve yukarıdakilerin hiçbiri
- *    eşleşmediyse "Bugünün görevleri: X/Y tamamlandı" gösterilir (Görev 3, D26x). Normal bir
- *    günde (acil/riskli görev yok, rapor hazır değil) görev/yıldız ilerlemesi ana ekranda hiç
- *    görünmüyordu — bu adım BALANCE_SUMMARY'den ÖNCE devreye girer.
- * 6. BALANCE_SUMMARY — hiçbiri yoksa, pulse'ın normal denge özeti (veri varsa)
- * 7. ADVICE — P7b: [DigitalAdviceEngine][com.armutlu.apporganizer.domain.advice.DigitalAdviceEngine]
+ * 5. BALANCE_SUMMARY — hiçbiri yoksa, pulse'ın normal denge özeti (veri varsa)
+ * 6. ADVICE — P7b: [DigitalAdviceEngine][com.armutlu.apporganizer.domain.advice.DigitalAdviceEngine]
  *    tarafından üretilen tek ana tavsiye varsa, yukarıdakilerin HİÇBİRİ eşleşmediyse gösterilir
  *    (en düşük öncelik — kritik/acil sinyaller her zaman öne geçer).
+ *
+ * D242 notu: eskiden 5. öncelik DAILY_MISSIONS'dı ("Bugünün görevleri: X/Y tamamlandı") — bu,
+ * ayrı bir "Görevler" kartının (HomeMissionCard) zaten gösterdiği aynı veriyi (HomeMissionSummary)
+ * tekrar gösteriyordu. Kullanıcı iki kartın aynı şeyi gösterdiğini bildirdi (Hüseyin, 2026-07-28),
+ * bu öncelik kaldırıldı — normal günde artık BALANCE_SUMMARY veya ADVICE gösterilir.
  *
  * Hiçbir girdi (mission/pulse/advice) yoksa veya hiçbir öncelik eşleşmezse `null` döner — kart
  * hiç çizilmez (SmartDashboardPage bu durumda eski davranışa döner ya da hiçbir şey göstermez).
@@ -86,21 +87,7 @@ object TodayCardSelector {
             )
         }
 
-        // 5. Günlük görevler — mission aktif (liste dolu) ve yukarıdaki hiçbir öncelik
-        // eşleşmedi (acil görev yok, klasör incelemesi yok, rapor hazır değil). Normal günde
-        // görev/yıldız ilerlemesini görünür kılar; BALANCE_SUMMARY'den önce değerlendirilir.
-        if (mission != null && mission.totalCount > 0) {
-            return TodayCardSpec(
-                kind = TodayCardKind.DAILY_MISSIONS,
-                titleRes = R.string.today_card_title,
-                subtitleRes = R.string.today_card_daily_missions_subtitle,
-                missionCompletedCount = mission.completedCount,
-                missionTotalCount = mission.totalCount,
-                missionTotalStars = mission.totalStars,
-            )
-        }
-
-        // 6. Denge özeti — pulse verisi var ve yukarıdaki hiçbir öncelik eşleşmedi.
+        // 5. Denge özeti — pulse verisi var ve yukarıdaki hiçbir öncelik eşleşmedi.
         if (pulse != null && pulse.freshness != DataFreshness.UNAVAILABLE && !pulse.shouldHideScore) {
             return TodayCardSpec(
                 kind = TodayCardKind.BALANCE_SUMMARY,
@@ -111,7 +98,7 @@ object TodayCardSelector {
             )
         }
 
-        // 7. Tavsiye — P7b: en düşük öncelik, yukarıdakilerin hiçbiri eşleşmediyse.
+        // 6. Tavsiye — P7b: en düşük öncelik, yukarıdakilerin hiçbiri eşleşmediyse.
         if (advice != null) {
             return TodayCardSpec(
                 kind = TodayCardKind.ADVICE,

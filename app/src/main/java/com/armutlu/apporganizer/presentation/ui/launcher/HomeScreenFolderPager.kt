@@ -280,7 +280,7 @@ internal fun FolderGridPage(
                 Spacer(Modifier.width(1.dp))
             }
             Text(
-                text = if (pageNotifications > 0) "$pageNotifications okunmamış bildirim" else "Yeni bildirim ve öneriler burada görünür",
+                text = if (pageNotifications > 0) "$pageNotifications okunmamış bildirim — rapora dokun" else "Bildirim raporunu gör",
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                 fontSize = 11.sp,
                 maxLines = 1,
