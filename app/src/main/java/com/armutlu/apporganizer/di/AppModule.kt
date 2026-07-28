@@ -81,6 +81,10 @@ object AppModule {
         db.notificationEventDao()
 
     @Provides
+    fun provideNotificationHistoryDao(db: AppDatabase): com.armutlu.apporganizer.data.local.NotificationHistoryDao =
+        db.notificationHistoryDao()
+
+    @Provides
     fun provideWeeklyGoalDao(db: AppDatabase): com.armutlu.apporganizer.data.local.WeeklyGoalDao =
         db.weeklyGoalDao()
 

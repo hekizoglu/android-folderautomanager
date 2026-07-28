@@ -4,10 +4,12 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.local.NotificationHistoryDao
 import com.armutlu.apporganizer.data.repository.SmartNotificationLegacyBadgeBridge
 import com.armutlu.apporganizer.data.repository.SmartNotificationRepository
 import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.NotificationEvent
+import com.armutlu.apporganizer.domain.models.NotificationHistoryEntity
 import com.armutlu.apporganizer.domain.models.SmartNotification
 import com.armutlu.apporganizer.domain.usecase.notification.NotificationClassifierUseCase
 import com.armutlu.apporganizer.utils.AppPrefs
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 open class AppNotificationListenerService : NotificationListenerService() {
 
     @Inject lateinit var notificationEventDao: NotificationEventDao
+    @Inject lateinit var notificationHistoryDao: NotificationHistoryDao
     @Inject lateinit var appDao: com.armutlu.apporganizer.data.local.AppDao
     @Inject lateinit var notificationClassifier: NotificationClassifierUseCase
     @Inject lateinit var smartNotificationRepository: SmartNotificationRepository
@@ -59,6 +62,31 @@ open class AppNotificationListenerService : NotificationListenerService() {
                                     systemPriority = classified.systemPriority,
                                 )
                             )
+                        }
+                    }
+                }
+                // D242c — Bildirim Geçmişi: yalnızca kullanıcı "Bildirim metnini göster" ayarını
+                // açtıysa gerçek başlık/metin kaydedilir (varsayılan kapalı, AppPrefs.kt:200).
+                // Kapalıyken hiçbir içerik notification_history'ye yazılmaz.
+                if (AppPrefs.isNotificationTextEnabled(this)) {
+                    val preview = classified.preview
+                    val title = preview?.title?.takeIf { it.isNotBlank() }
+                    if (preview != null && title != null) {
+                        serviceScope.launch {
+                            runCatching {
+                                notificationHistoryDao.insert(
+                                    NotificationHistoryEntity(
+                                        packageName = sbn.packageName,
+                                        title = title,
+                                        text = preview.body.takeIf { it.isNotBlank() } ?: preview.text,
+                                        postedAt = timestamp,
+                                    )
+                                )
+                                notificationHistoryDao.deleteOlderThan(
+                                    System.currentTimeMillis() - NOTIFICATION_HISTORY_RETENTION_MS
+                                )
+                                notificationHistoryDao.trimToLatest(NOTIFICATION_HISTORY_MAX_ROWS)
+                            }
                         }
                     }
                 }
@@ -208,6 +236,10 @@ open class AppNotificationListenerService : NotificationListenerService() {
     )
 
     companion object {
+        /** Bildirim Geçmişi retention — D242c: 7 gün veya 500 kayıt, hangisi önce dolarsa. */
+        private const val NOTIFICATION_HISTORY_RETENTION_MS = 7L * 24 * 60 * 60 * 1000
+        private const val NOTIFICATION_HISTORY_MAX_ROWS = 500
+
         /**
          * Geçiş API'si: tüketiciler aynı servis alanını kullanır ancak verinin gerçek sahibi
          * artık [SmartNotificationRepository]'dir. Doğrudan ViewModel enjeksiyonu sonrası kaldırılacak.

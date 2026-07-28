@@ -289,6 +289,12 @@
     <!-- Bildirim Raporu (Döngü 224 — durum ayrımı) -->
     <string name="notif_report_title">Bildirim Raporu</string>
     <string name="notif_report_back">Geri</string>
+    <string name="notif_report_tab_report">Rapor</string>
+    <string name="notif_report_tab_history">Geçmiş</string>
+    <string name="notif_history_disabled_title">Bildirim geçmişi kapalı</string>
+    <string name="notif_history_disabled_desc">Gerçek bildirim başlık ve metinlerini burada görmek için Ayarlar &gt; Bildirimler &gt; "Bildirim metnini göster" ayarını aç. Kapalıyken hiçbir içerik kaydedilmez, yalnızca uygulama adı ve zaman tutulur.</string>
+    <string name="notif_history_empty_title">Henüz bildirim yok</string>
+    <string name="notif_history_empty_desc">Yeni bildirimler geldikçe burada listelenecek.</string>
     <string name="notif_report_perm_title">Bildirim erişimi gerekli</string>
     <string name="notif_report_perm_desc">Raporun oluşabilmesi için AppOrganizer\'ın bildirimleri görmesi gerekiyor. İzin verdikten sonra veriler cihazında toplanmaya başlar — içerik saklanmaz, yalnızca uygulama adı ve zaman kaydedilir.</string>
     <string name="notif_report_perm_btn">Bildirim Erişimini Aç</string>

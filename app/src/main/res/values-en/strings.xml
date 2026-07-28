@@ -287,6 +287,12 @@
     <!-- Notification Report (Cycle 224 â€” state separation) -->
     <string name="notif_report_title">Notification Report</string>
     <string name="notif_report_back">Back</string>
+    <string name="notif_report_tab_report">Report</string>
+    <string name="notif_report_tab_history">History</string>
+    <string name="notif_history_disabled_title">Notification history is off</string>
+    <string name="notif_history_disabled_desc">To see real notification titles and text here, turn on Settings &gt; Notifications &gt; "Show notification text". While off, no content is stored, only app name and time.</string>
+    <string name="notif_history_empty_title">No notifications yet</string>
+    <string name="notif_history_empty_desc">New notifications will be listed here as they arrive.</string>
     <string name="notif_report_perm_title">Notification access required</string>
     <string name="notif_report_perm_desc">AppOrganizer needs to see notifications to build this report. After you grant access, data is collected on your device only â€” content is never stored, just app name and time.</string>
     <string name="notif_report_perm_btn">Open Notification Access</string>

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.local.NotificationHistoryDao
+import com.armutlu.apporganizer.domain.models.NotificationHistoryEntity
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.NotificationAccessUtils
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
@@ -15,8 +17,10 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -81,12 +85,32 @@ sealed interface NotificationReportUiState {
 class NotificationReportViewModel @Inject constructor(
     private val notificationEventDao: NotificationEventDao,
     private val appDao: AppDao,
+    private val notificationHistoryDao: NotificationHistoryDao,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _uiState =
         MutableStateFlow<NotificationReportUiState>(NotificationReportUiState.Loading)
     val uiState: StateFlow<NotificationReportUiState> = _uiState.asStateFlow()
+
+    /** D242c — Bildirim Geçmişi sekmesi: gerçek başlık/metin, yalnızca ayar açıkken dolu. */
+    val historyEnabled: Boolean get() = AppPrefs.isNotificationTextEnabled(context)
+
+    val history: StateFlow<List<NotificationHistoryEntity>> = notificationHistoryDao
+        .observeRecent()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    fun markHistoryRead(id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { notificationHistoryDao.markRead(id) }
+        }
+    }
+
+    fun markAllHistoryRead() {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { notificationHistoryDao.markAllRead() }
+        }
+    }
 
     init {
         refresh()

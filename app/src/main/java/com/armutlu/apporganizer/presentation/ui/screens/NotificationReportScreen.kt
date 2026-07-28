@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,9 +32,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.domain.models.NotificationHistoryEntity
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportViewModel
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * Bildirim Raporu — sealed UI-state ile net durum ayrımı (Döngü 224):
@@ -49,6 +53,7 @@ fun NotificationReportScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsState()
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     // D257: "Bildirim raporunu incele" gorevi — ekran ziyareti gorev tamamlama sayilir.
     LaunchedEffect(Unit) {
@@ -84,54 +89,152 @@ fun NotificationReportScreen(
             )
         }
     ) { padding ->
-        when (val s = state) {
-            is NotificationReportUiState.Loading -> Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+        Column(modifier = Modifier.padding(padding)) {
+            TabRow(selectedTabIndex = selectedTab) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text(stringResource(R.string.notif_report_tab_report)) },
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text(stringResource(R.string.notif_report_tab_history)) },
+                )
+            }
+            if (selectedTab == 0) {
+                when (val s = state) {
+                    is NotificationReportUiState.Loading -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) { CircularProgressIndicator() }
 
-            is NotificationReportUiState.PermissionMissing -> ReportStatusPane(
-                padding = padding,
-                icon = Icons.Default.NotificationsOff,
-                title = stringResource(R.string.notif_report_perm_title),
-                description = stringResource(R.string.notif_report_perm_desc),
-                buttonText = stringResource(R.string.notif_report_perm_btn),
-                onButtonClick = { openNotificationListenerSettings(context) }
-            )
+                    is NotificationReportUiState.PermissionMissing -> ReportStatusPane(
+                        padding = PaddingValues(0.dp),
+                        icon = Icons.Default.NotificationsOff,
+                        title = stringResource(R.string.notif_report_perm_title),
+                        description = stringResource(R.string.notif_report_perm_desc),
+                        buttonText = stringResource(R.string.notif_report_perm_btn),
+                        onButtonClick = { openNotificationListenerSettings(context) }
+                    )
 
-            is NotificationReportUiState.AnalyticsDisabled -> ReportStatusPane(
-                padding = padding,
-                icon = Icons.Default.NotificationsOff,
-                title = stringResource(R.string.notif_report_disabled_title),
-                description = stringResource(R.string.notif_report_disabled_desc),
-                buttonText = stringResource(R.string.notif_report_disabled_btn),
-                onButtonClick = { viewModel.enableAnalytics() }
-            )
+                    is NotificationReportUiState.AnalyticsDisabled -> ReportStatusPane(
+                        padding = PaddingValues(0.dp),
+                        icon = Icons.Default.NotificationsOff,
+                        title = stringResource(R.string.notif_report_disabled_title),
+                        description = stringResource(R.string.notif_report_disabled_desc),
+                        buttonText = stringResource(R.string.notif_report_disabled_btn),
+                        onButtonClick = { viewModel.enableAnalytics() }
+                    )
 
-            is NotificationReportUiState.CollectingData -> ReportStatusPane(
-                padding = padding,
-                icon = Icons.Default.HourglassEmpty,
-                title = stringResource(R.string.notif_report_collecting_title),
-                description = stringResource(R.string.notif_report_collecting_desc),
-                buttonText = null,
-                onButtonClick = null
-            )
+                    is NotificationReportUiState.CollectingData -> ReportStatusPane(
+                        padding = PaddingValues(0.dp),
+                        icon = Icons.Default.HourglassEmpty,
+                        title = stringResource(R.string.notif_report_collecting_title),
+                        description = stringResource(R.string.notif_report_collecting_desc),
+                        buttonText = null,
+                        onButtonClick = null
+                    )
 
-            is NotificationReportUiState.Error -> ReportStatusPane(
-                padding = padding,
-                icon = Icons.Default.Warning,
-                title = "Rapor yuklenemedi",
-                description = s.message,
-                buttonText = "Tekrar dene",
-                onButtonClick = { viewModel.refresh() }
-            )
+                    is NotificationReportUiState.Error -> ReportStatusPane(
+                        padding = PaddingValues(0.dp),
+                        icon = Icons.Default.Warning,
+                        title = "Rapor yuklenemedi",
+                        description = s.message,
+                        buttonText = "Tekrar dene",
+                        onButtonClick = { viewModel.refresh() }
+                    )
 
-            is NotificationReportUiState.Ready -> ReportContent(
-                padding = padding,
-                state = s,
-                onGrantPermission = { openNotificationListenerSettings(context) },
-                onEnableAnalytics = { viewModel.enableAnalytics() }
-            )
+                    is NotificationReportUiState.Ready -> ReportContent(
+                        padding = PaddingValues(0.dp),
+                        state = s,
+                        onGrantPermission = { openNotificationListenerSettings(context) },
+                        onEnableAnalytics = { viewModel.enableAnalytics() }
+                    )
+                }
+            } else {
+                NotificationHistoryTab(viewModel = viewModel)
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotificationHistoryTab(viewModel: NotificationReportViewModel) {
+    val history by viewModel.history.collectAsState()
+    val historyEnabled = viewModel.historyEnabled
+
+    if (!historyEnabled) {
+        ReportStatusPane(
+            padding = PaddingValues(0.dp),
+            icon = Icons.Default.NotificationsOff,
+            title = stringResource(R.string.notif_history_disabled_title),
+            description = stringResource(R.string.notif_history_disabled_desc),
+            buttonText = null,
+            onButtonClick = null,
+        )
+        return
+    }
+
+    if (history.isEmpty()) {
+        ReportStatusPane(
+            padding = PaddingValues(0.dp),
+            icon = Icons.Default.HourglassEmpty,
+            title = stringResource(R.string.notif_history_empty_title),
+            description = stringResource(R.string.notif_history_empty_desc),
+            buttonText = null,
+            onButtonClick = null,
+        )
+        return
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(history, key = { it.id }) { entry ->
+            NotificationHistoryRow(entry = entry, onClick = { viewModel.markHistoryRead(entry.id) })
+        }
+    }
+}
+
+private val historyTimeFormat = SimpleDateFormat("dd MMM HH:mm", Locale("tr"))
+
+@Composable
+private fun NotificationHistoryRow(entry: NotificationHistoryEntity, onClick: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = if (entry.isRead) {
+            MaterialTheme.colorScheme.surfaceContainerHigh
+        } else {
+            MaterialTheme.colorScheme.secondaryContainer
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(entry.title, fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                Text(
+                    historyTimeFormat.format(java.util.Date(entry.postedAt)),
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (entry.text.isNotBlank()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    entry.text,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                )
+            }
         }
     }
 }

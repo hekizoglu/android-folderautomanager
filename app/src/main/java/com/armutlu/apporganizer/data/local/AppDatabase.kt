@@ -23,8 +23,8 @@ import timber.log.Timber
  * Room @Fts5 entity yerine raw SQL tercih edildi — kapt stub uyumsuzluğunu önler.
  */
 @Database(
-    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class, UndoMergeEntity::class],
-    version = 25,
+    entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class, UndoMergeEntity::class, com.armutlu.apporganizer.domain.models.NotificationHistoryEntity::class],
+    version = 26,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,6 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun homeGridItemDao(): HomeGridItemDao
     abstract fun operationDao(): OperationDao
     abstract fun undoMergeDao(): UndoMergeDao
+    abstract fun notificationHistoryDao(): NotificationHistoryDao
 
     companion object {
         @Volatile
@@ -388,6 +389,28 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        internal val MIGRATION_25_26 = object : Migration(25, 26) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Bildirim Geçmişi (D242c) — yalnızca kullanıcı "Bildirim metnini göster" ayarını
+                // AÇTIYSA doldurulur (AppNotificationListenerService). NotificationEvent (paket+zaman,
+                // içeriksiz) ile karıştırılmamalı — bu tablo gerçek başlık/metin taşır.
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS notification_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        packageName TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        text TEXT NOT NULL DEFAULT '',
+                        postedAt INTEGER NOT NULL,
+                        isRead INTEGER NOT NULL DEFAULT 0
+                    )
+                    """
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_history_packageName ON notification_history(packageName)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_history_postedAt ON notification_history(postedAt)")
+            }
+        }
+
         internal fun SupportSQLiteDatabase.addColumnIfNotExists(
             table: String,
             column: String,
@@ -497,6 +520,7 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_22_23,
                         MIGRATION_23_24,
                         MIGRATION_24_25,
+                        MIGRATION_25_26,
                     )
                     .build()
 
