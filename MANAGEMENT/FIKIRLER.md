@@ -75,6 +75,11 @@
 - **F1: İkon Paketi Seçici Arayüzü (Icon Pack Picker UI)** — KD: 3, UYG: 4, BR: 4, EA: 3 = **14 Puan** 🟡
 - **F2: Bildirim Odaklı Renkli Rozetler (Smart Notification Badges)** — KD: 3, UYG: 3, BR: 4, EA: 3 = **13 Puan** 🟡
 - **F3: Akıcı Klasör Açılış Animasyonları (Shared Element Physics)** — KD: 4, UYG: 2, BR: 3, EA: 3 = **12 Puan** 🟡
+- **F4: Az Kullanılan / Standby-Kısıtlı Uygulama Bildirimi (Pil Farkındalığı)** — KD: 4, UYG: 4, BR: 4, EA: 3 = **15 Puan** 🟡 (D242 araştırması, 2026-07-28: Hüseyin ertelendi dedi, henüz kod yazılmadı)
+  - **Açıklama:** "Kullanmadığımız veya az kullandığımız ama pil tüketen uygulamaları launcher söylesin" isteği. **Teknik kısıtlama:** Android 3. taraf launcher'lara gerçek per-app pil tüketimi (mAh) vermiyor — `BatteryStatsManager`/`BATTERY_STATS` izni sistem-imzalı uygulamalara özel, alınamıyor.
+  - **Bulunan gerçek sinyal:** `UsageStatsManager.getAppStandbyBuckets()` — TÜM uygulamaların Android'in kendi "App Standby Bucket" sınıflandırmasını (ACTIVE/WORKING_SET/FREQUENT/RARE/RESTRICTED) döndürür, ve bu **`PACKAGE_USAGE_STATS`** izniyle çalışır (proje zaten bu izne sahip — Android 9+/API 28+). RARE/RESTRICTED bucket = Android'in kendisinin "bu uygulama arka planda kısıtlanıyor" kararı — bizim `lastUsedTimestamp`/`usageCount` proxy'sinden daha güçlü ve resmi bir sinyal.
+  - **Önerilen çerçeveleme:** "Pil tüketiyor" gibi kanıtlanamayan iddia yerine "Android bu uygulamayı da kısıtlıyor, az kullanılıyor" dürüst mesajı. Mevcut `InsightEngine`/`DeviceTidinessInsights` (az kullanılan uygulama insight'ları zaten var) altyapısına yeni bir candidate/eşik olarak eklenebilir; `HomeTickerRow`/`SmartTicker` sistemine eklemek (mevcut `SmartTickerType` + `SuggestionCoordinator` dedupe deseni) sistem bildirimine göre daha az risklidir. `SuggestionNotificationWorker.kt` sistem bildirimi şablonu da hazır (varsayılan kapalı toggle ile) — ikinci öncelik olarak kullanılabilir.
+  - **Zorluk:** 4/10 — yeni izin/veri kaynağı gerekmiyor, mevcut izin ve altyapı üzerine yeni bir hesaplama + UX çerçevelemesi.
 
 ---
 

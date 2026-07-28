@@ -468,3 +468,8 @@ Pazar araştırması (Mayıs-Temmuz 2026 rakip kullanıcı şikayetleri), canlı
 - **Durum:** Yapılacak (Öncelikli)
 - **Açıklama:** Ayarlar altında `.json` olarak düzen dışa aktarma ve geri yükleme arayüzü.
 - **Dosyalar:** `SettingsScreen.kt`, `BackupSyncService.kt`, `SettingsPrivacyDataSection.kt`
+
+#### R-FEAT-BATTERY-AWARENESS: Az Kullanılan / Standby-Kısıtlı Uygulama Bildirimi (15 ⭐)
+- **Durum:** Ertelendi (Hüseyin D242'de "şimdilik erteleyelim" dedi — kod yazılmadı)
+- **Açıklama:** "Pil tüketiyor" gibi kanıtlanamayan iddia yerine Android'in kendi `UsageStatsManager.getAppStandbyBuckets()` sınıflandırmasını (RARE/RESTRICTED bucket, `PACKAGE_USAGE_STATS` izniyle çalışır — proje zaten sahip) + mevcut az-kullanım verisini birleştirip dürüst bir "Android bu uygulamayı da kısıtlıyor" bildirimi/ticker kartı sunma. Gerçek per-app pil mAh verisi teknik olarak alınamıyor (`BATTERY_STATS` sistem-imzalı izin gerektiriyor).
+- **Dosyalar:** `UsageStatsHelper.kt`, `InsightEngine.kt`/`RealSmartTickerSource.kt` (DeviceTidinessInsights), `SuggestionNotificationWorker.kt` (opsiyonel sistem bildirimi şablonu)
