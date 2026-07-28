@@ -619,12 +619,14 @@
     <string name="hero_digital_life_permission_detail">Enable usage access to see your score</string>
     <string name="hero_smart_access_title">Smart Access</string>
     <string name="hero_smart_access_settings">Smart Access settings</string>
+    <string name="hero_smart_access_favorites">Favorites</string>
     <string name="hero_smart_access_now">Now</string>
     <string name="hero_smart_access_recent">Recently Opened</string>
     <string name="hero_smart_access_notifications">Notifications</string>
     <string name="hero_smart_access_usage_permission">Enable usage access for suggestions</string>
     <string name="hero_smart_access_notification_permission">Enable notification access for recent notifications</string>
     <string name="hero_smart_access_empty">No apps to show yet</string>
+    <string name="hero_smart_access_favorites_empty">No favorites yet — long-press an app to add it to favorites</string>
     <string name="hero_smart_access_loading">Preparing smart access…</string>
     <string name="search_overlay_close">Close full-screen search</string>
     <string name="search_overlay_clear_query">Clear search query</string>

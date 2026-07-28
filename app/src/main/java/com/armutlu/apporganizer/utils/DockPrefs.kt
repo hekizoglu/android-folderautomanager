@@ -49,11 +49,19 @@ object DockPrefs {
     fun migrateToHeroDock(context: Context, fallbackPackages: List<String>): List<String> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val current = getDockPackages(context)
-        if (!prefs.getBoolean(KEY_HERO_DOCK_MIGRATED, false)) {
+        val alreadyMigrated = prefs.getBoolean(KEY_HERO_DOCK_MIGRATED, false)
+        if (!alreadyMigrated) {
             prefs.edit {
                 putString(KEY_PRE_HERO_DOCK_BACKUP, current.joinToString(","))
                 putBoolean(KEY_HERO_DOCK_MIGRATED, true)
             }
+        } else {
+            // Migration daha önce yapıldıysa fallback ile tekrar doldurma — Ayarlar'dan dock
+            // sıfırlandığında/uygulama kaldırıldığında her onResume'da (loadDockPackages) buraya
+            // tekrar girilip current + fallbackPackages birleştiriliyordu, bu da kullanıcının
+            // Ayarlar'daki "sıfırla"/kaldırma işlemini bir sonraki Home açılışında geri
+            // dolduruyordu ("ana sayfa dock yönetimi ile ayarlar çelişiyor" şikayetinin kök nedeni, D242).
+            return sanitizeHeroDockItems(current)
         }
         val installed = buildHeroDockItems(
             current = current,

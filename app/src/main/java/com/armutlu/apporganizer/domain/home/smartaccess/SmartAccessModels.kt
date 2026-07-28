@@ -2,7 +2,7 @@ package com.armutlu.apporganizer.domain.home.smartaccess
 
 import com.armutlu.apporganizer.domain.models.AppInfo
 
-enum class SmartAccessTab { NOW, RECENT, NOTIFICATIONS }
+enum class SmartAccessTab { FAVORITES, NOW, RECENT, NOTIFICATIONS }
 
 data class NotificationAccessItem(
     val app: AppInfo,
@@ -11,6 +11,7 @@ data class NotificationAccessItem(
 )
 
 data class SmartAccessUiState(
+    val favoriteApps: List<AppInfo> = emptyList(),
     val nowApps: List<AppInfo> = emptyList(),
     val recentApps: List<AppInfo> = emptyList(),
     val notificationApps: List<NotificationAccessItem> = emptyList(),

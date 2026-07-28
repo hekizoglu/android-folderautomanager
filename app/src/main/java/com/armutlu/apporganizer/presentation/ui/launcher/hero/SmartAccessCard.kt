@@ -143,13 +143,14 @@ private fun SmartAccessContent(
     onAppLongClick: (String) -> Unit,
 ) {
     val apps: List<Pair<AppInfo, Int?>> = when (selectedTab) {
+        SmartAccessTab.FAVORITES -> state.favoriteApps.map { it to null }
         SmartAccessTab.NOW -> state.nowApps.map { it to null }
         SmartAccessTab.RECENT -> state.recentApps.map { it to null }
         SmartAccessTab.NOTIFICATIONS -> state.notificationApps.map { it.app to it.count }
     }
     if (apps.isEmpty()) {
         val permissionAction = when {
-            state.loading -> null
+            state.loading || selectedTab == SmartAccessTab.FAVORITES -> null
             selectedTab == SmartAccessTab.NOTIFICATIONS && !state.notificationPermissionGranted ->
                 onOpenNotificationSettings
             selectedTab != SmartAccessTab.NOTIFICATIONS && !state.usagePermissionGranted ->
@@ -191,6 +192,7 @@ private fun SmartAccessContent(
 }
 
 private fun SmartAccessTab.labelRes(): Int = when (this) {
+    SmartAccessTab.FAVORITES -> R.string.hero_smart_access_favorites
     SmartAccessTab.NOW -> R.string.hero_smart_access_now
     SmartAccessTab.RECENT -> R.string.hero_smart_access_recent
     SmartAccessTab.NOTIFICATIONS -> R.string.hero_smart_access_notifications
@@ -198,6 +200,7 @@ private fun SmartAccessTab.labelRes(): Int = when (this) {
 
 private fun emptyMessageRes(state: SmartAccessUiState, tab: SmartAccessTab): Int = when {
     state.loading -> R.string.hero_smart_access_loading
+    tab == SmartAccessTab.FAVORITES -> R.string.hero_smart_access_favorites_empty
     tab != SmartAccessTab.NOTIFICATIONS && !state.usagePermissionGranted ->
         R.string.hero_smart_access_usage_permission
     tab == SmartAccessTab.NOTIFICATIONS && !state.notificationPermissionGranted ->

@@ -1211,7 +1211,7 @@ class LauncherViewModel @Inject constructor(
         Triple(notificationSummaries, loaded, lastReadAt)
     }
 
-    /** Hero Akıllı Erişim için tek state; varsayılan sekme her ViewModel oturumunda Şimdi'dir. */
+    /** Hero Akıllı Erişim için tek state; varsayılan sekme her ViewModel oturumunda Favoriler'dir. */
     val smartAccessState: StateFlow<SmartAccessUiState> = combine(
         allAppsSource,
         suggestedApps,
@@ -1248,6 +1248,7 @@ class LauncherViewModel @Inject constructor(
                 ?.let { NotificationAccessItem(it, summary.count, summary.lastPostedAt) }
             }
         SmartAccessUiState(
+            favoriteApps = favorites,
             nowApps = nowApps,
             recentApps = rankedRecentApps,
             notificationApps = notificationApps,

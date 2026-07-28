@@ -128,7 +128,7 @@ internal fun HeroDashboardPage(
         .deviceClass(configuration.screenWidthDp)
     val dockAlignedMaxWidthDp = com.armutlu.apporganizer.presentation.ui.launcher.HomeAdaptiveLayoutPolicy
         .centeredContentMaxWidthDp(deviceClass)
-    var selectedTab by rememberSaveable { mutableStateOf(SmartAccessTab.NOW) }
+    var selectedTab by rememberSaveable { mutableStateOf(SmartAccessTab.FAVORITES) }
     val scrollState = rememberScrollState()
 
     BoxWithConstraints(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
