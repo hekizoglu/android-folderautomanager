@@ -1,9 +1,48 @@
-# AppOrganizer — Fikirler ve Gelecek Görev Havuzu
-
 > **Meta:** Pazar araştırması (Mayıs-Temmuz 2026 kullanıcı şikayetleri), fiziki cihaz canlı testleri ve kullanıcı talepleri doğrultusunda güncellenmiştir.  
-> **Son Güncelleme:** 2026-07-26  
+> **Son Güncelleme:** 2026-07-29 — Tüm 15+ puanlı maddeler ROADMAP.md § 17'ye aktarıldı; 14 ve altı puanlılar silindi.  
 > **Puanlama Standardı:** Kullanıcı Değeri (KD: 1-5) · Uygulanabilirlik (UYG: 1-5) · Bağımlılık Riski (BR: 1-5) · Etki Alanı (EA: 1-5)  
-> **Kural:** 15+ puan alan maddeler `ROADMAP.md` ⭐ Yüksek Puanlı bölümüne aktarılır.
+> **Kural:** 15+ puan alan maddeler `ROADMAP.md` § 17'ye aktarılır, bu dosyada yalnız kaynak-arşiv olarak tutulur.
+
+---
+
+## 🏆 ⭐ YÜKSEK PUANLI FİKİRLER (15+ Puan — ROADMAP § 17'de Aktif)
+
+> Tüm aşağıdaki maddeler `ROADMAP.md` Bölüm 17'ye **değer puanı + zorluk puanı** ile aktarılmıştır. Güncel durum ve dosya listesi için ROADMAP.md bakınız.
+
+| # | Özellik | Puan | ROADMAP Kodu |
+|---|---------|------|-------------|
+| 1 | 🖼️ Büyük Klasör / Dinamik 3×3 Önizleme | 19 ⭐ | R-FEAT-LARGE-FOLDERS |
+| 2 | 🆕 Son Yüklenen Uygulamalar & "YENİ" Rozeti | 19 ⭐ | R-FEAT-NEWLY-INSTALLED-APPS |
+| 3 | 🧹 Kullanılmayan Uygulama Süpürgesi | 18 ⭐ | R-FEAT-STALE-CLEANER |
+| 4 | ⚡ Toplu Kategori Onay Mekanizması | 18 ⭐ | R-FEAT-BATCH-APPROVE |
+| 5 | 🛡️ Kategori Kilidi & Kullanıcı Koruması | 18 ⭐ | R-FEAT-CATEGORY-PROTECTION |
+| 6 | 🔄 Akıllı Sürükle-Bırak & Undo Toast | 18 ⭐ | R-FEAT-SMART-DRAG-UNDO |
+| 7 | 💾 Dahili JSON Yedekleme & Geri Yükleme UI | 18 ⭐ | R-FEAT-JSON-BACKUP |
+| 8 | 🔒 Biyometrik Klasör Kilitleme | 16 ⭐ | R-FEAT-BIOMETRIC-LOCK |
+| 9 | 🔍 Arama Çubuğunda Uygulama Kısayolları | 15 ⭐ | R-FEAT-APP-SHORTCUTS |
+| 10 | 🕒 Arama Geçmişi & Hızlı Erişim Etiketleri | 15 ⭐ | R-FEAT-SEARCH-HISTORY |
+| 11 | 📑 Hızlı Sayfa & Kategori Geçiş Çekmecesi | 15 ⭐ | R-FEAT-QUICK-PAGE-DRAWER |
+| 12 | 🔋 Standby-Kısıtlı Uygulama Bildirimi | 15 ⭐ | R-FEAT-BATTERY-AWARENESS (Ertelendi) |
+
+---
+
+## 🗑️ DÜŞÜK PUANLI — ROADMAP'E AKTARILMAYAN (14 ve Altı)
+
+> Bu maddeler 15 puan eşiğinin altında kaldığı için roadmap'e alınmamıştır. Tekrar değerlendirilmek istenirse puan gerekçesi güncellenmeli ve eşiği geçmesi beklenmelidir.
+
+- **F1: İkon Paketi Seçici Arayüzü (Icon Pack Picker UI)** — KD: 3, UYG: 4, BR: 4, EA: 3 = **14 Puan** ❌ Eşik altı
+- **F2: Bildirim Odaklı Renkli Rozetler (Smart Notification Badges)** — KD: 3, UYG: 3, BR: 4, EA: 3 = **13 Puan** ❌ Eşik altı
+- **F3: Akıcı Klasör Açılış Animasyonları (Shared Element Physics)** — KD: 4, UYG: 2, BR: 3, EA: 3 = **12 Puan** ❌ Eşik altı
+
+---
+
+## 🧹 TAMAMLANAN VEYA UYGULAMADAN KALDIRILAN HATA/FİKİR ARŞİVİ
+
+- **[K1] Düzenleme Merkezi Çakışması:** Kart sadece 1. sayfaya sınırlandı (M11 & Canlı Test sonrası çözüldü).
+- **[K2] Mükerrer Kategori İnceleme Kartı:** `HeroDashboardPage` içindeki badge kaldırıldı (Çözüldü).
+- **[K3] Klasör Etiket Taşması:** Klasör etiketleri `maxLines = 1` ve `Ellipsis` ile tek satıra sabitlendi (Çözüldü).
+- **[K4] Ayarlar İzin Kartı Taşması:** Label metnine `weight(1f)` verilerek sağa sıkışma engellendi (Çözüldü).
+
 
 ---
 

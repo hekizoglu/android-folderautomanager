@@ -428,48 +428,125 @@ Bu sıra release’den önce değiştirilmez:
 
 ---
 
-## 17. ⭐ Yüksek Puanlı Yeni Fikirler ve USP Özellikler (2026-07-26 Pazar Araştırması)
+## 17. ⭐ Yüksek Puanlı Özellik Backlog'u (R9 / Post-Launch)
 
-Pazar araştırması (Mayıs-Temmuz 2026 rakip kullanıcı şikayetleri), canlı cihaz testleri ve 15+ puanlama kriteri doğrultusunda önceliklendirilen aktif yol haritası maddeleri:
+> **Puanlama:** Değer (1–20 puan, FIKIRLER.md kriterleri) · Zorluk (1–10: 10 = en çok token/zaman gerektiren)  
+> **Eşik:** Yalnız 15+ değer puanı alan maddeler bu bölümde yer alır.  
+> **Son güncelleme:** 2026-07-29 — FIKIRLER.md tam aktarımı, zorluk puanları eklendi, düşük puanlılar kaldırıldı.
 
-### 🌟 USP & Öncelikli Özellikler
+---
 
-#### R-FEAT-LARGE-FOLDERS: Büyük Klasör / Dinamik 3x3 Önizleme (19 ⭐)
-- **Durum:** Yapılacak (Öncelikli)
-- **Açıklama:** Klasörü açmadan içindeki uygulamaları doğrudan açabilen iOS/HarmonyOS stili 3x3 önizleme modu.
-- **Dosyalar:** `FolderTile.kt`, `HomeScreenComponents.kt`, `AppPrefs.kt`
+### 🥇 19 Puan — En Yüksek Öncelik
 
-#### R-FEAT-NEWLY-INSTALLED-APPS: Son Yüklenen Uygulamalar Yönetimi & "YENİ" Rozeti (19 ⭐)
-- **Durum:** Yapılacak (Öncelikli — Rakip Şikayet Çözümü)
-- **Açıklama:** Play Store'dan yeni yüklenen uygulamaların kaybolmasını engellemek için 3 kademeli çözüm: Simge üzerinde "YENİ" rozeti, uygulama çekmecesinin (AllAppsDrawer) en üstünde "Son Yüklenenler (Son 7 Gün)" yatay şeridi ve kurulum anında hızlı erişim Toast uyarısı.
-- **Dosyalar:** `AllAppsDrawer.kt`, `AppIcon.kt`, `PackageReplacedReceiver.kt`, `AppEntity.kt`, `AppPrefs.kt`
+#### R-FEAT-LARGE-FOLDERS: Büyük Klasör / Dinamik 3×3 Önizleme
+- **Durum:** Yapılacak
+- **Değer Puanı:** 19/20 | **Zorluk:** 8/10 | **Tahmini Efor:** 4–5 gün
+- **Açıklama:** Klasörü açmadan içindeki ilk 4–9 uygulamayı doğrudan dokunup açabilen iOS/HarmonyOS stili büyük klasör modu. `FolderTile` yeni layout dalı, dokunma hedefi ve preview grid composable.
+- **Bağımlılık:** R-FOLDER-SUMMARY tamamlanmış olmalı.
+- **Dosyalar:** `FolderTile.kt`, `HomeScreenComponents.kt`, `HomeScreenFolderPager.kt`, `AppPrefs.kt`
 
-#### R-FEAT-CATEGORY-PROTECTION: Kategori Kilidi & Kullanıcı Koruması (18 ⭐)
-- **Durum:** Yapılacak (Öncelikli — Rakip 1 Numaralı Şikayet Çözümü)
-- **Açıklama:** Kullanıcının elle taşıdığı uygulamaları `Manual Override` ile kilitleyip güncellemelerde yerlerinin bozulmasını engelleme.
-- **Dosyalar:** `AppEntity.kt`, `AppDao.kt`, `AppRepository.kt`, `ClassificationReviewViewModel.kt`
+#### R-FEAT-NEWLY-INSTALLED-APPS: Son Yüklenen Uygulamalar & "YENİ" Rozeti
+- **Durum:** Yapılacak (Rakip şikayet çözümü: "yüklüyorum ama bulamıyorum")
+- **Değer Puanı:** 19/20 | **Zorluk:** 6/10 | **Tahmini Efor:** 3 gün
+- **Açıklama:** Üç kademeli çözüm: (1) Simge üzerinde 48 saat geçerli "YENİ" rozeti/parlama halkası. (2) AllAppsDrawer en üstünde "Son Yüklenenler (Son 7 Gün)" yatay şerit. (3) Kurulum anında Toast hızlı aksiyon ("Klasöre Git" / "Aç").
+- **Dosyalar:** `AllAppsDrawer.kt`, `AppIcon.kt`, `PackageReplacedReceiver.kt`, `AppEntity.kt`, `AppPrefs.kt`, `LauncherViewModel.kt`
 
-#### R-FEAT-SMART-DRAG-UNDO: Akıllı Sürükle-Bırak & Undo Toast (18 ⭐)
-- **Durum:** Yapılacak (Öncelikli)
-- **Açıklama:** Hassas sürükle-bırak hedeflemesi ve yanlış bir klasöre bırakıldığında 4 saniyelik "Geri Al" (Undo) Toast uyarısı.
-- **Dosyalar:** `HomeScreenFolderPager.kt`, `FolderGridPage.kt`, `HomeScreen.kt`
+---
 
-#### R-FEAT-STALE-CLEANER: Kullanılmayan Uygulama Süpürgesi (18 ⭐)
-- **Durum:** Yapılacak (Öncelikli)
-- **Açıklama:** 30+ gündür açılmayan uygulamaları toplu gizleme/silme ekranı.
-- **Dosyalar:** `EditingCenterCard.kt`, `StaleAppsScreen.kt`, `LauncherViewModel.kt`
+### 🥈 18 Puan — Yüksek Öncelik (USP Özellikler)
 
-#### R-FEAT-BATCH-APPROVE: Toplu Kategori Onay Mekanizması (18 ⭐)
-- **Durum:** Yapılacak (Öncelikli)
-- **Açıklama:** 49+ bekleyen uygulama için tek tıkla "Tümünü Onayla" seçeneği.
-- **Dosyalar:** `ClassificationReviewScreen.kt`, `ClassificationReviewViewModel.kt`
+#### R-FEAT-CATEGORY-PROTECTION: Kategori Kilidi & Kullanıcı Koruması
+- **Durum:** Yapılacak (Rakip 1 numaralı şikayet: "düzenimi bozuyor")
+- **Değer Puanı:** 18/20 | **Zorluk:** 5/10 | **Tahmini Efor:** 2–3 gün
+- **Açıklama:** Kullanıcının elle taşıdığı uygulamalara `manualOverride = true` bayrağı eklenir; gelecekteki otomatik sınıflandırma ve güncelleme bu uygulamaların kategorisini değiştiremez. Rakip incelemelerde en çok şikayet edilen sorunun kesin çözümü.
+- **Bağımlılık:** R2 Kategori altyapısı tamamlanmış olmalı.
+- **Dosyalar:** `AppEntity.kt`, `AppDao.kt`, `AppRepository.kt`, `ClassificationReviewViewModel.kt`, `AppClassifier.kt`
 
-#### R-FEAT-JSON-BACKUP: Dahili JSON Düzen Yedekleme/Geri Yükleme UI (18 ⭐)
-- **Durum:** Yapılacak (Öncelikli)
-- **Açıklama:** Ayarlar altında `.json` olarak düzen dışa aktarma ve geri yükleme arayüzü.
-- **Dosyalar:** `SettingsScreen.kt`, `BackupSyncService.kt`, `SettingsPrivacyDataSection.kt`
+#### R-FEAT-SMART-DRAG-UNDO: Akıllı Sürükle-Bırak & Undo Toast
+- **Durum:** Yapılacak
+- **Değer Puanı:** 18/20 | **Zorluk:** 8/10 | **Tahmini Efor:** 4–5 gün
+- **Açıklama:** Klasör sürükle-bırak dokunma hedefini genişletir (milimetrik hizalama stresini azaltır) ve yanlış klasöre bırakıldığında 4 saniyelik "Geri Al" (Undo) Snackbar gösterir. Geri alma Room transaction ile gerçek undo garantisi verir.
+- **Bağımlılık:** R4 Atomik merge + undo altyapısı ile uyumlu olmalı.
+- **Dosyalar:** `HomeScreenFolderPager.kt`, `FolderGridPage.kt`, `HomeScreen.kt`, `LauncherViewModel.kt`
 
-#### R-FEAT-BATTERY-AWARENESS: Az Kullanılan / Standby-Kısıtlı Uygulama Bildirimi (15 ⭐)
-- **Durum:** Ertelendi (Hüseyin D242'de "şimdilik erteleyelim" dedi — kod yazılmadı)
-- **Açıklama:** "Pil tüketiyor" gibi kanıtlanamayan iddia yerine Android'in kendi `UsageStatsManager.getAppStandbyBuckets()` sınıflandırmasını (RARE/RESTRICTED bucket, `PACKAGE_USAGE_STATS` izniyle çalışır — proje zaten sahip) + mevcut az-kullanım verisini birleştirip dürüst bir "Android bu uygulamayı da kısıtlıyor" bildirimi/ticker kartı sunma. Gerçek per-app pil mAh verisi teknik olarak alınamıyor (`BATTERY_STATS` sistem-imzalı izin gerektiriyor).
-- **Dosyalar:** `UsageStatsHelper.kt`, `InsightEngine.kt`/`RealSmartTickerSource.kt` (DeviceTidinessInsights), `SuggestionNotificationWorker.kt` (opsiyonel sistem bildirimi şablonu)
+#### R-FEAT-STALE-CLEANER: Kullanılmayan Uygulama Süpürgesi
+- **Durum:** Yapılacak
+- **Değer Puanı:** 18/20 | **Zorluk:** 6/10 | **Tahmini Efor:** 3–4 gün
+- **Açıklama:** 30+ gündür açılmayan uygulamaları listeleyen dedike temizleme ekranı. Toplu gizleme, arşivleme veya kaldırma kolaylığı. `UsageStatsManager` verisini kullanır, proje zaten bu izne sahip.
+- **Dosyalar:** `EditingCenterCard.kt`, yeni `StaleAppsScreen.kt`, `LauncherViewModel.kt`, `UsageStatsHelper.kt`
+
+#### R-FEAT-BATCH-APPROVE: Toplu Kategori Onay Mekanizması
+- **Durum:** Yapılacak
+- **Değer Puanı:** 18/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 1–2 gün
+- **Açıklama:** Sınıflandırma İnceleme ekranında 49+ uygulama beklerken "Tümünü Güvenle Onayla" düğmesi veya kaydırarak toplu onay imkânı. Yalnız UI + ViewModel değişikliği — altyapı hazır.
+- **Bağımlılık:** R2 ClassificationReviewScreen kodlanmış olmalı.
+- **Dosyalar:** `ClassificationReviewScreen.kt`, `ClassificationReviewViewModel.kt`, `AppListViewModel.kt`
+
+#### R-FEAT-JSON-BACKUP: Dahili JSON Düzen Yedekleme & Geri Yükleme UI
+- **Durum:** Yapılacak
+- **Değer Puanı:** 18/20 | **Zorluk:** 6/10 | **Tahmini Efor:** 3 gün
+- **Açıklama:** Ayarlar altında mevcut klasör/uygulama düzenini tek tıkla `.json` dosyasına dışa aktarma; SAF file picker ile yeni cihaza geri yükleme. JSON şeması: AppEntity kategorileri + klasör sırası + AppPrefs kritik anahtarları.
+- **Dosyalar:** `SettingsScreen.kt`, `BackupSyncService.kt`, `SettingsPrivacyDataSection.kt`, `AppDatabase.kt`
+
+---
+
+### 🥉 16 Puan — Orta Öncelik
+
+#### R-FEAT-BIOMETRIC-LOCK: Biyometrik Klasör Kilitleme
+- **Durum:** Yapılacak
+- **Değer Puanı:** 16/20 | **Zorluk:** 7/10 | **Tahmini Efor:** 3–4 gün
+- **Açıklama:** Hassas klasörleri (Bankacılık, Galeri, Mesajlar) parmak izi / yüz tanıma ile kilitleme. `BiometricPrompt` API, per-folder `isLocked` bayrağı Room'a eklenir; açılışta biyometrik doğrulama composable gösterilir.
+- **Bağımlılık:** R3 Klasör birleştirme motoru (AppEntity şeması kararlı olmalı).
+- **Dosyalar:** `AppEntity.kt`, `AppDao.kt`, yeni `FolderLockScreen.kt`, `FolderScreen.kt`, `AppPrefs.kt`
+
+---
+
+### 🎖️ 15 Puan — Standart Öncelik
+
+#### R-FEAT-APP-SHORTCUTS: Arama Çubuğunda Uygulama İçi Kısayollar (Deep Links)
+- **Durum:** Yapılacak
+- **Değer Puanı:** 15/20 | **Zorluk:** 5/10 | **Tahmini Efor:** 2–3 gün
+- **Açıklama:** Arama çubuğuna yazıldığında uygulamanın alt kısayollarını (`LauncherApps.getShortcuts()`) doğrudan listeler. Örnek: "WhatsApp" → "Yeni Sohbet", "Kamera" → "Video Çek". API 25+ launcher rolü gerektirir — proje zaten launcher.
+- **Not:** AppContextMenu'da ShortcutHelper.kt zaten mevcut — search entegrasyonu ekleme işidir.
+- **Dosyalar:** `AllAppsDrawer.kt`, `SearchRepository.kt`, `ShortcutHelper.kt`, `SearchDocument.kt`
+
+#### R-FEAT-SEARCH-HISTORY: Arama Geçmişi & Hızlı Erişim Etiketleri
+- **Durum:** Yapılacak
+- **Değer Puanı:** 15/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 1–2 gün
+- **Açıklama:** Arama alanına tıklandığında son aratılan kelimeler chip olarak ve "En Çok Açılan 4 Uygulama" şeridi gösterilir. SharedPrefs'te circularBuffer (max 8 sorgu) yeterli — Room gerekmez.
+- **Dosyalar:** `AllAppsDrawer.kt`, `DrawerSearchBar.kt` (varsa), `AppPrefs.kt`, `SearchStatsPrefs.kt`
+
+#### R-FEAT-QUICK-PAGE-DRAWER: Hızlı Sayfa & Kategori Geçiş Çekmecesi
+- **Durum:** Yapılacak
+- **Değer Puanı:** 15/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 1–2 gün
+- **Açıklama:** Alt sayfa indikatörüne uzun basıldığında tüm klasör ve kategorilerin hızlı listesi (bottom sheet) açılır; seçilince doğrudan o sayfaya sıçrar. `HapticFeedback` + `LazyColumn` + `PagerState.scrollToPage()` ile uygulanır.
+- **Dosyalar:** `HomeScreenPageIndicator.kt`, `HomePagerHost.kt`, `HomeScreen.kt`
+
+#### R-FEAT-BATTERY-AWARENESS: Az Kullanılan / Standby-Kısıtlı Uygulama Bildirimi
+- **Durum:** Ertelendi (Hüseyin D242 — "şimdilik erteleyelim", kod yazılmadı)
+- **Değer Puanı:** 15/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 2 gün
+- **Açıklama:** "Pil tüketiyor" yerine Android'in kendi `UsageStatsManager.getAppStandbyBuckets()` (RARE/RESTRICTED bucket) + mevcut az-kullanım verisiyle "Android bu uygulamayı kısıtlıyor" dürüst mesajı. `PACKAGE_USAGE_STATS` izni zaten mevcut; `InsightEngine`/`DeviceTidinessInsights` altyapısına yeni eşik olarak eklenebilir.
+- **Teknik kısıt:** Gerçek per-app pil mAh verisi alınamıyor (`BATTERY_STATS` sistem-imzalı izin gerektiriyor).
+- **Dosyalar:** `UsageStatsHelper.kt`, `InsightEngine.kt`, `RealSmartTickerSource.kt`, `SuggestionNotificationWorker.kt`
+
+---
+
+### 📊 Özet Tablo
+
+| Kod | Özellik | Değer | Zorluk | Efor | Durum |
+|-----|---------|-------|--------|------|-------|
+| R-FEAT-LARGE-FOLDERS | Büyük Klasör / 3×3 Önizleme | 19/20 | 8/10 | 4–5 gün | Yapılacak |
+| R-FEAT-NEWLY-INSTALLED-APPS | Son Yüklenen & YENİ Rozeti | 19/20 | 6/10 | 3 gün | Yapılacak |
+| R-FEAT-CATEGORY-PROTECTION | Kategori Kilidi & Override | 18/20 | 5/10 | 2–3 gün | Yapılacak |
+| R-FEAT-SMART-DRAG-UNDO | Sürükle-Bırak & Undo Toast | 18/20 | 8/10 | 4–5 gün | Yapılacak |
+| R-FEAT-STALE-CLEANER | Kullanılmayan Uygulama Süpürgesi | 18/20 | 6/10 | 3–4 gün | Yapılacak |
+| R-FEAT-BATCH-APPROVE | Toplu Kategori Onay | 18/20 | 4/10 | 1–2 gün | Yapılacak |
+| R-FEAT-JSON-BACKUP | JSON Yedekleme & Geri Yükleme | 18/20 | 6/10 | 3 gün | Yapılacak |
+| R-FEAT-BIOMETRIC-LOCK | Biyometrik Klasör Kilidi | 16/20 | 7/10 | 3–4 gün | Yapılacak |
+| R-FEAT-APP-SHORTCUTS | Arama Kısayolları (Deep Links) | 15/20 | 5/10 | 2–3 gün | Yapılacak |
+| R-FEAT-SEARCH-HISTORY | Arama Geçmişi & Hızlı Erişim | 15/20 | 4/10 | 1–2 gün | Yapılacak |
+| R-FEAT-QUICK-PAGE-DRAWER | Hızlı Sayfa Geçiş Çekmecesi | 15/20 | 4/10 | 1–2 gün | Yapılacak |
+| R-FEAT-BATTERY-AWARENESS | Standby-Kısıtlı Uygulama Bildirimi | 15/20 | 4/10 | 2 gün | Ertelendi |
+
+> **Toplam tahmini efor (tümü yapılacaksa):** ~32–45 geliştirici günü  
+> **Zorluk 1–3:** Birkaç dosya, mevcut altyapı genişletilir | **4–6:** Yeni bileşen/ekran | **7–10:** Yeni mimari katman veya karmaşık UI/veri akışı
