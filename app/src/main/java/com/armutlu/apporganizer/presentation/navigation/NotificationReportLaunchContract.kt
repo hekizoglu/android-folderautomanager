@@ -22,7 +22,10 @@ internal object NotificationReportLaunchContract {
         val intent = Intent(context, MainActivity::class.java).apply {
             putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.NOTIFICATION_REPORT)
             putExtra(EXTRA_INITIAL_TAB, TAB_HISTORY)
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            // MainActivity standart launchMode kullanir. SINGLE_TOP eklenmez: rapor zaten aciksa
+            // mevcut composition'i korumak yerine yeni intent ile ekran yeniden olusur ve Geçmiş
+            // sekmesi istegi kesin olarak tüketilir.
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             if (context !is Activity) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
