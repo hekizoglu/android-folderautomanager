@@ -600,14 +600,10 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_HOME_SETTINGS)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        runCatching { context.startActivity(intent) }
-                    },
+                    onClick = { vm.loadAppsIfEmpty() },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text(stringResource(R.string.launcher_settings))
+                    Text(stringResource(R.string.onb_preview_retry))
                 }
                 Button(
                     onClick = {

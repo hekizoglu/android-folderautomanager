@@ -197,6 +197,7 @@ class AppRepository @Inject constructor(
             Timber.d("Inserted ${classifiedApps.size} apps (mode=$mode)")
         } catch (e: Exception) {
             Timber.e(e, "Error inserting apps")
+            throw e
         }
     }
     

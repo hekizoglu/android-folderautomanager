@@ -501,6 +501,7 @@ class LauncherViewModel @Inject constructor(
                 if (existing.isEmpty()) {
                     Timber.d("DB boş — ${installed.size} uygulama yazılıyor")
                     repository.insertApps(installed)
+                    installed.forEach { searchRepository.indexApp(it) }
                 } else {
                     // Cihazda olmayan ama DB'de kalan uygulamaları temizle
                     val installedPkgs = installed.map { it.packageName }.toSet()
@@ -514,6 +515,7 @@ class LauncherViewModel @Inject constructor(
                     val newApps = installed.filter { it.packageName !in existingPkgs }
                     if (newApps.isNotEmpty()) {
                         repository.insertApps(newApps)
+                        newApps.forEach { searchRepository.indexApp(it) }
                         Timber.d("Reconcile: ${newApps.size} yeni uygulama eklendi")
                     }
                     val installedByPkg = installed.associateBy { it.packageName }
@@ -539,6 +541,7 @@ class LauncherViewModel @Inject constructor(
                                     iconUrl = installedApp.iconUrl,
                                 )
                             )
+                            searchRepository.indexApp(installedApp)
                         }
                     }
                 }
@@ -831,6 +834,7 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    /*
     fun onPackageRemoved(packageName: String) {
         // Icon cache'ten bu pakete ait tüm boyut varyantlarını temizle
         iconCacheInternal.snapshot().keys
@@ -873,6 +877,9 @@ class LauncherViewModel @Inject constructor(
             }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
         }
     }
+
+    }
+    */
 
     // Widget ID listesi — SharedPrefs'ten yüklenir, ekleme/silmede güncellenir
     private val _widgetIds = MutableStateFlow<List<Int>>(emptyList())

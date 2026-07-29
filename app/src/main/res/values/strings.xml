@@ -833,6 +833,9 @@
     <string name="drawer_sort_filter_menu_content_description">Sıralama ve filtre menüsü</string>
     <string name="drawer_sort_menu_section_title">Sıralama</string>
     <string name="drawer_filter_menu_section_title">Filtre</string>
+    <string name="drawer_filter_menu_content_description">Uygulama filtresi</string>
+    <string name="drawer_settings_content_description">Çekmece ayarları</string>
+    <string name="notification_text_enabled_title">Bildirim metnini göster</string>
     <string name="missions_home_chip_title">Görevler</string>
     <string name="missions_home_chip_subtitle">Bugünün görevleri</string>
     <string name="home_page_indicator_dashboard_selected">Akıllı Ana Ekran, seçili</string>

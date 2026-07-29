@@ -203,6 +203,12 @@ object AppPrefs {
     fun setAllAppsSortMode(context: Context, mode: String) =
         prefs(context).edit().putString(KEY_ALL_APPS_SORT_MODE, mode).apply()
 
+    const val KEY_ALL_APPS_QUICK_FILTER = "all_apps_quick_filter"
+    fun getAllAppsQuickFilter(context: Context): Int =
+        prefs(context).getInt(KEY_ALL_APPS_QUICK_FILTER, 0).coerceIn(0, 3)
+    fun setAllAppsQuickFilter(context: Context, filter: Int) =
+        prefs(context).edit().putInt(KEY_ALL_APPS_QUICK_FILTER, filter.coerceIn(0, 3)).apply()
+
     // Bildirim metni goster (FolderTile + AllApps altinda)
     const val KEY_NOTIFICATION_TEXT_ENABLED = "notification_text_enabled"
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)

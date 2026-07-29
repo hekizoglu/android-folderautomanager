@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -204,6 +202,7 @@ class LauncherActivity : ComponentActivity() {
 
         // Launcher her zaman Room katalogundan aninda acilir. Tam katalog taramasi sadece
         // bootstrap/surum gecisi durumlarinda veya dusuk frekansli fallback'te calisir.
+        viewModel.loadAppsIfEmpty()
         viewModel.reconcileIfNeeded(this)
         viewModel.initFavorites(this)
         viewModel.syncUsageStats(this) { AppPrefs.markUsageStatsSynced(this) }
@@ -275,18 +274,6 @@ class LauncherActivity : ComponentActivity() {
         viewModel.openFolderByCategoryId(categoryId)
     }
 
-    private val packageReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val pkg = intent.data?.schemeSpecificPart ?: return
-            when (intent.action) {
-                Intent.ACTION_PACKAGE_REMOVED -> viewModel.onPackageRemoved(pkg)
-                Intent.ACTION_PACKAGE_ADDED,
-                Intent.ACTION_PACKAGE_REPLACED,
-                -> viewModel.onPackageAdded(context, pkg)
-            }
-        }
-    }
-
     private fun applyNavBarVisibility() {
         if (AppPrefs.isNavButtonsHidden(this)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -316,11 +303,6 @@ class LauncherActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        registerReceiver(packageReceiver, PACKAGE_FILTER)
-    }
-
     override fun onResume() {
         super.onResume()
         com.armutlu.apporganizer.utils.CrashReporter.markStartedSuccessfully(this)
@@ -346,11 +328,6 @@ class LauncherActivity : ComponentActivity() {
         WidgetHostManager.stopListening()
     }
 
-    override fun onStop() {
-        runCatching { unregisterReceiver(packageReceiver) }
-        super.onStop()
-    }
-
     // Launcher split-screen'e alınırsa tam ekrana geri döner (resizeableActivity=false yeterli değil tüm OEM'lerde)
     override fun onMultiWindowModeChanged(
         isInMultiWindowMode: Boolean,
@@ -374,12 +351,6 @@ class LauncherActivity : ComponentActivity() {
     companion object {
         const val EXTRA_OPEN_FOLDER_CATEGORY_ID = "open_folder_category_id"
         private const val KEY_PENDING_WIDGET_ID = "pending_widget_id"
-        private val PACKAGE_FILTER = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REPLACED)
-            addDataScheme("package")
-        }
     }
 }
 

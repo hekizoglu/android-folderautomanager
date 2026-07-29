@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material3.DropdownMenu
@@ -208,49 +209,20 @@ private fun DrawerSearchBar(
             }
         }
         if (!chipRowsEnabled) {
-            // S3 — sade mod: iki chip satırı yerine tek kompakt menü butonu (sıralama + filtre)
-            var sortFilterMenuOpen by remember { mutableStateOf(false) }
+            var filterMenuOpen by remember { mutableStateOf(false) }
             Box {
                 IconButton(
-                    onClick = { sortFilterMenuOpen = true },
+                    onClick = { filterMenuOpen = true },
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         Icons.Default.Tune,
-                        stringResource(R.string.drawer_sort_filter_menu_content_description),
+                        stringResource(R.string.drawer_filter_menu_content_description),
                         tint = textSecondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
-                DropdownMenu(expanded = sortFilterMenuOpen, onDismissRequest = { sortFilterMenuOpen = false }) {
-                    Text(
-                        stringResource(R.string.drawer_sort_menu_section_title),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = textSecondary,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                    )
-                    val baseSortChipsMenu = listOf(
-                        AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE,
-                        AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE
-                    )
-                    baseSortChipsMenu.forEach { baseMode ->
-                        val isActive = sortMode == baseMode || sortMode == baseMode.opposite()
-                        val displayLabel = if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label
-                        DropdownMenuItem(
-                            text = { Text(displayLabel, fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal) },
-                            leadingIcon = if (isActive) {
-                                { Icon(Icons.Default.Check, null, tint = primary, modifier = Modifier.size(18.dp)) }
-                            } else null,
-                            onClick = {
-                                val newMode = if (isActive) sortMode.opposite() else baseMode
-                                onSortModeChange(newMode)
-                                AppPrefs.setAllAppsSortMode(context, newMode.name)
-                                sortFilterMenuOpen = false
-                            }
-                        )
-                    }
-                    HorizontalDivider()
+                DropdownMenu(expanded = filterMenuOpen, onDismissRequest = { filterMenuOpen = false }) {
                     Text(
                         stringResource(R.string.drawer_filter_menu_section_title),
                         fontSize = 11.sp,
@@ -268,11 +240,69 @@ private fun DrawerSearchBar(
                             onClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onQuickFilterChange(idx)
-                                sortFilterMenuOpen = false
+                                AppPrefs.setAllAppsQuickFilter(context, idx)
+                                filterMenuOpen = false
                             }
                         )
                     }
                 }
+            }
+        }
+        var drawerSettingsMenuOpen by remember { mutableStateOf(false) }
+        Box {
+            IconButton(onClick = { drawerSettingsMenuOpen = true }, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.Default.MoreVert, stringResource(R.string.drawer_settings_content_description), tint = textSecondary)
+            }
+            DropdownMenu(
+                expanded = drawerSettingsMenuOpen,
+                onDismissRequest = { drawerSettingsMenuOpen = false },
+            ) {
+                Text(
+                    stringResource(R.string.drawer_sort_menu_section_title),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = textSecondary,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+                listOf(AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
+                    .forEach { baseMode ->
+                        val active = sortMode == baseMode || sortMode == baseMode.opposite()
+                        DropdownMenuItem(
+                            text = { Text(if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal) },
+                            leadingIcon = if (active) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
+                            onClick = {
+                                val newMode = if (active) sortMode.opposite() else baseMode
+                                onSortModeChange(newMode)
+                                AppPrefs.setAllAppsSortMode(context, newMode.name)
+                                drawerSettingsMenuOpen = false
+                            },
+                        )
+                    }
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.drawer_chip_rows_settings_toggle_title)) },
+                    leadingIcon = if (chipRowsEnabled) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
+                    onClick = {
+                        AppPrefs.setDrawerChipRowsEnabled(context, !chipRowsEnabled)
+                        drawerSettingsMenuOpen = false
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.settings_pixel_look_title)) },
+                    leadingIcon = if (AppPrefs.isPixelLookEnabled(context)) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
+                    onClick = {
+                        AppPrefs.setPixelLookEnabled(context, !AppPrefs.isPixelLookEnabled(context))
+                        drawerSettingsMenuOpen = false
+                    },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.notification_text_enabled_title)) },
+                    leadingIcon = if (AppPrefs.isNotificationTextEnabled(context)) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
+                    onClick = {
+                        AppPrefs.setNotificationTextEnabled(context, !AppPrefs.isNotificationTextEnabled(context))
+                        drawerSettingsMenuOpen = false
+                    },
+                )
             }
         }
         IconButton(
@@ -1254,7 +1284,7 @@ fun AllAppsDrawer(
         mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
     }
     var activeSidebarIdx by remember { mutableIntStateOf(-1) }
-    var quickFilter      by remember { mutableStateOf(0) }
+    var quickFilter      by remember { mutableStateOf(AppPrefs.getAllAppsQuickFilter(context)) }
 
     var bgAlpha          by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
     var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
@@ -1367,7 +1397,10 @@ fun AllAppsDrawer(
                         totalCount = apps.size,
                         filteredCount = sortedApps.size,
                         quickFilter = quickFilter,
-                        onQuickFilterChange = { quickFilter = it },
+                        onQuickFilterChange = {
+                            quickFilter = it
+                            AppPrefs.setAllAppsQuickFilter(context, it)
+                        },
                         quickFilterCounts = quickFilterCounts,
                         sortMode = sortMode,
                         onSortModeChange = { sortMode = it },
