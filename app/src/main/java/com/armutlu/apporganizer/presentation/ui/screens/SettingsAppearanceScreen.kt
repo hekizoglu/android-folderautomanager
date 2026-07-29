@@ -29,5 +29,8 @@ fun SettingsAppearanceScreen(onNavigateBack: () -> Unit) {
                 currentFont = currentFont,
             )
         }
+        item {
+            HomeObjectColorSettingsCard()
+        }
     }
 }
