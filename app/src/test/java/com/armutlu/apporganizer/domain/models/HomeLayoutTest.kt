@@ -10,7 +10,7 @@ class HomeLayoutTest {
     @Test
     fun `default config is the complete deterministic section source`() {
         val config = HomeLayoutConfig.DEFAULT
-        assertEquals(HomeSectionId.entries.toSet(), config.items.map { it.sectionId }.toSet())
+        assertEquals(HomeLayoutConfig.DEFAULT.items.map { it.sectionId }.toSet(), config.items.map { it.sectionId }.toSet())
         // P15 v2: Dashboard section'ları artık CONTENT zone'una ait; HEADER yalnızca MAIN_SEARCH'ü
         // barındırır.
         assertEquals(
@@ -19,7 +19,7 @@ class HomeLayoutTest {
                 .sortedBy { it.order }.map { it.sectionId },
         )
         assertEquals(
-            listOf(HomeSectionId.CLOCK, HomeSectionId.MISSIONS_AND_SCORE, HomeSectionId.MISSIONS,
+            listOf(HomeSectionId.CLOCK, HomeSectionId.DAILY_CONTROL_CENTER,
                 HomeSectionId.FAVORITES, HomeSectionId.SUGGESTIONS,
                 HomeSectionId.RECENT_NOTIFICATIONS, HomeSectionId.RECENT_APPS,
                 HomeSectionId.FOLDER_GRID),

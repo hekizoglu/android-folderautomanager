@@ -49,12 +49,11 @@ class HomeLayoutEditorStateTest {
 
     @Test
     fun movableSectionReordersAndPersistsAsDraftOrder() {
-        // P15 v2: MAIN_SEARCH is now the sole HEADER-zone section (moveSection only reorders within
-        // a zone), so this test moves a CONTENT-zone section pair instead (CLOCK, MISSIONS_AND_SCORE).
+        // MAIN_SEARCH is the sole HEADER-zone section; move a CONTENT-zone pair instead.
         val moved = HomeLayoutConfig.DEFAULT.moveSection(HomeSectionId.CLOCK, 1)
 
         assertEquals(1, moved.items.single { it.sectionId == HomeSectionId.CLOCK }.order)
-        assertEquals(0, moved.items.single { it.sectionId == HomeSectionId.MISSIONS_AND_SCORE }.order)
+        assertEquals(0, moved.items.single { it.sectionId == HomeSectionId.DAILY_CONTROL_CENTER }.order)
         assertTrue(HomeLayoutEditorState(HomeLayoutConfig.DEFAULT, moved).hasUnsavedChanges)
     }
 

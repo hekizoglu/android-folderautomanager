@@ -138,7 +138,7 @@ object HomeLayoutPrefs {
         }
         val suppliedHeader = headerSource.filter { it.allowedIn(HomeLayoutZone.HEADER) }.distinct()
         val suppliedFooter = parseIds(stored.footerOrder).filter { it.allowedIn(HomeLayoutZone.FOOTER) }.distinct()
-        val suppliedContent = (contentFromHeader + parseIds(stored.contentOrder))
+        val suppliedContent = collapseDailyControlCenter(contentFromHeader + parseIds(stored.contentOrder))
             .filter { it.allowedIn(HomeLayoutZone.CONTENT) }.distinct()
         val searchZone = if (HomeSectionId.MAIN_SEARCH in suppliedFooter &&
             HomeSectionId.MAIN_SEARCH !in suppliedHeader) HomeLayoutZone.FOOTER else HomeLayoutZone.HEADER
@@ -147,7 +147,17 @@ object HomeLayoutPrefs {
             HomeLayoutZone.FOOTER to sanitizeOrder(suppliedFooter, HomeLayoutZone.FOOTER, searchZone),
             HomeLayoutZone.CONTENT to sanitizeOrder(suppliedContent, HomeLayoutZone.CONTENT, searchZone),
         )
-        val hidden = parseIds(stored.hiddenSections).filterTo(mutableSetOf()) { it.hideable }
+        val hidden = parseIds(stored.hiddenSections)
+            .filterNot { it in LEGACY_DAILY_CONTROL_SECTIONS }
+            .toMutableSet()
+            .apply {
+                val legacyPresent = parseIds(stored.headerOrder) + parseIds(stored.contentOrder) + parseIds(stored.footerOrder)
+                if (legacyPresent.any { it in LEGACY_DAILY_CONTROL_SECTIONS } &&
+                    LEGACY_DAILY_CONTROL_SECTIONS.all { it in parseIds(stored.hiddenSections) }) {
+                    add(HomeSectionId.DAILY_CONTROL_CENTER)
+                }
+            }
+            .filterTo(mutableSetOf()) { it.hideable }
         val items = HomeLayoutConfig.DEFAULT.items.map { item ->
             val zone = if (item.sectionId == HomeSectionId.MAIN_SEARCH) searchZone else item.zone
             val index = orders[zone]?.indexOf(item.sectionId)?.takeIf { it >= 0 }
@@ -189,7 +199,7 @@ object HomeLayoutPrefs {
             HomeSectionId.RECENT_APPS to legacy.recentAppsVisible,
             HomeSectionId.ASSISTANT_INSIGHTS to legacy.assistantVisible,
             HomeSectionId.TICKER_OR_STATS to legacy.tickerVisible,
-            HomeSectionId.MISSIONS_AND_SCORE to legacy.missionsVisible,
+            HomeSectionId.DAILY_CONTROL_CENTER to legacy.missionsVisible,
             HomeSectionId.MAIN_SEARCH to legacy.mainSearchVisible,
             HomeSectionId.GOOGLE_SEARCH to legacy.googleSearchVisible,
         )
@@ -231,6 +241,20 @@ object HomeLayoutPrefs {
     private fun parseIds(raw: String?): List<HomeSectionId> = raw.orEmpty().split(',').mapNotNull { token ->
         HomeSectionId.entries.firstOrNull { it.name == token.trim() }
     }
+
+    private fun collapseDailyControlCenter(ids: List<HomeSectionId>): List<HomeSectionId> {
+        if (ids.none { it in LEGACY_DAILY_CONTROL_SECTIONS }) return ids
+        val firstLegacy = ids.indexOfFirst { it in LEGACY_DAILY_CONTROL_SECTIONS }
+        return ids.filterNot { it in LEGACY_DAILY_CONTROL_SECTIONS }
+            .toMutableList()
+            .apply { add(firstLegacy.coerceIn(0, size), HomeSectionId.DAILY_CONTROL_CENTER) }
+    }
+
+    private val LEGACY_DAILY_CONTROL_SECTIONS = setOf(
+        HomeSectionId.MISSIONS_AND_SCORE,
+        HomeSectionId.MISSIONS,
+        HomeSectionId.TODAY_CARD,
+    )
 
     private fun HomeLayoutConfig.idsIn(zone: HomeLayoutZone) = items.filter { it.zone == zone }
         .sortedBy { it.order }.map { it.sectionId }

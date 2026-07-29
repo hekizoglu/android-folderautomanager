@@ -769,6 +769,7 @@ private fun HiddenHomeSection(item: HomeLayoutItem, onShow: () -> Unit) {
 @StringRes
 private fun sectionName(id: HomeSectionId): Int = when (id) {
     HomeSectionId.CLOCK -> R.string.home_section_clock
+    HomeSectionId.DAILY_CONTROL_CENTER -> R.string.home_section_daily_control_center
     HomeSectionId.MISSIONS_AND_SCORE -> R.string.home_section_missions_score
     HomeSectionId.MISSIONS -> R.string.home_section_missions
     HomeSectionId.TODAY_CARD -> R.string.home_section_today_card

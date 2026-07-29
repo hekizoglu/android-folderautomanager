@@ -10,6 +10,7 @@ enum class HomeSectionId(
     val hideable: Boolean = true,
 ) {
     CLOCK(HomeLayoutZone.CONTENT),
+    DAILY_CONTROL_CENTER(HomeLayoutZone.CONTENT),
     MISSIONS_AND_SCORE(HomeLayoutZone.CONTENT),
     MISSIONS(HomeLayoutZone.CONTENT),
     // P7b — TodayCard bağlantısı: MISSIONS_AND_SCORE/MISSIONS section'larından BAĞIMSIZ, üçüncü
@@ -66,7 +67,7 @@ data class HomeLayoutConfig(
     }
 
     companion object {
-        const val CURRENT_VERSION = 2
+        const val CURRENT_VERSION = 3
 
         /** The single source of truth for a new home layout. */
         val DEFAULT = HomeLayoutConfig(
@@ -78,19 +79,16 @@ data class HomeLayoutConfig(
                 // unique WITHIN a zone; FOLDER_GRID shares CONTENT with the dashboard sections so
                 // it needs its own non-colliding slot, placed after the visible defaults).
                 defaultItem(HomeSectionId.CLOCK, 0),
-                defaultItem(HomeSectionId.MISSIONS_AND_SCORE, 1),
-                defaultItem(HomeSectionId.MISSIONS, 2),
-                // P7b — varsayılan gizli (yeni özellik, CLAUDE.md "Yeni Özellik = Ayarlar Kuralı").
-                defaultItem(HomeSectionId.TODAY_CARD, 3, visible = false),
-                defaultItem(HomeSectionId.FAVORITES, 4),
-                defaultItem(HomeSectionId.SUGGESTIONS, 5),
-                defaultItem(HomeSectionId.RECENT_NOTIFICATIONS, 6),
-                defaultItem(HomeSectionId.RECENT_APPS, 7),
-                defaultItem(HomeSectionId.GOOGLE_SEARCH, 8, visible = false),
-                defaultItem(HomeSectionId.ANDROID_WIDGETS, 9, visible = false),
-                defaultItem(HomeSectionId.ASSISTANT_INSIGHTS, 10, visible = false),
-                defaultItem(HomeSectionId.TICKER_OR_STATS, 11, visible = false),
-                defaultItem(HomeSectionId.FOLDER_GRID, 12),
+                defaultItem(HomeSectionId.DAILY_CONTROL_CENTER, 1),
+                defaultItem(HomeSectionId.FAVORITES, 2),
+                defaultItem(HomeSectionId.SUGGESTIONS, 3),
+                defaultItem(HomeSectionId.RECENT_NOTIFICATIONS, 4),
+                defaultItem(HomeSectionId.RECENT_APPS, 5),
+                defaultItem(HomeSectionId.GOOGLE_SEARCH, 6, visible = false),
+                defaultItem(HomeSectionId.ANDROID_WIDGETS, 7, visible = false),
+                defaultItem(HomeSectionId.ASSISTANT_INSIGHTS, 8, visible = false),
+                defaultItem(HomeSectionId.TICKER_OR_STATS, 9, visible = false),
+                defaultItem(HomeSectionId.FOLDER_GRID, 10),
                 // FOOTER: DOCK is fixed as the final entry.
                 defaultItem(HomeSectionId.DOCK, 0),
             ),

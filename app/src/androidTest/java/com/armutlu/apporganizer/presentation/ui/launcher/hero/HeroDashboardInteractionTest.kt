@@ -15,6 +15,12 @@ import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.NotificationAccessItem
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
+import com.armutlu.apporganizer.domain.common.DataFreshness
+import com.armutlu.apporganizer.domain.home.HomeMissionSummary
+import com.armutlu.apporganizer.domain.home.HomePulseSummary
+import com.armutlu.apporganizer.domain.home.PulseStatusBand
+import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
+import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
 import com.armutlu.apporganizer.domain.models.AppInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -42,15 +48,40 @@ class HeroDashboardInteractionTest {
                 )
             }
         }
-        // D240 — HeroSearchCard M5 kod tarama denetiminde silindi (0-caller, çift arama kutusu
-        // fix'i); bu test artık sadece kalan iki sabit kartı + SmartAccessCard'ı doğrular.
         val widths = listOf(
             "hero_clock_card",
-            "hero_digital_life_card",
+            "hero_daily_control_center",
             "hero_smart_access_card",
         ).map { tag -> compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot.width }
         assertTrue(widths.first() > 0f)
         widths.drop(1).forEach { width -> assertEquals(widths.first(), width, 0.5f) }
+    }
+
+    @Test fun daily_control_center_exposes_three_independent_buttons() {
+        var pulseClicks = 0
+        var missionClicks = 0
+        var notificationClicks = 0
+        compose.setContent {
+            HeroDailyControlCenterCard(
+                pulse = HomePulseSummary(78, PulseStatusBand.GOOD, 2, null, confidence = DataConfidence.HIGH,
+                    freshness = DataFreshness.LIVE),
+                missionSummary = HomeMissionSummary(1, 3, null, null, "Keep going", null, MissionStatus.IN_PROGRESS, false),
+                notificationCount24h = 5,
+                notificationAccessGranted = true,
+                spec = spec,
+                onOpenPulse = { pulseClicks++ },
+                onOpenMissions = { missionClicks++ },
+                onOpenNotificationHistory = { notificationClicks++ },
+            )
+        }
+        compose.onNodeWithTag("hero_daily_control_digital_life").performClick()
+        compose.onNodeWithTag("hero_daily_control_missions").performClick()
+        compose.onNodeWithTag("hero_daily_control_notifications").performClick()
+        compose.runOnIdle {
+            assertEquals(1, pulseClicks)
+            assertEquals(1, missionClicks)
+            assertEquals(1, notificationClicks)
+        }
     }
 
     @Test fun clock_supports_click_and_long_click() {

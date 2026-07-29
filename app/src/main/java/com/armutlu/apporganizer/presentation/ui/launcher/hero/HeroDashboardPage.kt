@@ -37,12 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
-import com.armutlu.apporganizer.domain.home.TodayCardSpec
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import com.armutlu.apporganizer.domain.models.HomeSectionId
-import com.armutlu.apporganizer.presentation.ui.launcher.HomeMissionCard
-import com.armutlu.apporganizer.presentation.ui.launcher.TodayCard
 
 /**
  * D240 — SmartAccessCard tek bir sekmeli (NOW/RECENT/NOTIFICATIONS) birim olduğu için editördeki
@@ -66,7 +63,7 @@ private val SMART_ACCESS_GROUP = setOf(
 )
 
 /** Hero'nun render edebildiği "sanal" bloklar — contentOrder içindeki gerçek section'lardan türetilir. */
-private enum class HeroBlock { CLOCK, MISSIONS_AND_SCORE, MISSIONS, TODAY_CARD, SMART_ACCESS }
+private enum class HeroBlock { CLOCK, DAILY_CONTROL_CENTER, SMART_ACCESS }
 
 /**
  * Editörün gerçek `contentOrder`'ından (dashboardContentOrder(config)) Hero'nun render edebileceği
@@ -79,9 +76,10 @@ private fun heroBlockOrder(contentOrder: List<HomeSectionId>): List<HeroBlock> {
     for (sectionId in contentOrder) {
         val block = when {
             sectionId == HomeSectionId.CLOCK -> HeroBlock.CLOCK
-            sectionId == HomeSectionId.MISSIONS_AND_SCORE -> HeroBlock.MISSIONS_AND_SCORE
-            sectionId == HomeSectionId.MISSIONS -> HeroBlock.MISSIONS
-            sectionId == HomeSectionId.TODAY_CARD -> HeroBlock.TODAY_CARD
+            sectionId == HomeSectionId.DAILY_CONTROL_CENTER ||
+                sectionId == HomeSectionId.MISSIONS_AND_SCORE ||
+                sectionId == HomeSectionId.MISSIONS ||
+                sectionId == HomeSectionId.TODAY_CARD -> HeroBlock.DAILY_CONTROL_CENTER
             sectionId in SMART_ACCESS_GROUP -> HeroBlock.SMART_ACCESS
             else -> null
         } ?: continue
@@ -97,7 +95,8 @@ internal fun HeroDashboardPage(
     pendingClassificationCount: Int = 0,
     contentOrder: List<HomeSectionId> = HomeSectionId.entries,
     missionSummary: HomeMissionSummary? = null,
-    todayCardSpec: TodayCardSpec? = null,
+    notificationCount24h: Int = 0,
+    notificationAccessGranted: Boolean = false,
     onOpenWeeklyReport: () -> Unit,
     onClockLongPress: () -> Unit,
     onOpenPulse: () -> Unit,
@@ -105,6 +104,7 @@ internal fun HeroDashboardPage(
     onOpenNotificationAccessSettings: () -> Unit,
     onOpenClassificationReview: () -> Unit = {},
     onOpenMissions: () -> Unit = {},
+    onOpenNotificationHistory: () -> Unit = {},
     onOpenFolderReview: () -> Unit = {},
     onOpenWeeklyReportReady: () -> Unit = {},
     onLaunchApp: (String) -> Unit,
@@ -152,24 +152,16 @@ internal fun HeroDashboardPage(
                         onClick = onOpenWeeklyReport,
                         onLongClick = onClockLongPress,
                     )
-                    HeroBlock.MISSIONS_AND_SCORE -> HeroDigitalLifeCard(
-                        summary = pulse,
+                    HeroBlock.DAILY_CONTROL_CENTER -> HeroDailyControlCenterCard(
+                        pulse = pulse,
+                        missionSummary = missionSummary,
+                        notificationCount24h = notificationCount24h,
+                        notificationAccessGranted = notificationAccessGranted,
                         spec = spec,
-                        onClick = onOpenPulse,
+                        onOpenPulse = onOpenPulse,
+                        onOpenMissions = onOpenMissions,
+                        onOpenNotificationHistory = onOpenNotificationHistory,
                     )
-                    HeroBlock.MISSIONS -> HomeMissionCard(
-                        summary = missionSummary,
-                        onClick = onOpenMissions,
-                    )
-                    HeroBlock.TODAY_CARD -> todayCardSpec?.let { spec ->
-                        TodayCard(
-                            spec = spec,
-                            onMissionClick = onOpenMissions,
-                            onPulseClick = onOpenPulse,
-                            onFolderReviewClick = onOpenFolderReview,
-                            onReportReadyClick = onOpenWeeklyReportReady,
-                        )
-                    }
                     HeroBlock.SMART_ACCESS -> SmartAccessCard(
                         state = smartAccess,
                         spec = spec,

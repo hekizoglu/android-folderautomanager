@@ -1049,4 +1049,21 @@
     <string name="folder_merge_large_transfer_warning">20+ uygulama taşınacak — lütfen kontrol et</string>
     <string name="folder_merge_cancel">İptal</string>
     <string name="folder_merge_approve">Onayla</string>
+    <string name="hero_daily_control_center_title">Günlük Kontrol Merkezi</string>
+    <string name="hero_daily_control_digital_life">Dijital Yaşam</string>
+    <string name="hero_daily_control_missions">Görevler</string>
+    <string name="hero_daily_control_notifications">Bildirimler</string>
+    <string name="hero_daily_control_score">%1$d puan</string>
+    <string name="hero_daily_control_unavailable">—</string>
+    <string name="hero_daily_control_missions_progress">%1$d/%2$d görev</string>
+    <string name="hero_daily_control_missions_complete">%1$d/%1$d tamam</string>
+    <string name="hero_daily_control_notifications_count">%1$d bildirim</string>
+    <string name="hero_daily_control_notifications_empty">Bildirim yok</string>
+    <string name="hero_daily_control_last_24_hours">Son 24 saat</string>
+    <string name="hero_daily_control_access_required">Erişim gerekli</string>
+    <string name="hero_daily_control_digital_description">Dijital Yaşam, %1$s. Ayrıntıları aç.</string>
+    <string name="hero_daily_control_missions_description">Görevler, %1$s. Görevleri aç.</string>
+    <string name="hero_daily_control_notifications_description">Bildirimler, son 24 saatte %1$d bildirim. Bildirim geçmişini aç.</string>
+    <string name="hero_daily_control_notifications_access_description">Bildirimler, erişim gerekli. Bildirim erişimi ayarlarını aç.</string>
+    <string name="home_section_daily_control_center">Günlük Kontrol Merkezi</string>
 </resources>
