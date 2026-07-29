@@ -85,6 +85,7 @@ fun FolderScreen(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
+    val objectPalette = LocalHomeObjectPalette.current
     var folderCarouselEnabled by remember { mutableStateOf(AppPrefs.isFolderCarouselEnabled(context)) }
     // Faz S2 — deneysel, varsayılan KAPALI. Açıkken klasör grid'i FolderFreeGrid'e döner.
     var folderFreeGridEnabled by remember { mutableStateOf(AppPrefs.isFolderFreeGridEnabled(context)) }
@@ -96,10 +97,6 @@ fun FolderScreen(
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
     var folderNavigatorMutedUntil by remember { mutableStateOf(AppPrefs.getFolderNavigatorMutedUntil(context)) }
-    // Görev 1: HomeScreen ile aynı kök zemin — klasörden çıkarken duvar kağıdı flaşı olmasın.
-    var bgType by remember { mutableStateOf(AppPrefs.getBgType(context)) }
-    var bgColorInt by remember { mutableStateOf(AppPrefs.getBgColor(context)) }
-    var bgGradientStyle by remember { mutableStateOf(AppPrefs.getHomeBackgroundStyle(context)) }
 
     DisposableEffect(context) {
         val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
@@ -121,15 +118,6 @@ fun FolderScreen(
             }
             if (key == AppPrefs.KEY_FOLDER_NAVIGATOR_MUTED_UNTIL) {
                 folderNavigatorMutedUntil = AppPrefs.getFolderNavigatorMutedUntil(context)
-            }
-            if (key == AppPrefs.KEY_BG_TYPE) {
-                bgType = AppPrefs.getBgType(context)
-            }
-            if (key == AppPrefs.KEY_BG_COLOR) {
-                bgColorInt = AppPrefs.getBgColor(context)
-            }
-            if (key == AppPrefs.KEY_HOME_BACKGROUND_STYLE) {
-                bgGradientStyle = AppPrefs.getHomeBackgroundStyle(context)
             }
             if (key == AppPrefs.KEY_LABEL_COLOR) {
                 labelColorHex = AppPrefs.getLabelColor(context)
@@ -381,16 +369,7 @@ fun FolderScreen(
                         Modifier
                     }
                 )
-                .homeRootBackground(bgType, bgColorInt, bgGradientStyle)
-                .then(
-                    // "Duvar Kağıdı" seçiliyken homeRootBackground transparan bırakır; klasör
-                    // içeriğinin okunabilirliği için güçlü karartma katmanı eklenir (surface
-                    // rengiyle değil, tema-nötr siyah yarı saydam ile). Gerçek blur yerine
-                    // yüksek alfa kullanılıyor — duvar kağıdı artık belirgin şekilde bastırılıyor
-                    // (0.35 → 0.78, Hüseyin talebi: "arka planı görüyoruz").
-                    if (bgType == "wallpaper") Modifier.background(Color.Black.copy(alpha = 0.78f))
-                    else Modifier
-                )
+                .background(objectPalette.folderBackground)
         ) { // NOT: navigationBarsPadding kök Box'ta uygulanır (D241) — HomeShell'in folderOverlay slotu
             // insets uygulamıyor (statusBars da uygulamıyor, sadece HomeShell'in kendi iç Column'u
             // alıyor), bu yüzden alt navigasyon çubuğu payı burada, doğrudan FolderScreen'de eklendi.
