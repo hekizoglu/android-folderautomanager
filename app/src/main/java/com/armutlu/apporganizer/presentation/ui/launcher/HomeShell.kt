@@ -92,8 +92,10 @@ fun HomeShell(
 
             // Klasör görünürken ana ekran/duvar kağıdı sızmaz. Renk, "Ana Ekran Öğe Rengi"
             // tercihinden türetilir ve okunabilirlik için her zaman opak koyu tona çevrilir.
-            Box(modifier = Modifier.background(objectPalette.folderBackground)) {
-                folderOverlay()
+            CompositionLocalProvider(LocalHomeFolderSurface provides true) {
+                Box(modifier = Modifier.background(objectPalette.folderBackground)) {
+                    folderOverlay()
+                }
             }
 
             searchOverlay()
