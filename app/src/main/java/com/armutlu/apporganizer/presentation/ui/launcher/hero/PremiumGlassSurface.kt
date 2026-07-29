@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.presentation.ui.launcher.LocalHomeObjectPalette
@@ -32,8 +31,8 @@ internal object PremiumGlassPolicy {
 }
 
 /**
- * Hero yüzeylerine özel API 26 uyumlu cam katmanı. Global GlassCard değiştirilmez. Gerçek
- * RenderEffect blur kullanılmadığı için API 26-30'da görsel/performans davranışı ayrışmaz.
+ * Hero yüzeylerine özel API 26 uyumlu cam katmanı. Ana ekranın ortak öğe paletini kullanır.
+ * Gerçek RenderEffect blur kullanılmadığı için API 26-30'da görsel/performans davranışı ayrışmaz.
  */
 @Composable
 internal fun PremiumGlassSurface(
