@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.armutlu.apporganizer.presentation.ui.launcher.LocalHomeObjectPalette
 
 internal enum class PremiumGlassEmphasis { STANDARD, ACTIVE, SUBTLE }
 
@@ -42,19 +43,20 @@ internal fun PremiumGlassSurface(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val palette = PremiumGlassPolicy.palette(emphasis)
+    val objectPalette = LocalHomeObjectPalette.current
     val shape = RoundedCornerShape(cornerRadius)
     val fill = Brush.verticalGradient(
         colors = listOf(
-            Color.White.copy(alpha = palette.fillAlpha + palette.highlightAlpha),
-            Color(0xFF7CB7FF).copy(alpha = palette.coolLayerAlpha),
-            Color.White.copy(alpha = palette.fillAlpha),
+            objectPalette.borderTint.copy(alpha = palette.highlightAlpha),
+            objectPalette.surfaceTint.copy(alpha = palette.coolLayerAlpha + palette.fillAlpha),
+            objectPalette.surfaceTint.copy(alpha = palette.fillAlpha),
         )
     )
     Box(
         modifier = modifier
             .clip(shape)
             .background(fill)
-            .border(1.dp, Color.White.copy(alpha = palette.borderAlpha), shape),
+            .border(1.dp, objectPalette.borderTint.copy(alpha = palette.borderAlpha), shape),
         content = content,
     )
 }
