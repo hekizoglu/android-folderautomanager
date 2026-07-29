@@ -13,6 +13,7 @@ import com.armutlu.apporganizer.utils.NotificationAnalyzer
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -20,10 +21,61 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+
+data class NotificationHistoryFilterOption(
+    val packageName: String,
+    val appName: String,
+    val count: Int,
+)
+
+data class NotificationHistoryUiState(
+    val entries: List<NotificationHistoryEntity> = emptyList(),
+    val filters: List<NotificationHistoryFilterOption> = emptyList(),
+    val selectedPackageName: String? = null,
+    val appNames: Map<String, String> = emptyMap(),
+    val totalCount: Int = 0,
+) {
+    companion object {
+        fun build(
+            entries: List<NotificationHistoryEntity>,
+            appNames: Map<String, String>,
+            requestedPackageName: String?,
+        ): NotificationHistoryUiState {
+            val packageCounts = entries.groupingBy { it.packageName }.eachCount()
+            val effectiveSelection = requestedPackageName?.takeIf(packageCounts::containsKey)
+            val filters = packageCounts.map { (packageName, count) ->
+                NotificationHistoryFilterOption(
+                    packageName = packageName,
+                    appName = resolveAppName(packageName, appNames),
+                    count = count,
+                )
+            }.sortedBy { it.appName.lowercase(Locale("tr", "TR")) }
+
+            return NotificationHistoryUiState(
+                entries = if (effectiveSelection == null) {
+                    entries
+                } else {
+                    entries.filter { it.packageName == effectiveSelection }
+                },
+                filters = filters,
+                selectedPackageName = effectiveSelection,
+                appNames = appNames,
+                totalCount = entries.size,
+            )
+        }
+
+        fun resolveAppName(packageName: String, appNames: Map<String, String>): String =
+            appNames[packageName]
+                ?.takeIf { it.isNotBlank() }
+                ?: packageName.substringAfterLast('.').takeIf { it.isNotBlank() }
+                ?: packageName
+    }
+}
 
 /**
  * Bildirim Raporu ekranının net UI durumları (Döngü 224 — UX ayrımı).
@@ -96,9 +148,25 @@ class NotificationReportViewModel @Inject constructor(
     /** D242c — Bildirim Geçmişi sekmesi: gerçek başlık/metin, yalnızca ayar açıkken dolu. */
     val historyEnabled: Boolean get() = AppPrefs.isNotificationTextEnabled(context)
 
-    val history: StateFlow<List<NotificationHistoryEntity>> = notificationHistoryDao
-        .observeRecent()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+    private val rawHistory = notificationHistoryDao.observeRecent()
+    private val _historyAppNames = MutableStateFlow<Map<String, String>>(emptyMap())
+    private val _selectedHistoryPackage = MutableStateFlow<String?>(null)
+
+    val historyUiState: StateFlow<NotificationHistoryUiState> = combine(
+        rawHistory,
+        _historyAppNames,
+        _selectedHistoryPackage,
+    ) { entries, appNames, selectedPackage ->
+        NotificationHistoryUiState.build(entries, appNames, selectedPackage)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000L),
+        NotificationHistoryUiState(),
+    )
+
+    fun selectHistoryPackage(packageName: String?) {
+        _selectedHistoryPackage.value = packageName
+    }
 
     fun markHistoryRead(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -112,11 +180,20 @@ class NotificationReportViewModel @Inject constructor(
         }
     }
 
+    fun deleteHistory(id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { notificationHistoryDao.deleteById(id) }
+                .onFailure { Timber.e(it, "Bildirim geçmişi kaydı silinemedi") }
+        }
+    }
+
     init {
+        refreshHistoryAppNames()
         refresh()
     }
 
     fun refresh() {
+        refreshHistoryAppNames()
         val permissionGranted = checkListenerPermission()
         val analyticsEnabled = AppPrefs.isNotifAnalyticsEnabled(context)
         viewModelScope.launch {
@@ -149,6 +226,18 @@ class NotificationReportViewModel @Inject constructor(
     fun enableAnalytics() {
         AppPrefs.setNotifAnalyticsEnabled(context, true)
         refresh()
+    }
+
+    private fun refreshHistoryAppNames() {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                appDao.getAllApps().associate { it.packageName to it.appName }
+            }.onSuccess { appNames ->
+                _historyAppNames.value = appNames
+            }.onFailure { error ->
+                Timber.w(error, "Bildirim geçmişi uygulama adları yüklenemedi")
+            }
+        }
     }
 
     private fun checkListenerPermission(): Boolean {
