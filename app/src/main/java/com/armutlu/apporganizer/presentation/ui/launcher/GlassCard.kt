@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Glassmorphism kart — blur simülasyonu: yarı saydam beyaz arka plan + ince beyaz border.
+ * Glassmorphism kart — blur simülasyonu: yarı saydam renkli arka plan + ince border.
  * Gerçek blur (RenderEffect) API 31+ gerektirir; bu composable API 21+'da çalışır.
  */
 @Composable
@@ -25,12 +25,15 @@ internal fun GlassCard(
     borderColor: Color = Color.White,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val palette = LocalHomeObjectPalette.current
     val shape = RoundedCornerShape(cornerRadius)
+    val resolvedBorder = if (borderColor == Color.White) palette.borderTint else borderColor
+
     Box(
         modifier = modifier
             .clip(shape)
-            .background(Color.White.copy(alpha = backgroundAlpha))
-            .border(1.dp, borderColor.copy(alpha = borderAlpha), shape),
+            .background(palette.surfaceTint.copy(alpha = backgroundAlpha))
+            .border(1.dp, resolvedBorder.copy(alpha = borderAlpha), shape),
         content = content
     )
 }
