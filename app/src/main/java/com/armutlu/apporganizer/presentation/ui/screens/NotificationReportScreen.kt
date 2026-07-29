@@ -3,10 +3,13 @@ package com.armutlu.apporganizer.presentation.ui.screens
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.NotificationHistoryEntity
+import com.armutlu.apporganizer.presentation.viewmodel.NotificationHistoryUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportViewModel
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
@@ -161,8 +165,9 @@ fun NotificationReportScreen(
 
 @Composable
 private fun NotificationHistoryTab(viewModel: NotificationReportViewModel) {
-    val history by viewModel.history.collectAsState()
+    val historyState by viewModel.historyUiState.collectAsState()
     val historyEnabled = viewModel.historyEnabled
+    var pendingDelete by remember { mutableStateOf<NotificationHistoryEntity?>(null) }
 
     if (!historyEnabled) {
         ReportStatusPane(
@@ -176,7 +181,7 @@ private fun NotificationHistoryTab(viewModel: NotificationReportViewModel) {
         return
     }
 
-    if (history.isEmpty()) {
+    if (historyState.totalCount == 0) {
         ReportStatusPane(
             padding = PaddingValues(0.dp),
             icon = Icons.Default.HourglassEmpty,
@@ -188,21 +193,106 @@ private fun NotificationHistoryTab(viewModel: NotificationReportViewModel) {
         return
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(history, key = { it.id }) { entry ->
-            NotificationHistoryRow(entry = entry, onClick = { viewModel.markHistoryRead(entry.id) })
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = stringResource(R.string.notif_history_filter_hint),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 16.dp),
+        )
+        Text(
+            text = stringResource(R.string.notif_history_long_press_hint),
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item(key = "all") {
+                FilterChip(
+                    selected = historyState.selectedPackageName == null,
+                    onClick = { viewModel.selectHistoryPackage(null) },
+                    label = {
+                        Text(stringResource(R.string.notif_history_filter_all, historyState.totalCount))
+                    },
+                )
+            }
+            items(historyState.filters, key = { it.packageName }) { filter ->
+                FilterChip(
+                    selected = historyState.selectedPackageName == filter.packageName,
+                    onClick = { viewModel.selectHistoryPackage(filter.packageName) },
+                    label = {
+                        Text(stringResource(R.string.notif_history_filter_app, filter.appName, filter.count))
+                    },
+                )
+            }
         }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            items(historyState.entries, key = { it.id }) { entry ->
+                val appName = NotificationHistoryUiState.resolveAppName(
+                    entry.packageName,
+                    historyState.appNames,
+                )
+                NotificationHistoryRow(
+                    entry = entry,
+                    appName = appName,
+                    onClick = { viewModel.markHistoryRead(entry.id) },
+                    onLongClick = { pendingDelete = entry },
+                )
+            }
+        }
+    }
+
+    pendingDelete?.let { entry ->
+        val appName = NotificationHistoryUiState.resolveAppName(
+            entry.packageName,
+            historyState.appNames,
+        )
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text(stringResource(R.string.notif_history_delete_title)) },
+            text = {
+                Text(stringResource(R.string.notif_history_delete_desc, appName))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteHistory(entry.id)
+                        pendingDelete = null
+                    }
+                ) {
+                    Text(
+                        stringResource(R.string.notif_history_delete_confirm),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) {
+                    Text(stringResource(R.string.notif_history_delete_cancel))
+                }
+            },
+        )
     }
 }
 
 private val historyTimeFormat = SimpleDateFormat("dd MMM HH:mm", Locale("tr"))
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun NotificationHistoryRow(entry: NotificationHistoryEntity, onClick: () -> Unit) {
+private fun NotificationHistoryRow(
+    entry: NotificationHistoryEntity,
+    appName: String,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = if (entry.isRead) {
@@ -212,20 +302,40 @@ private fun NotificationHistoryRow(entry: NotificationHistoryEntity, onClick: ()
         },
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(entry.title, fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                Text(
+                    appName,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
                 Text(
                     historyTimeFormat.format(java.util.Date(entry.postedAt)),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Text(
+                entry.packageName,
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                entry.title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+            )
             if (entry.text.isNotBlank()) {
                 Spacer(Modifier.height(4.dp))
                 Text(
