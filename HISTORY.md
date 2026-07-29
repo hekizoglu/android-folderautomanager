@@ -1,5 +1,10 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Dongu -- 2026-07-29 (Build + Telegram APK teslimi, 2 derleme hatasi giderildi)
+**Yapilanlar:** versionCode 174->175, versionName 1.4.50->1.4.51. Rebase ile remote'tan gelen klasor paleti/premium yuzey degisiklikleriyle birlikte assembleDebug+testDebugUnitTest calistirildi, APK Telegram'a gonderildi (~29.9 MB, "ok":true dogrulandi).
+**Bug:** Iki derleme hatasi bulundu ve duzeltildi: (1) HomeObjectColorSettingsCard.kt icinde internal androidx.compose.foundation.layout.weight yanlislikla import edilmisti (RowScope.weight scope icinde zaten cozumleniyor) -- import satiri silindi. (2) HomeIntelligenceFreshnessRegressionTest.kt icinde MissionSourceState(missionSummary) pozisyonel cagrisi List<Any> yerine HomeMissionSummary geciriyordu -- summary= named parametreye cevrildi.
+**Sonraki:** Roadmap kapsaminda planli is yok, kullanici APK'yi deneyecek.
+
 ## Döngü — 2026-07-27 (Firebase BigQuery telemetri altyapısı + APK teslimi)
 **Yapılanlar:** Kullanıcı Firebase Console'da Crashlytics+Analytics BigQuery export'larını açtı (Spark plan, Daily). Service account key kuruldu, IAM'e BigQuery Data Viewer+Job User rolleri eklendi. İki script yazıldı: `check_bigquery_status.py` (bağlantı/izin tanısı) ve `telemetry_report.py` (crash+kullanım event'lerini sorgulayıp Telegram'a rapor gönderir, veri henüz yoksa hata vermeden "veri yok" der) — uçtan uca test edildi, Telegram'a gerçekten gönderdiğini doğruladım. 8 saatte bir çalışan cron kuruldu (session-only, job `46e01ac7`). Yeni Firebase'li (`google-services.json` dahil) APK build alınıp Telegram'a gönderildi (v1.4.34/158).
 **Bug:** `.gitignore`'daki service-account key kuralları başka bir düzenlemede (muhtemelen paralel bir süreç) kaybolmuştu — commit ATMADAN önce `git check-ignore` ile fark edilip düzeltildi, hiçbir sır repoya gitmedi. D240 disiplini: commit öncesi her zaman `git status`/`check-ignore` ile stage listesi doğrulanmalı.
