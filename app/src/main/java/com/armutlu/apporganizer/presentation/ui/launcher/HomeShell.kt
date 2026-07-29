@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 /**
  * Döngü P03 — HomeScreen içinden çıkarılan global iskelet.
@@ -84,7 +86,14 @@ fun HomeShell(
             bottomSearch?.invoke()
             dock()
         }
-        folderOverlay()
+
+        // Klasör görünürken sistem duvar kağıdı veya ana ekran içeriği arkadan sızmasın.
+        // Bu Box içerik görünmezken sıfır boyutta kalır; klasör açıldığında ise FolderScreen'in
+        // fillMaxSize içeriğiyle tam ekran ölçülür ve opak koyu bir zemin oluşturur.
+        Box(modifier = Modifier.background(Color(0xFF0B0D10))) {
+            folderOverlay()
+        }
+
         searchOverlay()
         overlays()
     }
