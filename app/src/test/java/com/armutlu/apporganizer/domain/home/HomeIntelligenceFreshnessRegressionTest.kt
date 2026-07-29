@@ -68,7 +68,7 @@ class HomeIntelligenceFreshnessRegressionTest {
         )
         val state = HomeIntelligenceState(
             pulse = HomeDataResult.Ready(PulseSourceState(snapshot)),
-            mission = HomeDataResult.Ready(MissionSourceState(missionSummary)),
+            mission = HomeDataResult.Ready(MissionSourceState(summary = missionSummary)),
             ticker = HomeDataResult.Ready(TickerSourceState(emptyList())),
         )
         return HomeIntelligenceHealthReport.Input(
