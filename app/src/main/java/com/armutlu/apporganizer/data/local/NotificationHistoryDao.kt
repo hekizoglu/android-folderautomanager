@@ -24,6 +24,10 @@ interface NotificationHistoryDao {
     @Query("SELECT COUNT(*) FROM notification_history WHERE isRead = 0")
     fun observeUnreadCount(): Flow<Int>
 
+    /** Kullanıcının uzun basarak seçtiği tek geçmiş kaydını kalıcı olarak siler. */
+    @Query("DELETE FROM notification_history WHERE id = :id")
+    suspend fun deleteById(id: Long): Int
+
     /** Zaman bazlı retention — [olderThan]'dan eski kayıtlar silinir (varsayılan 7 gün). */
     @Query("DELETE FROM notification_history WHERE postedAt < :olderThan")
     suspend fun deleteOlderThan(olderThan: Long)
