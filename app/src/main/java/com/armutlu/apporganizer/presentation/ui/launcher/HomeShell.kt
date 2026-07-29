@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 
 /**
  * Döngü P03 — HomeScreen içinden çıkarılan global iskelet.
@@ -66,35 +66,38 @@ fun HomeShell(
     searchOverlay: @Composable BoxScope.() -> Unit = {},
     overlays: @Composable BoxScope.() -> Unit = {},
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding(),
-            verticalArrangement = Arrangement.Top
-        ) {
-            topSearch?.invoke()
-            Box(
+    val objectPalette = rememberHomeObjectPalette()
+
+    CompositionLocalProvider(LocalHomeObjectPalette provides objectPalette) {
+        Box(modifier = modifier.fillMaxSize()) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .navigationBarsPadding(),
+                verticalArrangement = Arrangement.Top
             ) {
-                pager()
+                topSearch?.invoke()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                ) {
+                    pager()
+                }
+                indicator()
+                bottomSearch?.invoke()
+                dock()
             }
-            indicator()
-            bottomSearch?.invoke()
-            dock()
-        }
 
-        // Klasör görünürken sistem duvar kağıdı veya ana ekran içeriği arkadan sızmasın.
-        // Bu Box içerik görünmezken sıfır boyutta kalır; klasör açıldığında ise FolderScreen'in
-        // fillMaxSize içeriğiyle tam ekran ölçülür ve opak koyu bir zemin oluşturur.
-        Box(modifier = Modifier.background(Color(0xFF0B0D10))) {
-            folderOverlay()
-        }
+            // Klasör görünürken ana ekran/duvar kağıdı sızmaz. Renk, "Ana Ekran Öğe Rengi"
+            // tercihinden türetilir ve okunabilirlik için her zaman opak koyu tona çevrilir.
+            Box(modifier = Modifier.background(objectPalette.folderBackground)) {
+                folderOverlay()
+            }
 
-        searchOverlay()
-        overlays()
+            searchOverlay()
+            overlays()
+        }
     }
 }
