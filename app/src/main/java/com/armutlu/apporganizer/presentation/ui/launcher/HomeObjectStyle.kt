@@ -31,6 +31,9 @@ internal val LocalHomeObjectPalette = staticCompositionLocalOf {
     )
 }
 
+/** HomeScreen ile FolderScreen aynı arka plan modifier'ını kullandığı için çağrı rolünü ayırır. */
+internal val LocalHomeFolderSurface = staticCompositionLocalOf { false }
+
 internal object HomeObjectStylePrefs {
     const val KEY_MODE = "home_object_color_mode"
     const val KEY_CUSTOM_COLOR = "home_object_custom_color"
