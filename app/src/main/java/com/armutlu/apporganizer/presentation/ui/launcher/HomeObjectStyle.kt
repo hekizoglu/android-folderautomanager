@@ -41,7 +41,7 @@ internal object HomeObjectStylePrefs {
     const val MODE_CUSTOM = "custom"
 
     private val validModes = setOf(MODE_AUTO, MODE_DARK, MODE_LIGHT, MODE_CUSTOM)
-    private const val DEFAULT_CUSTOM_COLOR = 0xFF0F6F68.toInt()
+    private val defaultCustomColor = 0xFF0F6F68.toInt()
 
     fun getMode(context: Context): String {
         val stored = prefs(context).getString(KEY_MODE, MODE_AUTO)
@@ -56,7 +56,7 @@ internal object HomeObjectStylePrefs {
     }
 
     fun getCustomColor(context: Context): Int =
-        prefs(context).getInt(KEY_CUSTOM_COLOR, DEFAULT_CUSTOM_COLOR)
+        prefs(context).getInt(KEY_CUSTOM_COLOR, defaultCustomColor)
 
     fun setCustomColor(context: Context, color: Int) {
         prefs(context).edit().putInt(KEY_CUSTOM_COLOR, color or 0xFF000000.toInt()).apply()
