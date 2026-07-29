@@ -36,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.NotificationHistoryEntity
+import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunchContract
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationHistoryUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportViewModel
@@ -57,7 +58,10 @@ fun NotificationReportScreen(
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsState()
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    val initialTab = remember(context) {
+        NotificationReportLaunchContract.consumeInitialTab(context)
+    }
+    var selectedTab by rememberSaveable { mutableIntStateOf(initialTab) }
 
     // D257: "Bildirim raporunu incele" gorevi — ekran ziyareti gorev tamamlama sayilir.
     LaunchedEffect(Unit) {
