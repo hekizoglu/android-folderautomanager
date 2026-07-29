@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_history_filter_hint">Filter by app</string>
+    <string name="notif_history_filter_all">All (%1$d)</string>
+    <string name="notif_history_filter_app">%1$s (%2$d)</string>
+    <string name="notif_history_long_press_hint">Choose an app filter above. Long-press a notification to delete it.</string>
+    <string name="notif_history_delete_title">Delete notification</string>
+    <string name="notif_history_delete_desc">Permanently remove this notification from %1$s from history?</string>
+    <string name="notif_history_delete_confirm">Delete</string>
+    <string name="notif_history_delete_cancel">Cancel</string>
+</resources>
