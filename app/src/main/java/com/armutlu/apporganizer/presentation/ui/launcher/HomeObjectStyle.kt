@@ -31,39 +31,28 @@ internal val LocalHomeObjectPalette = staticCompositionLocalOf {
     )
 }
 
+/**
+ * İnce uyumluluk katmanı — gerçek doğruluk kaynağı [AppPrefs]'teki
+ * `getHomeObjectColorMode`/`setHomeObjectColorMode`/`getHomeObjectCustomColor`/
+ * `setHomeObjectCustomColor` API'sidir (backup export/import zincirine bağlı
+ * olabilmesi için). Anahtar adları ve varsayılanlar AppPrefs ile birebir aynı.
+ */
 internal object HomeObjectStylePrefs {
-    const val KEY_MODE = "home_object_color_mode"
-    const val KEY_CUSTOM_COLOR = "home_object_custom_color"
+    const val KEY_MODE = AppPrefs.KEY_HOME_OBJECT_COLOR_MODE
+    const val KEY_CUSTOM_COLOR = AppPrefs.KEY_HOME_OBJECT_CUSTOM_COLOR
 
-    const val MODE_AUTO = "auto"
-    const val MODE_DARK = "dark"
-    const val MODE_LIGHT = "light"
-    const val MODE_CUSTOM = "custom"
+    const val MODE_AUTO = AppPrefs.HOME_OBJECT_COLOR_MODE_AUTO
+    const val MODE_DARK = AppPrefs.HOME_OBJECT_COLOR_MODE_DARK
+    const val MODE_LIGHT = AppPrefs.HOME_OBJECT_COLOR_MODE_LIGHT
+    const val MODE_CUSTOM = AppPrefs.HOME_OBJECT_COLOR_MODE_CUSTOM
 
-    private val validModes = setOf(MODE_AUTO, MODE_DARK, MODE_LIGHT, MODE_CUSTOM)
-    private val defaultCustomColor = 0xFF0F6F68.toInt()
+    fun getMode(context: Context): String = AppPrefs.getHomeObjectColorMode(context)
 
-    fun getMode(context: Context): String {
-        val stored = prefs(context).getString(KEY_MODE, MODE_AUTO)
-        return stored?.takeIf(validModes::contains) ?: MODE_AUTO
-    }
+    fun setMode(context: Context, mode: String) = AppPrefs.setHomeObjectColorMode(context, mode)
 
-    fun setMode(context: Context, mode: String) {
-        prefs(context).edit().putString(
-            KEY_MODE,
-            mode.takeIf(validModes::contains) ?: MODE_AUTO,
-        ).apply()
-    }
+    fun getCustomColor(context: Context): Int = AppPrefs.getHomeObjectCustomColor(context)
 
-    fun getCustomColor(context: Context): Int =
-        prefs(context).getInt(KEY_CUSTOM_COLOR, defaultCustomColor)
-
-    fun setCustomColor(context: Context, color: Int) {
-        prefs(context).edit().putInt(KEY_CUSTOM_COLOR, color or 0xFF000000.toInt()).apply()
-    }
-
-    private fun prefs(context: Context) =
-        context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+    fun setCustomColor(context: Context, color: Int) = AppPrefs.setHomeObjectCustomColor(context, color)
 }
 
 @Composable

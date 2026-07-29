@@ -298,7 +298,9 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Update multiple apps' category
+     * Update multiple apps' category — FINDING-003: tekli updateAppCategory() ile aynı
+     * sözleşme (rethrow). ViewModel katmanı DAO hatasını görmeden AppPrefs override,
+     * arama indeksi, dismissal/accepted-pattern ve puan yan etkilerini yazmamalı.
      */
     suspend fun updateAppsCategory(packageNames: List<String>, categoryId: String) {
         try {
@@ -318,9 +320,15 @@ class AppRepository @Inject constructor(
             Timber.d("Updated ${packageNames.size} apps to category $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating multiple apps")
+            throw e  // FINDING-003: ViewModel'e hata bildir, sessiz başarısızlık yapma
         }
     }
 
+    /**
+     * FINDING-003: tek çağıran (AppListViewModel.deleteCategory) zaten runCatching ile
+     * sarıyor ve başarısızlıkta deleteCategory/removeCategory'yi çalıştırmıyor — rethrow
+     * bu davranışı bozmaz, aksine önceden sessizce yutulan hatayı görünür kılar.
+     */
     suspend fun updateAppsCategoryAutomatically(packageNames: List<String>, categoryId: String) {
         try {
             appDao.updateAppsCategoryWithClassification(
@@ -339,6 +347,7 @@ class AppRepository @Inject constructor(
             Timber.d("Auto-updated ${packageNames.size} apps to category $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error auto-updating multiple apps")
+            throw e
         }
     }
 

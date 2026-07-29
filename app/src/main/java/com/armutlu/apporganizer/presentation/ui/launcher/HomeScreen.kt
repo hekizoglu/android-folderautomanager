@@ -813,7 +813,29 @@ fun HomeScreen(
                 { searchBarSection() }
             } else null,
             indicator = {
-                // Döngü P2.2 — indicator slotu boş; overlay'e taşındı (aşağıdaki overlays slotuna bak).
+                // Sayfa göstergesi HomeShell'in `indicator` slotunda render edilir: bu slot
+                // Column içinde pager'dan hemen sonra, ama folderOverlay/searchOverlay/overlays
+                // Box'larından ARKADA çizilir — klasör açıkken veya AllAppsDrawer/arama açıkken
+                // gösterge artık üstte görünmez (önceden `overlays` slotunda AllAppsDrawer'dan
+                // SONRA çizildiği için üstte kalıyordu).
+                val state = homePagerState
+                if (state != null && homePages.size > 1) {
+                    // Column akışında dock'tan hemen önce render edilir (eski absolute-positioned
+                    // BottomCenter Box'ın aksine artık DockHeight+44dp gibi bir "dock'un üstüne it"
+                    // padding'ine gerek yok — sıradaki eleman zaten dock).
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        HomePageIndicator(
+                            pages = homePages,
+                            pagerState = state,
+                            isOverlay = true
+                        )
+                    }
+                }
             },
             dock = {
                 // Döngü P20 — büyük tablette dock'un tüm ekran genişliğine yayılmaması için
@@ -1010,28 +1032,6 @@ fun HomeScreen(
                     )
                 }
 
-                // Döngü P2.2 — Sayfa göstergesi overlay (dock üzerine, Z: 1)
-                // Görseller 4-7dp, dokunma hedefi 48dp, dock 8dp üzerinde ortalanmış
-                val state = homePagerState
-                if (state != null && homePages.size > 1) {
-                    // Sabit 88dp yerine dock alanının gerçek token yüksekliği: DockHeight(64) +
-                    // dikey padding(24) + pill alanı(12) + 8dp boşluk — dock ile üst üste binmez.
-                    val indicatorBottomPadding =
-                        com.armutlu.apporganizer.presentation.ui.launcher.hero.HomeHeroTokens.DockHeight + 44.dp
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .padding(bottom = indicatorBottomPadding),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        HomePageIndicator(
-                            pages = homePages,
-                            pagerState = state,
-                            isOverlay = true
-                        )
-                    }
-                }
             },
             folderOverlay = {
                 // Döngü P0.3 — FolderScreen overlay entegrasyonu.

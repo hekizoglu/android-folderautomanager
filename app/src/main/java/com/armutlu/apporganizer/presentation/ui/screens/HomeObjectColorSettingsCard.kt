@@ -29,15 +29,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.StringRes
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.components.ColorPickerDialog
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeObjectStylePrefs
 
 private data class HomeObjectColorOption(
     val mode: String,
-    val label: String,
+    @StringRes val labelRes: Int,
     val preview: Color,
 )
 
@@ -51,10 +54,10 @@ internal fun HomeObjectColorSettingsCard() {
 
     val options = remember(customColorInt) {
         listOf(
-            HomeObjectColorOption(HomeObjectStylePrefs.MODE_AUTO, "Otomatik", Color(0xFF0D918A)),
-            HomeObjectColorOption(HomeObjectStylePrefs.MODE_DARK, "Koyu", Color(0xFF111820)),
-            HomeObjectColorOption(HomeObjectStylePrefs.MODE_LIGHT, "Açık Cam", Color(0xFFF3F5F7)),
-            HomeObjectColorOption(HomeObjectStylePrefs.MODE_CUSTOM, "Özel", Color(customColorInt)),
+            HomeObjectColorOption(HomeObjectStylePrefs.MODE_AUTO, R.string.home_object_color_auto, Color(0xFF0D918A)),
+            HomeObjectColorOption(HomeObjectStylePrefs.MODE_DARK, R.string.home_object_color_dark, Color(0xFF111820)),
+            HomeObjectColorOption(HomeObjectStylePrefs.MODE_LIGHT, R.string.home_object_color_light_glass, Color(0xFFF3F5F7)),
+            HomeObjectColorOption(HomeObjectStylePrefs.MODE_CUSTOM, R.string.home_object_color_custom, Color(customColorInt)),
         )
     }
 
@@ -64,12 +67,12 @@ internal fun HomeObjectColorSettingsCard() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = "Ana Ekran Öğe Rengi",
+                text = stringResource(R.string.home_object_color_title),
                 fontWeight = FontWeight.Medium,
                 fontSize = 15.sp,
             )
             Text(
-                text = "Arama alanı, dock, cam kartlar ve klasör arka planının renk uyumunu belirler.",
+                text = stringResource(R.string.home_object_color_description),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 lineHeight = 16.sp,
@@ -106,7 +109,7 @@ internal fun HomeObjectColorSettingsCard() {
                                 selectedMode = option.mode
                                 HomeObjectStylePrefs.setMode(context, option.mode)
                             },
-                            label = { Text(option.label, fontSize = 11.sp) },
+                            label = { Text(stringResource(option.labelRes), fontSize = 11.sp) },
                         )
                     }
                 }
@@ -114,7 +117,7 @@ internal fun HomeObjectColorSettingsCard() {
 
             if (selectedMode == HomeObjectStylePrefs.MODE_AUTO) {
                 Text(
-                    text = "Ana ekran arka planından uyumlu bir ton üretir; klasör ekranında aynı tonu daha koyu ve opak kullanır.",
+                    text = stringResource(R.string.home_object_color_auto_hint),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
                 )
@@ -122,7 +125,7 @@ internal fun HomeObjectColorSettingsCard() {
 
             if (selectedMode == HomeObjectStylePrefs.MODE_LIGHT) {
                 Text(
-                    text = "Cam yüzeyleri açar. Klasör zemini, beyaz yazıların okunabilmesi için güvenli koyu tonda kalır.",
+                    text = stringResource(R.string.home_object_color_light_hint),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp,
                 )
@@ -145,7 +148,7 @@ internal fun HomeObjectColorSettingsCard() {
                         onClick = { showColorPicker = true },
                         modifier = Modifier.weight(1f),
                     ) {
-                        Text("Özel renk seç", fontSize = 13.sp)
+                        Text(stringResource(R.string.home_object_color_pick_custom), fontSize = 13.sp)
                     }
                 }
             }

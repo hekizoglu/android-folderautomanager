@@ -256,6 +256,28 @@ class AppRepositoryTest {
         }
     }
 
+    @Test
+    fun `updateAppsCategory does not silently swallow dao exception`() = runTest {
+        // FINDING-003: toplu update artik tekli updateAppCategory ile ayni sozlesmeyi
+        // kullanir (rethrow) — ViewModel katmani DAO hatasini gormeden AppPrefs override,
+        // arama indeksi, dismissal/accepted-pattern ve puan yan etkilerini yazmamali.
+        coEvery {
+            mockAppDao.updateAppsCategoryWithClassification(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
+            )
+        } throws RuntimeException("bulk dao error")
+
+        var thrown: Throwable? = null
+        try {
+            repository.updateAppsCategory(listOf("com.a", "com.b"), "games")
+            advanceUntilIdle()
+        } catch (e: Throwable) {
+            thrown = e
+        }
+
+        assertTrue("updateAppsCategory should rethrow the dao exception", thrown is RuntimeException)
+    }
+
     // ── deleteApp ─────────────────────────────────────────────────────────────
 
     @Test

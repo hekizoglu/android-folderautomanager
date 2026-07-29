@@ -1009,6 +1009,15 @@
     <string name="home_section_ticker">Ticker and stats</string>
     <string name="home_section_folders">Folders</string>
     <string name="home_section_dock">Dock</string>
+    <string name="home_object_color_title">Home Screen Accent Color</string>
+    <string name="home_object_color_description">Sets the color tone for the search bar, dock, glass cards, and folder background.</string>
+    <string name="home_object_color_auto">Automatic</string>
+    <string name="home_object_color_dark">Dark</string>
+    <string name="home_object_color_light_glass">Light Glass</string>
+    <string name="home_object_color_custom">Custom</string>
+    <string name="home_object_color_auto_hint">Generates a tone that matches your home background; the folder screen uses a darker, opaque version of the same tone.</string>
+    <string name="home_object_color_light_hint">Lightens the glass surfaces. The folder background stays a safe dark tone so white text remains readable.</string>
+    <string name="home_object_color_pick_custom">Pick a custom color</string>
     <!-- Cycle P19: pager accessibility -->
     <string name="home_pager_position_suffix">Page %1$d / %2$d</string>
     <string name="home_pager_next_page_action">Next page</string>

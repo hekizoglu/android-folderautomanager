@@ -435,6 +435,9 @@ class AppListViewModel @Inject constructor(
     fun updateAppsCategory(packageNames: List<String>, categoryId: String) {
         viewModelScope.launch {
             try {
+                // FINDING-003: repository.updateAppsCategory artık DAO hatasında rethrow
+                // ediyor — bu satır atarsa aşağıdaki AppPrefs/arama indeksi/seçim temizleme
+                // yan etkileri hiç çalışmaz, catch bloğuna düşer.
                 repository.updateAppsCategory(packageNames, categoryId)
                 packageNames.forEach { packageName ->
                     AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
@@ -444,6 +447,7 @@ class AppListViewModel @Inject constructor(
                 Timber.d("Updated ${packageNames.size} apps to $categoryId")
             } catch (e: Exception) {
                 Timber.e(e, "Error updating apps category")
+                _screenState.value = _screenState.value.copy(error = "Uygulamalar taşınamadı")
             }
         }
     }
@@ -461,18 +465,25 @@ class AppListViewModel @Inject constructor(
         }
         viewModelScope.launch {
             val packageNames = apps.map { it.packageName }
-            repository.updateAppsCategory(packageNames, categoryId)
-            packageNames.forEach { packageName ->
-                AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
-                repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+            try {
+                // FINDING-003: repository başarısızsa aşağıdaki override/indeks/accepted-pattern/
+                // puan yan etkileri ve öneri listesi temizleme çalışmamalı — öneri korunur.
+                repository.updateAppsCategory(packageNames, categoryId)
+                packageNames.forEach { packageName ->
+                    AppPrefs.setManualCategoryOverride(getApplication(), packageName, categoryId)
+                    repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+                }
+                AppPrefs.addAcceptedOverridePattern(getApplication(), categoryId, packageNames)
+                TaskScoreManager.recordBulk(
+                    context = getApplication(),
+                    eventType = TaskScoreManager.EventType.SimilarAppsAccepted,
+                    itemCount = packageNames.size,
+                )
+                clearSimilarCategorySuggestions()
+            } catch (e: Exception) {
+                Timber.e(e, "Error accepting similar category suggestions")
+                _screenState.value = _screenState.value.copy(error = "Benzer uygulamalar taşınamadı")
             }
-            AppPrefs.addAcceptedOverridePattern(getApplication(), categoryId, packageNames)
-            TaskScoreManager.recordBulk(
-                context = getApplication(),
-                eventType = TaskScoreManager.EventType.SimilarAppsAccepted,
-                itemCount = packageNames.size,
-            )
-            clearSimilarCategorySuggestions()
         }
     }
 
@@ -484,18 +495,25 @@ class AppListViewModel @Inject constructor(
     fun acceptFolderSuggestion(suggestionId: String) {
         val suggestion = folderSuggestions.value.firstOrNull { it.id == suggestionId } ?: return
         viewModelScope.launch {
-            repository.updateAppsCategory(suggestion.packageNames, suggestion.targetCategoryId)
-            suggestion.packageNames.forEach { packageName ->
-                AppPrefs.setManualCategoryOverride(getApplication(), packageName, suggestion.targetCategoryId)
-                repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+            try {
+                // FINDING-003: repository başarısızsa dismiss/puan/refresh çalışmamalı —
+                // öneri listede kalır, kullanıcı tekrar deneyebilir.
+                repository.updateAppsCategory(suggestion.packageNames, suggestion.targetCategoryId)
+                suggestion.packageNames.forEach { packageName ->
+                    AppPrefs.setManualCategoryOverride(getApplication(), packageName, suggestion.targetCategoryId)
+                    repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+                }
+                AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
+                TaskScoreManager.recordBulk(
+                    context = getApplication(),
+                    eventType = TaskScoreManager.EventType.FolderSuggestionAccepted,
+                    itemCount = suggestion.packageNames.size.coerceAtLeast(1),
+                )
+                _folderSuggestionRefresh.value += 1
+            } catch (e: Exception) {
+                Timber.e(e, "Error accepting folder suggestion")
+                _screenState.value = _screenState.value.copy(error = "Klasör önerisi uygulanamadı")
             }
-            AppPrefs.dismissFolderSuggestion(getApplication(), suggestionId)
-            TaskScoreManager.recordBulk(
-                context = getApplication(),
-                eventType = TaskScoreManager.EventType.FolderSuggestionAccepted,
-                itemCount = suggestion.packageNames.size.coerceAtLeast(1),
-            )
-            _folderSuggestionRefresh.value += 1
         }
     }
 

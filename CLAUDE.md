@@ -45,6 +45,7 @@
    - Test geçiyor mu? (testDebugUnitTest, lint, detekt sonuç)
    - Git push başarılı mı? (remote'ta görülüyor mü?)
 4. **Kural ihlali sonuç:** İşaret kaldır, [x] → [ ], revert commit, kaynağı açıkla
+5. **UI/görsel değişiklik özel kuralı (D2026-07-29):** "Düzelttim" / "artık görünmüyor" gibi bir iddia SADECE şu ikisinden biriyle desteklenirse söylenebilir: (a) emülatör/cihazda gerçekten çalıştırılıp ekran görüntüsüyle doğrulandı, veya (b) build alınmadıysa açıkça "kodu değiştirdim ama build/test/emülatör ile doğrulamadım" denir — asla "düzelttim" gibi kesin dil kullanılmaz. Kod okuma/mantık yürütme ile "çalışıyor" arasındaki farkı gizleme. Aynı sorun ikinci kez bildirilirse önce önceki değişikliğin GERÇEKTEN doğru yere denk gelip gelmediğini (z-order, hangi Composable/slot, hangi koşul) satır satır yeniden doğrula — varsayımla ikinci bir "düzelttim" söyleme.
 5. **Hüseyin'in talebi:** "tüm görevler için geçerli bu bunu kural olarak yaz" → ZORUNLU ve kalıcı
 
 ### Yeni Özellik = Ayarlar Kuralı

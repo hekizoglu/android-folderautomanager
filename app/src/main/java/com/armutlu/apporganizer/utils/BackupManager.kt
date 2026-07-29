@@ -96,6 +96,8 @@ object BackupManager {
                     put("folderSizeDp", AppPrefs.getFolderSizeDp(context))
                     put("bgType", AppPrefs.getBgType(context))
                     put("bgColor", AppPrefs.getBgColor(context))
+                    put("homeObjectColorMode", AppPrefs.getHomeObjectColorMode(context))
+                    put("homeObjectCustomColor", AppPrefs.getHomeObjectCustomColor(context))
                     put("textAlpha", AppPrefs.getTextAlpha(context))
                     put("iconScale", AppPrefs.getIconScale(context))
                     put("pageSize", AppPrefs.getPageSize(context))
@@ -349,6 +351,9 @@ object BackupManager {
                     s.optString("bgType").takeIf { it.isNotEmpty() }
                         ?.let { AppPrefs.setBgType(context, it) }
                     if (s.has("bgColor")) AppPrefs.setBgColor(context, s.getInt("bgColor"))
+                    s.optString("homeObjectColorMode").takeIf { it.isNotEmpty() }
+                        ?.let { AppPrefs.setHomeObjectColorMode(context, it) }
+                    if (s.has("homeObjectCustomColor")) AppPrefs.setHomeObjectCustomColor(context, s.getInt("homeObjectCustomColor"))
                     if (s.has("textAlpha")) AppPrefs.setTextAlpha(context, s.getDouble("textAlpha").toFloat())
                     if (s.has("iconScale")) AppPrefs.setIconScale(context, s.getDouble("iconScale").toFloat())
                     if (s.has("pageSize")) AppPrefs.setPageSize(context, s.getInt("pageSize"))

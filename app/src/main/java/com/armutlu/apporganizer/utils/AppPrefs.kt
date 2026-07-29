@@ -494,6 +494,45 @@ object AppPrefs {
     fun getBgColor(context: Context): Int = prefs(context).getInt(KEY_BG_COLOR, 0xFF1A1A2E.toInt())
     fun setBgColor(context: Context, color: Int) = prefs(context).edit().putInt(KEY_BG_COLOR, color).apply()
 
+    // Ana ekran öğe rengi — cam yüzeyler ve klasör zemini için ortak mod. Değerler:
+    // "auto" | "dark" | "light" | "custom". HomeObjectStylePrefs bu API'ye delege eder.
+    const val KEY_HOME_OBJECT_COLOR_MODE = "home_object_color_mode"
+    const val HOME_OBJECT_COLOR_MODE_AUTO = "auto"
+    const val HOME_OBJECT_COLOR_MODE_DARK = "dark"
+    const val HOME_OBJECT_COLOR_MODE_LIGHT = "light"
+    const val HOME_OBJECT_COLOR_MODE_CUSTOM = "custom"
+    private val homeObjectColorModes = setOf(
+        HOME_OBJECT_COLOR_MODE_AUTO,
+        HOME_OBJECT_COLOR_MODE_DARK,
+        HOME_OBJECT_COLOR_MODE_LIGHT,
+        HOME_OBJECT_COLOR_MODE_CUSTOM,
+    )
+
+    /** Context'siz saf normalize kuralı — geçersiz/null mod her zaman auto'ya düşer. */
+    fun resolveHomeObjectColorMode(stored: String?): String =
+        stored?.takeIf(homeObjectColorModes::contains) ?: HOME_OBJECT_COLOR_MODE_AUTO
+
+    fun getHomeObjectColorMode(context: Context): String =
+        resolveHomeObjectColorMode(prefs(context).getString(KEY_HOME_OBJECT_COLOR_MODE, HOME_OBJECT_COLOR_MODE_AUTO))
+
+    fun setHomeObjectColorMode(context: Context, mode: String) {
+        prefs(context).edit().putString(KEY_HOME_OBJECT_COLOR_MODE, resolveHomeObjectColorMode(mode)).apply()
+    }
+
+    // Ana ekran öğe özel rengi — ARGB int, alpha her zaman opak zorlanır.
+    const val KEY_HOME_OBJECT_CUSTOM_COLOR = "home_object_custom_color"
+    private val HOME_OBJECT_CUSTOM_COLOR_DEFAULT = 0xFF0F6F68.toInt()
+
+    /** Context'siz saf normalize kuralı — alpha kanalı her zaman opak (0xFF) zorlanır. */
+    fun resolveHomeObjectCustomColor(color: Int): Int = color or 0xFF000000.toInt()
+
+    fun getHomeObjectCustomColor(context: Context): Int =
+        prefs(context).getInt(KEY_HOME_OBJECT_CUSTOM_COLOR, HOME_OBJECT_CUSTOM_COLOR_DEFAULT)
+
+    fun setHomeObjectCustomColor(context: Context, color: Int) {
+        prefs(context).edit().putInt(KEY_HOME_OBJECT_CUSTOM_COLOR, resolveHomeObjectCustomColor(color)).apply()
+    }
+
     // Yazı/ikon etiket transparanlığı — 0.0-1.0 (1.0 = tam opak)
     const val KEY_TEXT_ALPHA = "text_alpha"
     fun getTextAlpha(context: Context): Float = prefs(context).getFloat(KEY_TEXT_ALPHA, 1.0f)
