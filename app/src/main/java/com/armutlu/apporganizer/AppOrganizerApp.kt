@@ -5,6 +5,9 @@ import android.app.Application
 import android.content.pm.PackageManager
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
+import com.armutlu.apporganizer.domain.usecase.missions.MissionWorkScheduler
+import com.armutlu.apporganizer.domain.usecase.missions.SettleMissionInstancesUseCase
+import com.armutlu.apporganizer.telemetry.TelemetryConsentManager
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.FilesIndexWorkCoordinator
@@ -15,12 +18,12 @@ import com.armutlu.apporganizer.workers.SuggestionNotificationWorker
 import com.armutlu.apporganizer.workers.TickerHistoryCleanupWorker
 import com.armutlu.apporganizer.workers.WeeklyDigestWorker
 import com.google.firebase.FirebaseApp
-import com.armutlu.apporganizer.telemetry.TelemetryConsentManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -29,7 +32,8 @@ class AppOrganizerApp : Application() {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface MissionSchedulerEntryPoint {
-        fun missionWorkScheduler(): com.armutlu.apporganizer.domain.usecase.missions.MissionWorkScheduler
+        fun missionWorkScheduler(): MissionWorkScheduler
+        fun settleMissionInstancesUseCase(): SettleMissionInstancesUseCase
     }
 
     override fun onCreate() {
@@ -66,14 +70,32 @@ class AppOrganizerApp : Application() {
                 if (AppPrefs.isSuggestionNotificationsEnabled(this)) {
                     SuggestionNotificationWorker.schedule(this)
                 }
-                // Dongu M04 — bir sonraki donem sinirina (gece yarisi/hafta baslangici) tek
-                // seferlik gorev sonuclandirma isi planlanir; worker kendini zincirleme yeniden
-                // planlar (bkz. MissionSettlementWorker.doWork -> scheduler.scheduleNext()).
+
+                // Uygulama WorkManager sinir isinden once acilirsa veya onceki surumde is yanlislikla
+                // ertelenmisse, donemi bitmis instance'lari hemen telafi et. Bu kod zaten ilk frame
+                // disindaki app-init-bg thread'inde calisir; runBlocking ana thread'i bloke etmez.
                 runCatching {
-                    EntryPointAccessors.fromApplication(this, MissionSchedulerEntryPoint::class.java)
-                        .missionWorkScheduler()
-                        .scheduleNext()
-                }.onFailure { Timber.w(it, "MissionWorkScheduler baslatilamadi") }
+                    val missionEntryPoint = EntryPointAccessors.fromApplication(
+                        this,
+                        MissionSchedulerEntryPoint::class.java,
+                    )
+                    val catchUpResult = runBlocking {
+                        missionEntryPoint.settleMissionInstancesUseCase()
+                            .settleOverdue(System.currentTimeMillis())
+                    }
+                    Timber.d(
+                        "Mission startup catch-up: settled=${catchUpResult.settledCount} " +
+                            "stars=${catchUpResult.starsAwarded} failures=${catchUpResult.failures} " +
+                            "dataUnavailable=${catchUpResult.dataUnavailable} " +
+                            "retryLater=${catchUpResult.skippedRetryLater}",
+                    )
+
+                    // Uygulama acilisinda REPLACE KULLANILMAZ. Mevcut gecikmis/aktif sinir isi KEEP
+                    // ile korunur; worker kendi basarili calismasindan sonra scheduleNext() ile
+                    // zinciri bir sonraki sinira tasir.
+                    missionEntryPoint.missionWorkScheduler().ensureNextScheduled()
+                }.onFailure { Timber.w(it, "Mission settlement catch-up/scheduler baslatilamadi") }
+
                 CategoryDbUpdateWorker.schedule(this)
                 // Ticker arşivi ("Tüm haberler") günlük temizlik — 7 günden eski kayıtlar silinir.
                 TickerHistoryCleanupWorker.schedule(this)

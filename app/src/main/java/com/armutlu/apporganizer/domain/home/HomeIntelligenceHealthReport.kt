@@ -18,6 +18,16 @@ object HomeIntelligenceHealthReport {
 
     val SETTLEMENT_STALE_THRESHOLD_MS: Long = 26L * 60 * 60 * 1000
 
+    /**
+     * DigitalPulse skoru gunluk davranis verisinden uretilir; bildirim gibi anlik bir akista degildir.
+     * Eski 5/30 dakikalik esikler, gece hesaplanan saglikli snapshot'i sabah gereksiz yere STALE
+     * isaretliyordu. Iki saate kadar LIVE, yuksek/normal guvende 18 saate kadar RECENT kabul edilir.
+     * Dusuk guvenli veri ise eski davranistaki gibi daha sikı izlenir ve 30 dakikada STALE olur.
+     */
+    val DIGITAL_LIFE_LIVE_THRESHOLD_MS: Long = 2L * 60 * 60 * 1000
+    val DIGITAL_LIFE_STALE_THRESHOLD_MS: Long = 18L * 60 * 60 * 1000
+    val DIGITAL_LIFE_LOW_CONFIDENCE_STALE_THRESHOLD_MS: Long = 30L * 60 * 1000
+
     data class Input(
         val homeIntelligenceState: HomeIntelligenceState,
         val settlementLastSucceededAt: Long,
@@ -129,7 +139,7 @@ object HomeIntelligenceHealthReport {
             is HomeDataResult.Stale -> pulseResult.value.snapshot
             else -> null
         }
-        val freshness = freshnessOf(snapshot?.computedAt, input.now)
+        val freshness = freshnessOf(snapshot?.computedAt, input.now, snapshot?.score?.confidence)
         if (freshness == DataFreshness.STALE || freshness == DataFreshness.UNAVAILABLE) {
             warnings += HomeErrorCodes.DIGITAL_LIFE_DATA_STALE
         }
@@ -219,12 +229,22 @@ object HomeIntelligenceHealthReport {
         is HomeDataResult.Failed -> SourceHealth.FAILED
     }
 
-    private fun freshnessOf(computedAt: Long?, now: Long): DataFreshness {
+    private fun freshnessOf(
+        computedAt: Long?,
+        now: Long,
+        confidence: DataConfidence?,
+    ): DataFreshness {
         if (computedAt == null || computedAt <= 0L) return DataFreshness.UNAVAILABLE
         val ageMs = now - computedAt
+        val staleThreshold = if (confidence == DataConfidence.LOW) {
+            DIGITAL_LIFE_LOW_CONFIDENCE_STALE_THRESHOLD_MS
+        } else {
+            DIGITAL_LIFE_STALE_THRESHOLD_MS
+        }
+        val liveThreshold = minOf(DIGITAL_LIFE_LIVE_THRESHOLD_MS, staleThreshold)
         return when {
-            ageMs <= 5 * 60 * 1000L -> DataFreshness.LIVE
-            ageMs <= 30 * 60 * 1000L -> DataFreshness.RECENT
+            ageMs <= liveThreshold -> DataFreshness.LIVE
+            ageMs <= staleThreshold -> DataFreshness.RECENT
             else -> DataFreshness.STALE
         }
     }

@@ -18,7 +18,7 @@ import javax.inject.Singleton
  * daha yakinsa) tek seferlik `MissionSettlementWorker` isi planlar. Exact alarm KULLANILMAZ —
  * WorkManager'in normal (Doze/battery-aware) zamanlamasina birakilir; roadmap'in "WorkManager tam
  * zamaninda calismazsa HOME_RESUME sirasinda catch-up settlement yapilir" kurali bu gecikmeyi
- * tolere eder (bkz. MissionsViewModel.computeAndAward -> settleOverdue catch-up cagrisi).
+ * tolere eder.
  */
 @Singleton
 class MissionWorkScheduler @Inject constructor(
@@ -37,8 +37,24 @@ class MissionWorkScheduler @Inject constructor(
         }
     }
 
-    /** Bir sonraki donem sinirina tek seferlik isi (yeniden) planlar — ExistingWorkPolicy.REPLACE. */
+    /**
+     * Uygulama acilisinda mevcut aktif isi KORUR. REPLACE kullanmak, WorkManager'in Doze nedeniyle
+     * gecikmis ama hala ENQUEUED olan gece yarisi isini her uygulama acilisinda ertesi gune
+     * itiyordu. KEEP ile kacirilmis isin uygulama yeniden acildiginda calismasina izin verilir.
+     */
+    fun ensureNextScheduled() {
+        enqueueNext(ExistingWorkPolicy.KEEP)
+    }
+
+    /**
+     * Settlement worker tamamlandiktan sonra zincirin yeni donem sinirina tasinmasi icin kullanilir.
+     * Burada REPLACE bilincli olarak korunur; tamamlanan sinira ait kayit yerine yeni sinir yazilir.
+     */
     fun scheduleNext() {
+        enqueueNext(ExistingWorkPolicy.REPLACE)
+    }
+
+    private fun enqueueNext(existingWorkPolicy: ExistingWorkPolicy) {
         val nowMillis = clock.millis()
         val nextMidnight = periodBoundaryResolver.nextLocalMidnight()
         val nextWeekBoundary = periodBoundaryResolver.nextWeekBoundary()
@@ -56,7 +72,7 @@ class MissionWorkScheduler @Inject constructor(
 
         WorkManager.getInstance(context).enqueueUniqueWork(
             WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
+            existingWorkPolicy,
             request,
         )
     }
