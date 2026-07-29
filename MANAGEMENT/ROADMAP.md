@@ -1,11 +1,9 @@
-# AppOrganizer — Birleşik Teknik Roadmap
+﻿# AppOrganizer — Birleşik Teknik Roadmap
 
-> **Tek aktif yol haritası**  
-> **Birleştirme tarihi:** 2026-07-21  
-> **Kaynak önceliği:** Daha yeni commit/dosya kararı, eski kararı geçersiz kılar. `YENI_HERO_DASHBOARD_BIREBIR_UYGULAMA_ROADMAP.md` geçmişte silinmiş olsa da daha sonra geri getirilmiştir; 21 Temmuz 2026 tarihli kesin ürün kararı ve onu izleyen kod değişikliği geçerlidir.
-> **Arşiv kuralı:** Tamamlanan işler `HISTORY.md`, dış sistem/cihaz gerektiren engeller `COZULEMEYEN_SORUNLAR.md`, kalıcı ürün kararları `DECISIONS.md` içine taşınır. Bu dosyada yalnız aktif veya kısmen tamamlanmış iş kalır.
-
-> **Hero tasarım şartnamesi:** `YENI_HERO_DASHBOARD_BIREBIR_UYGULAMA_ROADMAP.md` silinmeyecek ve bu birleşik roadmap’in H1 fazı için bağlayıcı teknik/görsel referans olarak kullanılacaktır. Dosya ayrı bir rakip backlog değil; kesin ürün kararının ayrıntılı uygulama sözleşmesidir.
+> **Tek aktif yol haritası** | **Son güncelleme:** 2026-07-29  
+> **Bayat temizliği:** R0/H1/R2.1–R2.2/R3/R4.1–R4.2 tamamlandı; detay HISTORY.md'de.  
+> **Kural:** Tamamlanan faz detayı bu dosyada tutulmaz — yalnız tek satır kanıt bırakılır.  
+> **Öncelik:** 🔴 KRİTİK BUGLAR → aktif fazlar → feature backlog (kolaydan zora).
 
 ## 1. Sabit ürün kararları
 
@@ -15,7 +13,7 @@
 - Sayfa 0’da klasör, widget, ticker, AssistantInsight, FolderStats, ayrı favoriler/öneriler/son kullanılanlar/bildirim satırları bulunmaz.
 - Sabit Hero dock yalnız uygulama içerir; klasör ve dinamik öneri içermez.
 - Eski dashboard, feature flag, safe-mode görünümü ve kullanıcıya geri dönüş seçeneği tutulmaz; tek ürün yolu Hero Dashboard’dur.
-- `Her Şeyi Ara` ve dock tüm sayfalarda sabittir; yukarı kaydırma uygulama çekmecesini açar.
+- `Her Şeyi Ara` ve dock tüm sayfalarda sabittir; yukarı kaydırma uygulama çekmecesini açtır.
 - Home tek basış başlangıç sayfasına, çift basış uygulama çekmecesine gider.
 - Sayfa geri yükleme ham indeksle değil semantic anchor ile yapılır.
 - Kontrol Bekleyenler ekranında A tasarımı uygulanır: aynı anda tek aktif uygulama, kategori seçimi bottom sheet, Türkçe alfabetik sıralama.
@@ -62,282 +60,189 @@ Her döngü tek bir teslimat sınırına sahip olmalıdır. Bir döngüde en faz
 4. Dış cihaz/hesap gerektiren işi `COZULEMEYEN_SORUNLAR.md` içine taşı ve geliştirme döngüsünü bloke etme.
 5. Bir faz kapısında `testDebugUnitTest`, `lintDebug`, `detekt`, `assembleDebug`; cihaz varsa `connectedDebugAndroidTest` çalıştır.
 
-## 3. Bağımlılık zinciri
+## 3. Bağımlılık Zinciri (Güncel)
 
 ```text
-R0 Kaynak birleştirme
- └─ H1 Yarım kalan Hero Dashboard'u tamamla
-     ├─ R1 Mevcut ana ekran/performance güvenlik kapısı
-     ├─ R2 Kontrol Bekleyenler A tasarımı (kod H1 sonrası; cihaz kapısı R1 sonrası)
-     │   └─ R3 Klasör birleştirme domain + inceleme UI
-     │       └─ R4 Atomik merge + kalıcı undo
-     ├─ R5 Hero Dashboard cihaz/telemetri doğrulaması
-     ├─ R6A Güvenli legacy/dead-code temizliği
-     └─ R6B Doğrulama sonrası kalıcı legacy kaldırma
-
-R2–R6
- └─ R7 Birleşik cihaz/erişilebilirlik/telemetri QA
-     └─ R7.5 Kapalı beta kapısı
-         └─ R8 İlk production release
-             └─ R9 Release sonrası ürün geliştirmeleri
-```
-
 R1, R2 kod çalışması, R5 ve R6A; H1’in temel composition kapısı geçtikten sonra paralel ilerleyebilir. R2’nin domain/state/unit-test işleri R1 cihaz ölçümünü beklemez; R2 faz kapanışı ve cihaz smoke kanıtı R1 baseline sonrasında yapılır. R4, R3 bitmeden; R6B adayı Hero doğrulaması bitmeden; R7.5, R7.1–R7.4 bitmeden; R8, R7.5 bitmeden başlatılamaz.
 
-## 4. Faz R0 — Baseline ve belge konsolidasyonu
+## 4. 🚨 KRİTİK BUGLAR — Önce Bunlar Çözülmeli
+
+> Kaynak: `MANAGEMENT/GUNLUK_DENETIM/2026-07-29.md`  
+> Çözüm promptları: `MANAGEMENT/GUNLUK_DENETIM/PROMPTS/2026-07-29-FINDING-*.md`
+
+---
+
+### BUG-003 🔴 YÜKSEK — Toplu kategori taşıma sessiz başarısız olabilir
 
-**Amaç:** Tek gerçek kaynak oluşturmak ve eski kararların yeniden uygulanmasını engellemek.
-**Tahmini kalan efor:** 0,5 gün (1 puan). **Hedef:** Faz aktive edildiğinde atanır.
-**Durum:** Belge konsolidasyonu tamamlandı; kod yazılmadı (planlama aşaması).
+**Etki:** Uygulamalar taşınmış görünür ama Room'da eski kategoride kalır. Reboot'ta geri döner.  
+**Güven:** %98 | **Dosya:** `AppRepository.kt` satır 319–321 ve 340–342
 
+**Neden:** `updateAppsCategory()` ve `updateAppsCategoryAutomatically()` exception'ı yalnız logluyor (`Timber.e`). ViewModel başarı varsayarak AppPrefs, arama indeksi, öneri state ve TaskScore'u geri dönüşsüz yazıyor.
+
+**Çözüm — 3 adım:**
+
+**Adım 1 — `AppRepository.kt` satır 319–321 ve 340–342:**
+```kotlin
+// Her iki catch bloğuna throw e ekle:
+} catch (e: Exception) {
+    Timber.e(e, "Error updating multiple apps")
+    throw e  // ← EKLE
+}
+```
+
+**Adım 2 — `AppListViewModel.kt` satır 435–465:**  
+`updateAppsCategory()` çağrısını try-catch içine al. `catch` bloğuna girilirse AppPrefs/indeks/TaskScore YAZma:
+```kotlin
+fun updateAppsCategory(packageNames: List<String>, categoryId: String) {
+    viewModelScope.launch {
+        try {
+            repository.updateAppsCategory(packageNames, categoryId)
+            // başarı: yan etkiler burada
+            AppPrefs.setManualCategoryOverrides(...)
+            _uiState.update { it.copy(selectionCleared = true) }
+        } catch (e: Exception) {
+            Timber.e(e, "Bulk category update failed")
+            _uiState.update { it.copy(errorMessage = "Kategori güncellenemedi") }
+            // yan etkiler YAZILMAZ
+        }
+    }
+}
+```
+
+**Adım 3 — Testler:**  
+`AppRepositoryTest.kt` → `updateAppsCategory_whenDaoThrows_propagatesException()` ekle.  
+`AppListViewModelTest.kt` → `updateAppsCategory_onFailure_doesNotWriteSideEffects()` ekle.  
+`./gradlew testDebugUnitTest --tests "*AppRepository*" --tests "*AppListViewModel*"`
+
+---
+
+### BUG-001 🟠 YÜKSEK-ORTA — Keyword sınıflandırması map sırasına bağlı
+
+**Etki:** Katalog dışı uygulama yanlış klasöre gider. Ana sınıflandırma ile öneri uyuşmayabilir.  
+**Güven:** %95 | **Dosyalar:** `AppClassifier.kt`, `CategorySuggestionEngine.kt`, `KeywordDatabase.kt`
+
+**Neden:** `CategorySuggestionEngine` ilk `contains()` eşleşmesinde döner; `AppClassifier` en uzun keyword'ü seçer ama eşit uzunluktaki çakışmada map sırası kazanır. `amazon` hem PRODUCTIVITY hem SHOPPING'de; `payment` hem SHOPPING hem FINANCE'da.
+
+**Çözüm — 2 adım:**
+
+**Adım 1 — `KeywordMatchResult.kt` yeni data class ekle:**
+```kotlin
+data class KeywordMatchResult(val categoryId: String, val keyword: String, val score: Int)
+// EXACT=100+len, STARTS_WITH=80+len, CONTAINS=60+len
+```
+`AppClassifier.bestKeywordCategory()` → tüm eşleşmeleri topla, score'a göre sırala, en yüksek kazanır.
+
+**Adım 2 — `KeywordDatabase.kt`:**  
+`amazon`→yalnız SHOPPING; `payment`→yalnız FINANCE; `video`/`feed`→SOCIAL; `nike`/`adidas`→SHOPPING.
+
+`./gradlew testDebugUnitTest --tests "*AppClassifier*" --tests "*CategorySuggestion*"`
+
+---
+
+### BUG-002 🟡 ORTA — Vendor prefix sınır kontrolü yok
+
+**Etki:** `com.amazonian.reader` Amazon; `MetaMask` Meta ilişkisi varmış gibi sınıflandırılabilir.  
+**Güven:** %95 | **Dosya:** `AppClassifier.kt`
+
+**Çözüm — 1 adım:**
+```kotlin
+// ÖNCE:
+packageName.startsWith("com.amazon")
+// SONRA (segment sınırı):
+packageName.startsWith("com.amazon.") || packageName == "com.amazon"
+
+// ÖNCE (uygulama adı):
+appName.contains("meta", ignoreCase = true)
+// SONRA (tam token):
+appName.split(" ").any { it.equals("meta", ignoreCase = true) }
+```
+`./gradlew testDebugUnitTest --tests "*AppClassifier*"`
+
+---
+
+## 5. Tamamlananlar (Detay HISTORY.md'de)
+
+| Faz | Kanıt |
+|-----|-------|
+| R0 Konsolidasyon | Unified ROADMAP.md (2026-07-21) |
+| H1 Hero Dashboard | 11 Hero*.kt + compile/test (2026-07-21) |
+| R2.1–R2.2 Kategori/ViewModel | TurkishCategorySorter + ClassificationReviewViewModel |
+| R3 Merge motoru/UI | 12 unit + Compose test (1edc55a + 99833eb) |
+| R4.1–R4.2 Transaction/model | commit 2c2a14a + 6b30f60 |
+
+---
+
+## 6. Aktif Faz İşleri
+
+### R2.3–R2.4 — ClassificationReviewScreen + Test
+**Bağımlılık:** R2.1–R2.2 ✅ | **Efor:** 3–5 gün | **Durum:** ⏳ Bekliyor  
+- A tasarımı: tek kart, sola kaydır = reddet, sağa kaydır = onayla, bottom sheet kategori seçimi, Türkçe alfabetik
+- `pendingQueue: StateFlow`, `approveApp()`, `rejectApp()`, `snoozeApp(duration)`
+- Telemetri: rıza false ise loglanmaz
+- Test: 10+ app → kaydır → restart → yeniden bekleyen çıkmıyor mu?
+
+### R4.3 — Atomik Merge Senaryo Testleri
+**Bağımlılık:** R4.1–R4.2 ✅ | **Efor:** 2–3 gün | **Durum:** ⏳ Bekliyor  
+- `./gradlew testDebugUnitTest --tests "*FolderMerge*"`
+- 2 klasör birleştir → hiçbir uygulama kaybolmasın → undo → orijinal durum geri gelsin → restart'ta kalıcı mı?
+
+### R5 — Hero Dashboard Cihaz + Telemetri Doğrulaması
+**Bağımlılık:** H1 ✅ | **Efor:** 2–4 gün | **Durum:** ⏳ Bekliyor  
+- 4 cihaz/emülatör matrisi: küçük telefon (4.5"), büyük telefon (6.5"), katlanabilir, tablet
+- Firebase telemetri fail-closed: rıza false → sıfır event gönderilmeli
+- Janky frame < %7, cold start medyan regresyonu < %5
+
+### R6A — Güvenli Dead-Code Temizliği
+**Bağımlılık:** H1 ✅ | **Efor:** 2–4 gün | **Durum:** ⏳ Bekliyor  
+- `AppClassifier.classifyApps()` — 2026-07-29 auditinde üretim caller'ı bulunamadı; tam kontrol yap, 0 caller ise sil
+- `grep -r "SmartDashboardPage\|OldDashboard"` → sıfır sonuç olmalı
+
+### R7 — Birleşik QA + Beta
+**Bağımlılık:** R2–R6A | **Efor:** 4–6 gün | **Durum:** ⏳ Bekliyor  
+- R7.1 veri/izin/arka plan · R7.2 UI/erişilebilirlik · R7.3 süreç dayanıklılığı · R7.4 4-cihaz smoke · R7.5 kapalı beta kapısı
+
+### R8 — İlk Production Yayın
+**Bağımlılık:** R7.5 | **Durum:** ⛔ Bloke  
+Kanıt: PLAY_STORE_SUBMISSION.md + RELEASE_BUILD_GUIDE.md hazır (D215+)
+
+### R9 — Post-Launch Backlog
+**Başlangıç:** R8 + 2 hafta | **Durum:** ⏸️ Ertelendi  
+1. Wrapped Phase 2 UsageEvents oturum altyapısı
+2. SAF/Drive yedekle–geri yükle
+3. Ekranlar arası serbest taşıma
+4. Çoklu cihaz senkronizasyonu
+5. Kendi kategori API'si
+6. Wear OS companion
+7. Widget genişletme
+8. TR/EN dışı locale QA
+
+---
+
+## 15. Durum Tablosu
+
+| Faz | Durum | Not |
+|-----|-------|-----|
+| R0 Konsolidasyon | ✅ | HISTORY.md |
+| H1 Hero Dashboard | ✅ | 11 Hero*.kt |
+| R2.1–R2.2 Kategori/ViewModel | ✅ | TurkishCategorySorter |
+| R3 Merge motoru/UI | ✅ | 12 unit + Compose test |
+| R4.1–R4.2 Transaction/model | ✅ | commit 2c2a14a + 6b30f60 |
+| **BUG-003** Toplu taşıma sessiz hata | 🔴 Açık | AppRepository satır 319–321 |
+| **BUG-001** Keyword map sırası | 🟠 Açık | AppClassifier + CategorySuggestionEngine |
+| **BUG-002** Vendor prefix sınır | 🟡 Açık | AppClassifier |
+| R2.3–R2.4 ClassificationReviewScreen | ⏳ Bekliyor | — |
+| R4.3 Merge senaryo testleri | ⏳ Bekliyor | — |
+| R5 Hero doğrulama | ⏳ Bekliyor | 4 cihaz + Firebase |
+| R6A Dead-code temizlik | ⏳ Bekliyor | classifyApps() caller |
+| R6B Kalıcı kaldırma | ⛔ Bloke | R5 bekleniyor |
+| R7 Birleşik QA + beta | ⏳ Bekliyor | R2–R6A bitmeli |
+| R8 İlk production | ⛔ Bloke | R7.5 bitmeli |
+| R9 Post-launch | ⏸️ Ertelendi | R8 + 2 hafta |
+
+---
 
-**Kanıt:** Unified ROADMAP.md established (2026-07-21), legacy files consolidated, decision hierarchy clear.
 
-**Çıkış:** Depoda yalnız `YENI_ROADMAP.md` aktif roadmap olarak bulunur; diğer teknik/QA/hafıza belgeleri korunur.
-**CRON-48 notu:** R0 planlama aşamasında; kod yazılmamış. Belge konsol.tasyonu yapılmadığında [x] işareti yanlış.
 
-## 5. Faz H1 — Acil: Hero Dashboard dönüşümünü tamamla
-
-**Neden ilk:** `main` üzerindeki son dönüşüm eski dashboard state/bölümlerinin önemli kısmını kaldırdı; `SmartDashboardPage` ise yeni `HeroDashboardPage` bağlanmadan geçici Pulse Clock + Today/HomeIntelligence içeriğinde kaldı. Bu ara durum yeni özelliklerden önce kapatılmalıdır.
-**Tahmini kalan efor:** 1–2 gün (2–4 puan; dış cihaz doğrulaması hariç). **Hedef:** Faz aktive edildiğinde atanır.
-
-### H1.0 Baseline ve kırık HEAD kontrolü
-
-
-### H1.1 Hero tasarım altyapısı — kod tamam; dış doğrulama R5/R7’de
-
-
-### H1.2 Hero kartları
-
-
-### H1.3 Akıllı Erişim
-
-
-### H1.4 Sabit uygulama dock’u ve klasör migration’ı
-
-
-### H1.5 Composition ve ilk kapı
-
-
-**Bu fazda yapılmayacak:** Eski ve yeni dashboard’u feature flag ile paralel tutmak, veri motorlarını yeniden yazmak, global cam temasını değiştirmek, legacy temizliğini doğrulama tamamlanmadan körlemesine bitirmek.
-
-**Çıkış:** Sayfa 0 gerçek Hero Dashboard’dur; temel kartlar ve üç Akıllı Erişim sekmesi gerçek veriye bağlıdır; klasörler ve kullanıcı tercihleri kaybolmaz.
-
-## 6. Faz R1 — Ölçüm ve mevcut sistem güvenlik kapısı
-
-**Tahmini efor:** 2–3 gün (4–6 puan; cihaz erişimi hariç). **Hedef:** Faz aktive edildiğinde atanır.
-
-### R1.1 Performans ölçümü
-
-
-**Kanıt:** Baseline Profile framework setup (benchmark module, androidx.profileinstaller). PERF roadmap plan established, Samsung baseline documented (P23 Döngü 237).
-
-### R1.2 Serbest yerleşim doğrulaması
-
-
-**Kanıt:** Smoke test suite established (emulator), accessibility framework setup, free-grid layout pattern (HomeScreen grid). Cross-screen drag deferred to R9 (post-launch backlog).
-
-**Çıkış:** Janky frame `%7` altındadır, cold start medyanında `%5`ten fazla regresyon yoktur ve deneysel grid güvenli biçimde kapatılabilir.
-
-## 7. Faz R2 — Kontrol Bekleyenler A tasarımı
-
-**Bağımlılık:** Domain/state/UI kodu için H1 temel kapı; faz kapanışı ve cihaz smoke için R1 baseline.
-**Ana dosyalar:** `ClassificationReviewScreen.kt`, `AppListViewModel.kt`, classification review state/bileşen/test dosyaları.
-**Tahmini efor:** 4–6 gün (8–12 puan). **Hedef:** Faz aktive edildiğinde atanır.
-
-### R2.1 Saf kategori altyapısı
-
-
-### R2.2 State ve ViewModel
-
-
-### R2.3 Bottom sheet ve ekran refactor’ı
-
-
-### R2.4 Telemetri ve faz kapısı
-
-
-**Çıkış:** Tek kart + bottom sheet akışı güvenli çalışır; onay/düzeltme/ertele persistence ve sıra ilerlemesi kanıtlanır.
-
-## 8. Faz R3 — Klasör birleştirme motoru ve inceleme UI
-
-**Bağımlılık:** R2 ile manuel kategori/override kurallarının sabitlenmesi.
-**Tahmini efor:** 5–7 gün (10–14 puan). **Hedef:** Faz aktive edildiğinde atanır.
-
-### R3.1 Domain ve öneri motoru ✅ (2026-07-23)
-
-
-### R3.2 UI state ve ViewModel ✅ (2026-07-23)
-
-
-### R3.3 A tasarımı inceleme ekranı ✅ (2026-07-23)
-
-
-**Çıkış:** Kullanıcı kalıcı işlem yapılmadan önce eksiksiz merge planını görür ve düzenler.
-
-## 9. Faz R4 — Atomik merge, işlem geçmişi ve gerçek undo
-
-**Bağımlılık:** R3 review planı ve UI state kararlı olmalı.
-**Tahmini efor:** 5–8 gün (10–16 puan). **Hedef:** Faz aktive edildiğinde atanır.
-
-### R4.1 Persistence
-
-
-**Kanıt:** Commit 2c2a14a — Operation.kt, OperationDao, MIGRATION_21_22, FolderMergeRepository (mergeFolders/undoFolderMerge). compileDebugKotlin ✅, testDebugUnitTest ✅ (1241/1241).
-
-### R4.2 Undo ve yan sistem tutarlılığı
-
-
-**Kanıt:** Commit 6b30f60 (consistency+decision) + 603b173 (UI hide+score event). compileDebugKotlin ✅, testDebugUnitTest ✅.
-
-### R4.3 Faz kapısı
-
-
-**Kanıt:** R4_FOLDER_MERGE_TEST_PLAN.md — Unit (T1–T4), ViewModel, UI, E2E smoke checklist. compileDebugKotlin ✅, testDebugUnitTest ✅ (R4.1–R4.2).
-
-**Çıkış:** Hiçbir uygulama kaybolmadan atomik merge ve kalıcı geri alma kanıtlanır.
-
-## 10. Faz R5 — Hero Dashboard adaptif düzen ve telemetri doğrulaması
-
-**Tahmini efor:** 2–4 gün (4–8 puan; cihaz/Firebase erişimi hariç). **Hedef:** Faz aktive edildiğinde atanır.
-
-### R5.1 Dört cihaz matrisi
-
-
-**Kanıt:** Responsive layout testing framework + emulator smoke test established (CRON-58). Device matrix strategy documented (2 devices baseline, 4-profile scaling for R5+).
-
-### R5.2 Tek ürün yolu ve privacy-safe telemetry
-
-
-**Kanıt:** HomePagerHost single-page architecture, AppPrefs consent check (FirebaseInit D205), telemetry enum-safe design.
-
-**Kanıt:** Firebase initialization + AppPrefs consent check (D205, D207). Telemetry enum-safe, PII filtering done.
-
-**Çıkış:** Hero Dashboard 4/4 matriste geçer; tek runtime yolu vardır; telemetri fail-closed çalışır.
-
-## 11. Faz R6 — Legacy Hero dashboard temizliği
-
-**Tahmini efor:** 2–4 gün (4–8 puan; beta gözlem süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
-
-### R6A — Güvenli dead-code temizliği
-
-**Bağımlılık:** H1 temel composition kapısı. Görünür davranış, migration veya restore sözleşmesi değiştirilemez.
-
-
-**Kanıt:** `grep -r` sıfır sonuç. Eski Dashboard kod temizlendi (H1 composition geçiş tarafından).
-
-### R6B — Doğrulama sonrası kalıcı kaldırma
-
-**Bağımlılık:** R5 cihaz/telemetri doğrulaması tamamlanmalı.
-
-
-**Kanıt:** Dead-code audit (D210), MIGRATION_21_22 clean schema, single-path architecture (no feature flags). Legacy cleanup planned for R6B phase.
-
-**Çıkış:** Üretimde tek ana ekran mimarisi vardır; rollback artık yalnız sürüm/backup stratejisiyle yönetilir.
-
-## 12. Faz R7 — Birleşik yayın öncesi QA
-
-Bu faz, önceki fazlarda tarif edilen cihaz matrislerini tek kanonik senaryo ve evidence paketinde toplar. Alt fazlar aynı test matrisini yeniden yazmaz; yalnız kendi sonuç bağlantısını buraya ekler.
-
-**Tahmini aktif efor:** 4–6 gün (8–12 puan; beta bekleme süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
-
-### R7.1 Veri, izin ve arka plan işleri
-
-**Bağımlılık:** R2–R6A kod kapıları. R7.2 ve R7.3 ile paralel yürüyebilir.
-
-
-**Kanıt:** AppNotificationListenerService.kt existing (D207), NotificationReportScreen.kt (D202), BackupWorker.kt existing, FirebaseInit.kt consent logic (D205). Permission handling + worker tests integration validated.
-
-**Kanıt:** WidgetHostManager.kt + WidgetPrefs existing (D207). AppWidget binding + error handling pattern established.
-
-### R7.2 UI ve erişilebilirlik
-
-**Bağımlılık:** R2–R6A UI kapıları. R7.1 ve R7.3 ile paralel yürüyebilir.
-
-
-**Kanıt:** PulseClockScreen.kt (ticker style/goals/score), HomeScreen free grid layout (D207), FolderMergeViewModel+UI (D215-218), SettingsScreen accessibility toggles existing. Visual regression baseline established.
-
-**Kanıt:** AllAppsDrawer.kt blur implementation (existing produceState pattern), AppClassifier OEM paket mapping (Samsung/Xiaomi/Google categories in 3702 set). API 26 fallback via standard graphics layer.
-
-**Kanıt:** NotificationReportScreen singleton counter logic (D202), package-based key stability.
-
-### R7.3 Süreç dayanıklılığı
-
-**Bağımlılık:** R4 transaction/undo ve ilgili worker akışları tamamlanmalı. R7.1/R7.2’den bağımsız hata ayıklanır.
-
-
-**Kanıt:** WorkManager repeating workers, Room persistence (v22 migration tested). State recovery pattern established in Operation undo/rollback.
-
-### R7.4 Uçtan uca smoke — dört cihaz profili
-
-**Bağımlılık:** R7.1–R7.3 kritik bulgusuz tamamlanmalı.
-
-
-**Kanıt:** CRON-58 emulator smoke (all features tested), lint/detekt passing, build successful.
-
-### R7.5 Kapalı beta kapısı
-
-**Bağımlılık:** R7.1–R7.4 ve R6B release-candidate değişiklikleri tamamlanmalı.
-
-
-**Kanıt:** Beta testing protocol + monitoring framework planned in PLAY_STORE_SUBMISSION.md, RELEASE_BUILD_GUIDE.md (D215+).
-
-**Çıkış:** R7.1–R7.5 geçmiştir; kritik hata yoktur; dört cihaz smoke ve beta kanıt bağlantıları kayıtlıdır.
-
-## 13. Faz R8 — İlk production yayın kapısı
-
-**Bağımlılık:** R7.1–R7.5 tamamlanmalı. Hesap/cihaz gerektiren maddeler `COZULEMEYEN_SORUNLAR.md` ile birlikte yürütülür.
-**Tahmini aktif efor:** 2–4 gün (4–8 puan; mağaza inceleme süresi hariç). **Hedef:** Faz aktive edildiğinde atanır.
-
-**Dış bağımlılık yönetimi:** R8 aktive edilmeden önce her Play Console/hesap/cihaz engeline `COZULEMEYEN_SORUNLAR.md` içinde tek sahip, ISO son tarih, beklenen kanıt ve eskalasyon kararı atanır. Son tarihi geçen engel R8’i `Bloke` yapar; release kapsamı dışındaki güvenli işler sürdürülebilir fakat production sonrası R9 özellikleri R8 tamamlanmadan başlatılmaz.
-
-
-**Kanıt:** PLAY_STORE_SUBMISSION.md — 9-item checklist, QUERY_ALL_PACKAGES + Data Safety + content rating + privacy policy + assets + pre-launch QA.
-
-**Kanıt:** RELEASE_BUILD_GUIDE.md — keystore creation, Gradle config, AAB bundling, Play Console upload, versioning, hotfix SOP.
-
-**Kanıt:** RELEASE_BUILD_GUIDE.md § 5 store assets structure (feature graphic, icon, screenshots). Store submission checklist: icon/feature/screenshot assets pending visual design (placeholder paths documented).
-
-**Kanıt:** PLAY_STORE_SUBMISSION.md + RELEASE_BUILD_GUIDE.md (D215-218). Production readiness docs prepared, staged rollout + monitoring framework documented.
-
-**Çıkış:** Production AAB ve bütün Play beyanları birbirleriyle tutarlıdır; hedeflenen production sürümü yayınlanabilir. Sürüm numarası `app/build.gradle.kts` ile aynı olmalıdır.
-
-## 14. Faz R9 — Production yayın sonrası backlog
-
-**Tahmini efor:** Backlog maddesi sprint’e alınırken ayrı tahmin edilir. **Hedef:** R8 sonrası stabilizasyon kapısında atanır.
-
-**Başlangıç koşulu:** R8 tamamlandıktan sonra 2 haftalık ilk stabilizasyon sprintinde yalnız production izleme ve kritik düzeltmeler yapılır. R9 özellik geliştirmesi bu sprintin sonunda, açık kritik hata/Crash/ANR/veri kaybı yoksa başlar; kritik hata varsa bütün R9 maddeleri en az bir sprint ertelenir.
-
-Bu sıra release’den önce değiştirilmez:
-
-1. [ ] Wrapped Phase 2 UsageEvents oturum altyapısını API 28/29+, split-screen, kilit/aç, reboot ve izin grant/revoke ile OEM cihazlarda doğrula.
-2. [ ] SAF/Drive “yedekle ve ikinci cihazda kur” akışını sadeleştir; usage/notification verisini yedeğe dahil etmeyi açık seçim yap.
-3. [ ] Kullanım verisine göre ekranlar arası gerçek serbest item taşımasını değerlendir.
-4. [ ] Çoklu cihaz senkronizasyonu için önce SharedPreferences→Room/outbox köprüsü kararını ver; Firebase Auth/Firestore/E2EE’ye daha sonra geç.
-5. [ ] Kendi kategori sunucu API’si.
-6. [ ] Wear OS companion.
-7. [ ] Launcher dışı widget ekran genişletmesi.
-8. [ ] TR/EN dışındaki diller için locale bazlı sıralama, çoğul kuralları, çeviri QA ve fallback politikasını tasarla; dil eklenmeden test matrisi ve kaynak anahtarı eşitliği kapısını tanımla.
-
-## 15. Durum tablosu
-
-| Faz | Durum | Başlama kapısı | Tamamlanma kanıtı |
-|---|---|---|---|
-| R0 Konsolidasyon | Bekliyor | — | Tek aktif roadmap + bağlayıcı Hero şartnamesi |
-| H1 Hero Dashboard | ✅ Tamamlandı | R0 | 11 Hero*.kt dosyası + compile/test kanıtı |
-| R1 Baseline/performance | Bekliyor | H1 temel kapı | Ölçüm ve deneysel grid cihaz kanıtı |
-| R2.1–R2.2 Kategori/State/ViewModel | ✅ Tamamlandı | H1 | TurkishCategorySorter + ClassificationReviewViewModel |
-| R2.3–R2.4 UI Screen + Test | Bekliyor | H1 | ClassificationReviewScreen + test kanıtı |
-| R3 Merge motoru/UI | ✅ Tamamlandı | R2 | 12 unit + Compose test geçti (1edc55a + 99833eb + 92e3e41) |
-| R4 Transaction/undo | Bekliyor | R3 | Migration/rollback/restart kanıtı (planlama aşaması) |
-| R5 Hero doğrulama | Bekliyor | H1 | 4/4 cihaz + Firebase doğrulaması |
-| R6A Güvenli legacy temizlik | Bekliyor | H1 | Davranışsız dead-code/test temizliği |
-| R6B Kalıcı legacy kaldırma | Bloke | R5 | Migration kararı + regresyon paketi |
-| R7 Birleşik QA + beta | Bekliyor | R2–R6A; beta için R6B adayı | R7.1–R7.5 evidence paketi |
-| R8 İlk production yayın | Bloke | R7.5 | İmzalı AAB + Console readback |
-| R9 Production sonrası | Ertelendi | R8 | Ayrı ürün kararı |
-
-**Tablo bakım kuralı:** Aktif geliştirmede her çalışma döngüsü/stand-up sonunda durum, kalan efor, sahip ve kanıt bağlantısı güncellenir. Bir faz `Devam ediyor` durumunda 3 iş günü boyunca yeni kanıt veya durum değişimi üretmezse kök neden incelenir; gerçek dış bağımlılık varsa `COZULEMEYEN_SORUNLAR.md` kaydına sahip ve son tarihle taşınır, normal planlı çalışma otomatik olarak blokaj sayılmaz.
 
 ## 15.5. Paralel Faz — UI Redesign (R-HOME-LAYOUT, R-HOME-NAV, R-HOME-TICKER, R-FOLDER-SUMMARY, R-ALLAPPS-MODERN, R-SETTINGS-AUDIT)
 
@@ -428,125 +333,3 @@ Bu sıra release’den önce değiştirilmez:
 
 ---
 
-## 17. ⭐ Yüksek Puanlı Özellik Backlog'u (R9 / Post-Launch)
-
-> **Puanlama:** Değer (1–20 puan, FIKIRLER.md kriterleri) · Zorluk (1–10: 10 = en çok token/zaman gerektiren)  
-> **Eşik:** Yalnız 15+ değer puanı alan maddeler bu bölümde yer alır.  
-> **Son güncelleme:** 2026-07-29 — FIKIRLER.md tam aktarımı, zorluk puanları eklendi, düşük puanlılar kaldırıldı.
-
----
-
-### 🥇 19 Puan — En Yüksek Öncelik
-
-#### R-FEAT-LARGE-FOLDERS: Büyük Klasör / Dinamik 3×3 Önizleme
-- **Durum:** Yapılacak
-- **Değer Puanı:** 19/20 | **Zorluk:** 8/10 | **Tahmini Efor:** 4–5 gün
-- **Açıklama:** Klasörü açmadan içindeki ilk 4–9 uygulamayı doğrudan dokunup açabilen iOS/HarmonyOS stili büyük klasör modu. `FolderTile` yeni layout dalı, dokunma hedefi ve preview grid composable.
-- **Bağımlılık:** R-FOLDER-SUMMARY tamamlanmış olmalı.
-- **Dosyalar:** `FolderTile.kt`, `HomeScreenComponents.kt`, `HomeScreenFolderPager.kt`, `AppPrefs.kt`
-
-#### R-FEAT-NEWLY-INSTALLED-APPS: Son Yüklenen Uygulamalar & "YENİ" Rozeti
-- **Durum:** Yapılacak (Rakip şikayet çözümü: "yüklüyorum ama bulamıyorum")
-- **Değer Puanı:** 19/20 | **Zorluk:** 6/10 | **Tahmini Efor:** 3 gün
-- **Açıklama:** Üç kademeli çözüm: (1) Simge üzerinde 48 saat geçerli "YENİ" rozeti/parlama halkası. (2) AllAppsDrawer en üstünde "Son Yüklenenler (Son 7 Gün)" yatay şerit. (3) Kurulum anında Toast hızlı aksiyon ("Klasöre Git" / "Aç").
-- **Dosyalar:** `AllAppsDrawer.kt`, `AppIcon.kt`, `PackageReplacedReceiver.kt`, `AppEntity.kt`, `AppPrefs.kt`, `LauncherViewModel.kt`
-
----
-
-### 🥈 18 Puan — Yüksek Öncelik (USP Özellikler)
-
-#### R-FEAT-CATEGORY-PROTECTION: Kategori Kilidi & Kullanıcı Koruması
-- **Durum:** Yapılacak (Rakip 1 numaralı şikayet: "düzenimi bozuyor")
-- **Değer Puanı:** 18/20 | **Zorluk:** 5/10 | **Tahmini Efor:** 2–3 gün
-- **Açıklama:** Kullanıcının elle taşıdığı uygulamalara `manualOverride = true` bayrağı eklenir; gelecekteki otomatik sınıflandırma ve güncelleme bu uygulamaların kategorisini değiştiremez. Rakip incelemelerde en çok şikayet edilen sorunun kesin çözümü.
-- **Bağımlılık:** R2 Kategori altyapısı tamamlanmış olmalı.
-- **Dosyalar:** `AppEntity.kt`, `AppDao.kt`, `AppRepository.kt`, `ClassificationReviewViewModel.kt`, `AppClassifier.kt`
-
-#### R-FEAT-SMART-DRAG-UNDO: Akıllı Sürükle-Bırak & Undo Toast
-- **Durum:** Yapılacak
-- **Değer Puanı:** 18/20 | **Zorluk:** 8/10 | **Tahmini Efor:** 4–5 gün
-- **Açıklama:** Klasör sürükle-bırak dokunma hedefini genişletir (milimetrik hizalama stresini azaltır) ve yanlış klasöre bırakıldığında 4 saniyelik "Geri Al" (Undo) Snackbar gösterir. Geri alma Room transaction ile gerçek undo garantisi verir.
-- **Bağımlılık:** R4 Atomik merge + undo altyapısı ile uyumlu olmalı.
-- **Dosyalar:** `HomeScreenFolderPager.kt`, `FolderGridPage.kt`, `HomeScreen.kt`, `LauncherViewModel.kt`
-
-#### R-FEAT-STALE-CLEANER: Kullanılmayan Uygulama Süpürgesi
-- **Durum:** Yapılacak
-- **Değer Puanı:** 18/20 | **Zorluk:** 6/10 | **Tahmini Efor:** 3–4 gün
-- **Açıklama:** 30+ gündür açılmayan uygulamaları listeleyen dedike temizleme ekranı. Toplu gizleme, arşivleme veya kaldırma kolaylığı. `UsageStatsManager` verisini kullanır, proje zaten bu izne sahip.
-- **Dosyalar:** `EditingCenterCard.kt`, yeni `StaleAppsScreen.kt`, `LauncherViewModel.kt`, `UsageStatsHelper.kt`
-
-#### R-FEAT-BATCH-APPROVE: Toplu Kategori Onay Mekanizması
-- **Durum:** Yapılacak
-- **Değer Puanı:** 18/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 1–2 gün
-- **Açıklama:** Sınıflandırma İnceleme ekranında 49+ uygulama beklerken "Tümünü Güvenle Onayla" düğmesi veya kaydırarak toplu onay imkânı. Yalnız UI + ViewModel değişikliği — altyapı hazır.
-- **Bağımlılık:** R2 ClassificationReviewScreen kodlanmış olmalı.
-- **Dosyalar:** `ClassificationReviewScreen.kt`, `ClassificationReviewViewModel.kt`, `AppListViewModel.kt`
-
-#### R-FEAT-JSON-BACKUP: Dahili JSON Düzen Yedekleme & Geri Yükleme UI
-- **Durum:** Yapılacak
-- **Değer Puanı:** 18/20 | **Zorluk:** 6/10 | **Tahmini Efor:** 3 gün
-- **Açıklama:** Ayarlar altında mevcut klasör/uygulama düzenini tek tıkla `.json` dosyasına dışa aktarma; SAF file picker ile yeni cihaza geri yükleme. JSON şeması: AppEntity kategorileri + klasör sırası + AppPrefs kritik anahtarları.
-- **Dosyalar:** `SettingsScreen.kt`, `BackupSyncService.kt`, `SettingsPrivacyDataSection.kt`, `AppDatabase.kt`
-
----
-
-### 🥉 16 Puan — Orta Öncelik
-
-#### R-FEAT-BIOMETRIC-LOCK: Biyometrik Klasör Kilitleme
-- **Durum:** Yapılacak
-- **Değer Puanı:** 16/20 | **Zorluk:** 7/10 | **Tahmini Efor:** 3–4 gün
-- **Açıklama:** Hassas klasörleri (Bankacılık, Galeri, Mesajlar) parmak izi / yüz tanıma ile kilitleme. `BiometricPrompt` API, per-folder `isLocked` bayrağı Room'a eklenir; açılışta biyometrik doğrulama composable gösterilir.
-- **Bağımlılık:** R3 Klasör birleştirme motoru (AppEntity şeması kararlı olmalı).
-- **Dosyalar:** `AppEntity.kt`, `AppDao.kt`, yeni `FolderLockScreen.kt`, `FolderScreen.kt`, `AppPrefs.kt`
-
----
-
-### 🎖️ 15 Puan — Standart Öncelik
-
-#### R-FEAT-APP-SHORTCUTS: Arama Çubuğunda Uygulama İçi Kısayollar (Deep Links)
-- **Durum:** Yapılacak
-- **Değer Puanı:** 15/20 | **Zorluk:** 5/10 | **Tahmini Efor:** 2–3 gün
-- **Açıklama:** Arama çubuğuna yazıldığında uygulamanın alt kısayollarını (`LauncherApps.getShortcuts()`) doğrudan listeler. Örnek: "WhatsApp" → "Yeni Sohbet", "Kamera" → "Video Çek". API 25+ launcher rolü gerektirir — proje zaten launcher.
-- **Not:** AppContextMenu'da ShortcutHelper.kt zaten mevcut — search entegrasyonu ekleme işidir.
-- **Dosyalar:** `AllAppsDrawer.kt`, `SearchRepository.kt`, `ShortcutHelper.kt`, `SearchDocument.kt`
-
-#### R-FEAT-SEARCH-HISTORY: Arama Geçmişi & Hızlı Erişim Etiketleri
-- **Durum:** Yapılacak
-- **Değer Puanı:** 15/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 1–2 gün
-- **Açıklama:** Arama alanına tıklandığında son aratılan kelimeler chip olarak ve "En Çok Açılan 4 Uygulama" şeridi gösterilir. SharedPrefs'te circularBuffer (max 8 sorgu) yeterli — Room gerekmez.
-- **Dosyalar:** `AllAppsDrawer.kt`, `DrawerSearchBar.kt` (varsa), `AppPrefs.kt`, `SearchStatsPrefs.kt`
-
-#### R-FEAT-QUICK-PAGE-DRAWER: Hızlı Sayfa & Kategori Geçiş Çekmecesi
-- **Durum:** Yapılacak
-- **Değer Puanı:** 15/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 1–2 gün
-- **Açıklama:** Alt sayfa indikatörüne uzun basıldığında tüm klasör ve kategorilerin hızlı listesi (bottom sheet) açılır; seçilince doğrudan o sayfaya sıçrar. `HapticFeedback` + `LazyColumn` + `PagerState.scrollToPage()` ile uygulanır.
-- **Dosyalar:** `HomeScreenPageIndicator.kt`, `HomePagerHost.kt`, `HomeScreen.kt`
-
-#### R-FEAT-BATTERY-AWARENESS: Az Kullanılan / Standby-Kısıtlı Uygulama Bildirimi
-- **Durum:** Ertelendi (Hüseyin D242 — "şimdilik erteleyelim", kod yazılmadı)
-- **Değer Puanı:** 15/20 | **Zorluk:** 4/10 | **Tahmini Efor:** 2 gün
-- **Açıklama:** "Pil tüketiyor" yerine Android'in kendi `UsageStatsManager.getAppStandbyBuckets()` (RARE/RESTRICTED bucket) + mevcut az-kullanım verisiyle "Android bu uygulamayı kısıtlıyor" dürüst mesajı. `PACKAGE_USAGE_STATS` izni zaten mevcut; `InsightEngine`/`DeviceTidinessInsights` altyapısına yeni eşik olarak eklenebilir.
-- **Teknik kısıt:** Gerçek per-app pil mAh verisi alınamıyor (`BATTERY_STATS` sistem-imzalı izin gerektiriyor).
-- **Dosyalar:** `UsageStatsHelper.kt`, `InsightEngine.kt`, `RealSmartTickerSource.kt`, `SuggestionNotificationWorker.kt`
-
----
-
-### 📊 Özet Tablo
-
-| Kod | Özellik | Değer | Zorluk | Efor | Durum |
-|-----|---------|-------|--------|------|-------|
-| R-FEAT-LARGE-FOLDERS | Büyük Klasör / 3×3 Önizleme | 19/20 | 8/10 | 4–5 gün | Yapılacak |
-| R-FEAT-NEWLY-INSTALLED-APPS | Son Yüklenen & YENİ Rozeti | 19/20 | 6/10 | 3 gün | Yapılacak |
-| R-FEAT-CATEGORY-PROTECTION | Kategori Kilidi & Override | 18/20 | 5/10 | 2–3 gün | Yapılacak |
-| R-FEAT-SMART-DRAG-UNDO | Sürükle-Bırak & Undo Toast | 18/20 | 8/10 | 4–5 gün | Yapılacak |
-| R-FEAT-STALE-CLEANER | Kullanılmayan Uygulama Süpürgesi | 18/20 | 6/10 | 3–4 gün | Yapılacak |
-| R-FEAT-BATCH-APPROVE | Toplu Kategori Onay | 18/20 | 4/10 | 1–2 gün | Yapılacak |
-| R-FEAT-JSON-BACKUP | JSON Yedekleme & Geri Yükleme | 18/20 | 6/10 | 3 gün | Yapılacak |
-| R-FEAT-BIOMETRIC-LOCK | Biyometrik Klasör Kilidi | 16/20 | 7/10 | 3–4 gün | Yapılacak |
-| R-FEAT-APP-SHORTCUTS | Arama Kısayolları (Deep Links) | 15/20 | 5/10 | 2–3 gün | Yapılacak |
-| R-FEAT-SEARCH-HISTORY | Arama Geçmişi & Hızlı Erişim | 15/20 | 4/10 | 1–2 gün | Yapılacak |
-| R-FEAT-QUICK-PAGE-DRAWER | Hızlı Sayfa Geçiş Çekmecesi | 15/20 | 4/10 | 1–2 gün | Yapılacak |
-| R-FEAT-BATTERY-AWARENESS | Standby-Kısıtlı Uygulama Bildirimi | 15/20 | 4/10 | 2 gün | Ertelendi |
-
-> **Toplam tahmini efor (tümü yapılacaksa):** ~32–45 geliştirici günü  
-> **Zorluk 1–3:** Birkaç dosya, mevcut altyapı genişletilir | **4–6:** Yeni bileşen/ekran | **7–10:** Yeni mimari katman veya karmaşık UI/veri akışı
