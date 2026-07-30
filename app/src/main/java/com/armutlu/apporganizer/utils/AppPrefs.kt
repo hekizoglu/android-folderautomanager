@@ -610,6 +610,11 @@ object AppPrefs {
     fun isFolderSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_SEARCH_ENABLED, false)
     fun setFolderSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SEARCH_ENABLED, v).apply()
 
+    const val KEY_FOLDER_NOTIFICATIONS_ENABLED = "folder_notifications_enabled"
+    fun isFolderNotificationsEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_NOTIFICATIONS_ENABLED, true)
+    fun setFolderNotificationsEnabled(context: Context, v: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_NOTIFICATIONS_ENABLED, v).apply()
+
     // ── Saat ve Dijital Nabız (Pulse Clock, D244) ─────────────────────────
     // Saat stili: minimal (sadece saat+tarih) / pulse (skor+içgörü, varsayılan) / glass (cam yüzey)
     const val KEY_CLOCK_STYLE = "home_clock_style"

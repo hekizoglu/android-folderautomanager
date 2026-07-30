@@ -91,6 +91,7 @@ fun FolderScreen(
     var folderFreeGridEnabled by remember { mutableStateOf(AppPrefs.isFolderFreeGridEnabled(context)) }
     var folderCarouselPosition by remember { mutableStateOf(AppPrefs.getFolderCarouselPosition(context)) }
     var folderSearchEnabled by remember { mutableStateOf(AppPrefs.isFolderSearchEnabled(context)) }
+    var folderNotificationsEnabled by remember { mutableStateOf(AppPrefs.isFolderNotificationsEnabled(context)) }
     var folderTransitionEffect by remember { mutableStateOf(AppPrefs.getFolderTransitionEffect(context)) }
     var labelColorHex by remember { mutableStateOf(AppPrefs.getLabelColor(context)) }
     val labelColor = remember(labelColorHex) {
@@ -112,6 +113,9 @@ fun FolderScreen(
             }
             if (key == AppPrefs.KEY_FOLDER_SEARCH_ENABLED) {
                 folderSearchEnabled = AppPrefs.isFolderSearchEnabled(context)
+            }
+            if (key == AppPrefs.KEY_FOLDER_NOTIFICATIONS_ENABLED) {
+                folderNotificationsEnabled = AppPrefs.isFolderNotificationsEnabled(context)
             }
             if (key == AppPrefs.KEY_FOLDER_TRANSITION_EFFECT) {
                 folderTransitionEffect = AppPrefs.getFolderTransitionEffect(context)
@@ -294,8 +298,18 @@ fun FolderScreen(
 
         val badgeCounts by AppNotificationListenerService.badgeCounts.collectAsState()
         val latestTexts by AppNotificationListenerService.latestTexts.collectAsState()
-        val appsWithNotifs = remember(f.apps, badgeCounts) {
-            f.apps.filter { (badgeCounts[it.packageName] ?: 0) > 0 }
+        val lastPostedAt by AppNotificationListenerService.lastPostedAt.collectAsState()
+        val appsWithNotifs = remember(f.apps, badgeCounts, lastPostedAt, folderNotificationsEnabled) {
+            if (!folderNotificationsEnabled) {
+                emptyList()
+            } else {
+                f.apps
+                    .filter { (badgeCounts[it.packageName] ?: 0) > 0 }
+                    .sortedWith(
+                        compareByDescending<AppInfo> { badgeCounts[it.packageName] ?: 0 }
+                            .thenByDescending { lastPostedAt[it.packageName] ?: 0L }
+                    )
+            }
         }
         val displayApps = remember(sortedApps, badgeCounts, latestTexts) {
             sortedApps.withLiveNotificationState(
@@ -523,7 +537,7 @@ fun FolderScreen(
                 }
 
                 // Bildirim bandı
-                if (appsWithNotifs.isNotEmpty()) {
+                if (folderNotificationsEnabled && appsWithNotifs.isNotEmpty()) {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -558,13 +572,13 @@ fun FolderScreen(
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(20.dp)
+                                            .defaultMinSize(minWidth = 20.dp, minHeight = 20.dp)
                                             .clip(CircleShape)
                                             .background(primary),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         Text(
-                                            "$count",
+                                            if (count > 99) "99+" else count.toString(),
                                             color = MaterialTheme.colorScheme.onPrimary,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,

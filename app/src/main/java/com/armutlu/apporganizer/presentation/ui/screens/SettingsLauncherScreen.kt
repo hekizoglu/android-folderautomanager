@@ -300,7 +300,26 @@ fun SettingsLauncherScreen(
                 key = AppPrefs.KEY_FOLDER_CAROUSEL_POSITION,
                 read = { AppPrefs.getFolderCarouselPosition(context) }
             )
+            var folderNotifications by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_FOLDER_NOTIFICATIONS_ENABLED,
+                read = { AppPrefs.isFolderNotificationsEnabled(context) }
+            )
             SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.Notifications,
+                    title = stringResource(R.string.settings_folder_notifications_title),
+                    subtitle = stringResource(R.string.settings_folder_notifications_desc),
+                    checked = folderNotifications,
+                    onCheckedChange = {
+                        folderNotifications = it
+                        AppPrefs.setFolderNotificationsEnabled(context, it)
+                    }
+                )
+                HorizontalDivider(
+                    Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+                )
                 SettingsSwitchRow(
                     icon = Icons.Default.Folder,
                     title = "Fihrist Klasor Gecisi",

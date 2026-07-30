@@ -57,6 +57,8 @@
     <string name="settings_drawer_text_desc">Bildirim destekleyen satırlarda kısa bildirim metnini göster</string>
     <string name="settings_drawer_pixel_title">Pixel görünümünü kullan</string>
     <string name="settings_drawer_pixel_desc">Çekmeceyi sade, yüksek opaklıklı Pixel görünümünde göster</string>
+    <string name="settings_folder_notifications_title">Klasör içi bildirimleri göster</string>
+    <string name="settings_folder_notifications_desc">Açık klasörde bildirim alan uygulamaları, adetleri ve son bildirim özetlerini göster</string>
     <!-- S4: Ayarlar ana ekran hub bölüm başlıkları -->
     <string name="settings_hub_home_screen_title">Ana Ekran</string>
     <string name="settings_hub_search_drawer_title">Arama &amp; Çekmece</string>
