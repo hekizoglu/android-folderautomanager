@@ -43,6 +43,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -110,6 +111,7 @@ private fun DrawerSearchBar(
     quickFilterCounts: IntArray,
     sortMode: AllAppsSortMode,
     onSortModeChange: (AllAppsSortMode) -> Unit,
+    onOpenDrawerSettings: () -> Unit,
     context: android.content.Context,
     pixelLookEnabled: Boolean = false,
 ) {
@@ -245,65 +247,35 @@ private fun DrawerSearchBar(
                             }
                         )
                     }
+                    HorizontalDivider()
+                    Text(
+                        stringResource(R.string.drawer_sort_menu_section_title),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = textSecondary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                    listOf(AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
+                        .forEach { baseMode ->
+                            val active = sortMode == baseMode || sortMode == baseMode.opposite()
+                            DropdownMenuItem(
+                                text = { Text(if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal) },
+                                leadingIcon = if (active) {
+                                    { Icon(Icons.Default.Check, null, tint = secondary, modifier = Modifier.size(18.dp)) }
+                                } else null,
+                                onClick = {
+                                    val newMode = if (active) sortMode.opposite() else baseMode
+                                    onSortModeChange(newMode)
+                                    AppPrefs.setAllAppsSortMode(context, newMode.name)
+                                    filterMenuOpen = false
+                                },
+                            )
+                        }
                 }
             }
         }
-        var drawerSettingsMenuOpen by remember { mutableStateOf(false) }
-        Box {
-            IconButton(onClick = { drawerSettingsMenuOpen = true }, modifier = Modifier.size(40.dp)) {
-                Icon(Icons.Default.MoreVert, stringResource(R.string.drawer_settings_content_description), tint = textSecondary)
-            }
-            DropdownMenu(
-                expanded = drawerSettingsMenuOpen,
-                onDismissRequest = { drawerSettingsMenuOpen = false },
-            ) {
-                Text(
-                    stringResource(R.string.drawer_sort_menu_section_title),
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = textSecondary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                )
-                listOf(AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
-                    .forEach { baseMode ->
-                        val active = sortMode == baseMode || sortMode == baseMode.opposite()
-                        DropdownMenuItem(
-                            text = { Text(if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal) },
-                            leadingIcon = if (active) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
-                            onClick = {
-                                val newMode = if (active) sortMode.opposite() else baseMode
-                                onSortModeChange(newMode)
-                                AppPrefs.setAllAppsSortMode(context, newMode.name)
-                                drawerSettingsMenuOpen = false
-                            },
-                        )
-                    }
-                HorizontalDivider()
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.drawer_chip_rows_settings_toggle_title)) },
-                    leadingIcon = if (chipRowsEnabled) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
-                    onClick = {
-                        AppPrefs.setDrawerChipRowsEnabled(context, !chipRowsEnabled)
-                        drawerSettingsMenuOpen = false
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.settings_pixel_look_title)) },
-                    leadingIcon = if (AppPrefs.isPixelLookEnabled(context)) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
-                    onClick = {
-                        AppPrefs.setPixelLookEnabled(context, !AppPrefs.isPixelLookEnabled(context))
-                        drawerSettingsMenuOpen = false
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.notification_text_enabled_title)) },
-                    leadingIcon = if (AppPrefs.isNotificationTextEnabled(context)) { { Icon(Icons.Default.Check, null, tint = primary) } } else null,
-                    onClick = {
-                        AppPrefs.setNotificationTextEnabled(context, !AppPrefs.isNotificationTextEnabled(context))
-                        drawerSettingsMenuOpen = false
-                    },
-                )
-            }
+        IconButton(onClick = onOpenDrawerSettings, modifier = Modifier.size(40.dp)) {
+            Icon(Icons.Default.MoreVert, stringResource(R.string.drawer_settings_content_description), tint = textSecondary)
         }
         IconButton(
             onClick = { keyboardController?.hide(); onClose() },
@@ -699,6 +671,7 @@ private fun DrawerAppList(
                 item(key = "recent_notification_apps_section") {
                     DrawerRecentNotificationSection(
                         apps = recentNotificationApps.take(4),
+                        notificationCounts = recentNotificationCounts,
                         iconPackPkg = state.iconPackPkg,
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
@@ -760,6 +733,7 @@ private fun DrawerAppList(
                 item(key = "recent_notification_apps_section_flat") {
                     DrawerRecentNotificationSection(
                         apps = recentNotificationApps.take(4),
+                        notificationCounts = recentNotificationCounts,
                         iconPackPkg = state.iconPackPkg,
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
@@ -1035,12 +1009,14 @@ private fun DrawerRecentFavSection(
 @OptIn(ExperimentalFoundationApi::class)
 private fun DrawerRecentNotificationSection(
     apps: List<AppInfo>,
+    notificationCounts: Map<String, Int> = emptyMap(),
     iconPackPkg: String,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)? = null,
 ) {
     DrawerAppIconRowSection(
         apps = apps,
+        notificationCounts = notificationCounts,
         iconPackPkg = iconPackPkg,
         onAppClick = onAppClick,
         onAppLongClick = onAppLongClick,
@@ -1076,6 +1052,7 @@ private fun DrawerTodayInstalledSection(
 @Composable
 private fun DrawerAppIconRowSection(
     apps: List<AppInfo>,
+    notificationCounts: Map<String, Int> = emptyMap(),
     iconPackPkg: String,
     onAppClick: (String) -> Unit,
     letter: Char,
@@ -1118,13 +1095,21 @@ private fun DrawerAppIconRowSection(
                             }
                         }
                     }
-                    bitmap?.let {
-                        androidx.compose.foundation.Image(
-                            bitmap = it,
-                            contentDescription = app.appName,
-                            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
-                        )
-                    } ?: Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.1f)))
+                    Box(contentAlignment = Alignment.TopEnd) {
+                        bitmap?.let {
+                            androidx.compose.foundation.Image(
+                                bitmap = it,
+                                contentDescription = app.appName,
+                                modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
+                            )
+                        } ?: Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.1f)))
+                        val notificationCount = notificationCounts[app.packageName] ?: 0
+                        if (notificationCount > 0) {
+                            Badge {
+                                Text(if (notificationCount > 99) "99+" else notificationCount.toString())
+                            }
+                        }
+                    }
                     Spacer(Modifier.height(3.dp))
                     Text(
                         app.appName,
@@ -1253,6 +1238,7 @@ fun AllAppsDrawer(
     categories: List<Category> = emptyList(),
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
     recentNotificationCounts: Map<String, Int> = emptyMap(),
+    onOpenDrawerSettings: () -> Unit = {},
     // P0.3: dosya kaynağı izin/indeks durumu — DrawerAppList "izin gerekli" satırı için kullanır
     filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
@@ -1404,6 +1390,7 @@ fun AllAppsDrawer(
                         quickFilterCounts = quickFilterCounts,
                         sortMode = sortMode,
                         onSortModeChange = { sortMode = it },
+                        onOpenDrawerSettings = onOpenDrawerSettings,
                         context = context,
                         pixelLookEnabled = pixelLookEnabled
                     )

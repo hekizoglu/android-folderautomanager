@@ -983,6 +983,13 @@ fun HomeScreen(
                         recentNotificationApps = recentNotificationApps,
                         todayInstalledAppsEnabled = recentInstallsEnabled,
                         todayInstalledApps = todayInstalledApps,
+                        onOpenDrawerSettings = {
+                            val intent = Intent(context, MainActivity::class.java).apply {
+                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.SETTINGS_DRAWER)
+                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            runCatching { context.startActivity(intent) }
+                        },
                         focusSearchOnOpen = focusSearchOnOpen,
                         onFocusSearchConsumed = vm::resetFocusSearchOnOpen,
                         categories = categories,

@@ -53,6 +53,7 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToLauncher: () -> Unit = {},
+    onNavigateToDrawer: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToSearchSettings: () -> Unit = {},
     onNavigateToApps: () -> Unit = {},
@@ -103,6 +104,13 @@ fun SettingsScreen(
                         title = "Launcher",
                         subtitle = "Ana ekran davranışı, dock, hareketler ve widget alanı",
                         onClick = onNavigateToLauncher,
+                    )
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SettingsButtonRow(
+                        icon = Icons.Default.Apps,
+                        title = stringResource(R.string.settings_drawer_title),
+                        subtitle = stringResource(R.string.settings_drawer_subtitle),
+                        onClick = onNavigateToDrawer,
                     )
                 }
             }

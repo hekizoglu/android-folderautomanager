@@ -39,6 +39,24 @@
 
     <!-- Navigation & Screen Titles -->
     <string name="settings_title">Ayarlar</string>
+    <string name="settings_drawer_title">Çekmece</string>
+    <string name="settings_drawer_subtitle">Favoriler, son kullanılanlar, bildirimler ve görünüm</string>
+    <string name="settings_drawer_favorites_title">Favorileri göster</string>
+    <string name="settings_drawer_favorites_desc">Uygulama çekmecesinin üstünde favori uygulamalarını göster</string>
+    <string name="settings_drawer_recent_title">Son kullanılanları göster</string>
+    <string name="settings_drawer_recent_desc">Çekmecede son açtığın uygulamalar için hızlı erişim satırı göster</string>
+    <string name="settings_drawer_notifications_title">Son bildirim alanları göster</string>
+    <string name="settings_drawer_notifications_desc">Son bildirim alan uygulamaları ve bildirim adetlerini göster</string>
+    <string name="settings_drawer_today_title">Bugün yüklenenleri göster</string>
+    <string name="settings_drawer_today_desc">Bugün yüklenen uygulamaları çekmecede öne çıkar</string>
+    <string name="settings_drawer_system_title">Sistem uygulamalarını göster</string>
+    <string name="settings_drawer_system_desc">Sistem uygulamalarını uygulama listesine dahil et</string>
+    <string name="settings_drawer_chips_title">Filtre ve sıralama çiplerini göster</string>
+    <string name="settings_drawer_chips_desc">Filtre ve sıralama seçeneklerini çekmece üstünde görünür tut</string>
+    <string name="settings_drawer_text_title">Bildirim metnini göster</string>
+    <string name="settings_drawer_text_desc">Bildirim destekleyen satırlarda kısa bildirim metnini göster</string>
+    <string name="settings_drawer_pixel_title">Pixel görünümünü kullan</string>
+    <string name="settings_drawer_pixel_desc">Çekmeceyi sade, yüksek opaklıklı Pixel görünümünde göster</string>
     <!-- S4: Ayarlar ana ekran hub bölüm başlıkları -->
     <string name="settings_hub_home_screen_title">Ana Ekran</string>
     <string name="settings_hub_search_drawer_title">Arama &amp; Çekmece</string>

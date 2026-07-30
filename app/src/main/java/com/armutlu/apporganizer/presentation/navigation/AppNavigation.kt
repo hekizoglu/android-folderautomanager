@@ -20,6 +20,7 @@ import com.armutlu.apporganizer.presentation.ui.screens.SettingsAboutScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsAppearanceScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsAppsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsLauncherScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsDrawerScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsNotificationsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SmartTickerSettingsScreen
@@ -52,6 +53,7 @@ object Routes {
     // U1: Ayarlar alt-ekran hiyerarşisi - her ana kategori kendi route'unda
     const val SETTINGS_APPEARANCE = "settings_appearance"
     const val SETTINGS_LAUNCHER = "settings_launcher"
+    const val SETTINGS_DRAWER = "settings_drawer"
     const val SETTINGS_NOTIFICATIONS = "settings_notifications"
     const val SETTINGS_APPS = "settings_apps"
     const val SETTINGS_STATS = "settings_stats"
@@ -72,7 +74,7 @@ object Routes {
     val ALL: Set<String> = setOf(
         APP_LIST, APP_LIST_UNCERTAIN, CATEGORIES, SETTINGS, PRIVACY_POLICY, USAGE_REPORT, DASHBOARD,
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT, MISSIONS,
-        SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
+        SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_DRAWER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
         SETTINGS_STATS, SETTINGS_USAGE_DATA, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
         CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, FOLDER_MERGE, SETTINGS_SMART_TICKER, TICKER_HISTORY
     )
@@ -168,6 +170,7 @@ fun AppNavigation(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToAppearance = { navController.navigate(Routes.SETTINGS_APPEARANCE) },
                     onNavigateToLauncher = { navController.navigate(Routes.SETTINGS_LAUNCHER) },
+                    onNavigateToDrawer = { navController.navigate(Routes.SETTINGS_DRAWER) },
                     onNavigateToNotifications = { navController.navigate(Routes.SETTINGS_NOTIFICATIONS) },
                     onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
                     onNavigateToApps = { navController.navigate(Routes.SETTINGS_APPS) },
@@ -193,6 +196,11 @@ fun AppNavigation(
                     onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
                     onNavigateToSmartTickerSettings = { navController.navigate(Routes.SETTINGS_SMART_TICKER) }
                 )
+            }
+        }
+        composable(Routes.SETTINGS_DRAWER) {
+            SettingsLockGate {
+                SettingsDrawerScreen(onNavigateBack = { navController.popBackStack() })
             }
         }
         composable(Routes.SETTINGS_NOTIFICATIONS) {
