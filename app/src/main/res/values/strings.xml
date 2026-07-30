@@ -307,6 +307,14 @@
     <string name="notif_report_perm_banner">Bildirim erişimi verilmemiş — rapor güncellenmiyor.</string>
     <string name="notif_report_perm_banner_btn">İzin Ver</string>
     <string name="notif_report_summary_period">Son 7 gün</string>
+    <string name="notif_report_period_title">Rapor dönemi</string>
+    <string name="notif_report_period_24h">Son 24 saat</string>
+    <string name="notif_report_period_7d">Son 7 gün</string>
+    <string name="notif_report_period_custom">Özel tarih</string>
+    <string name="notif_report_date_confirm">Seç</string>
+    <string name="notif_report_date_cancel">İptal</string>
+    <string name="notif_report_export_txt">TXT dışa aktar</string>
+    <string name="notif_history_retention_hint">Rapor toplamı seçilen dönemdeki tüm olayları kapsar; ayrıntılı geçmiş en fazla 500 kayıt gösterir.</string>
     <string name="notif_report_summary_total">toplam bildirim</string>
     <string name="notif_report_summary_top">%1$s %2$d bildirim gönderdi</string>
     <string name="notif_report_section_talkative">📢 Çok Konuşanlar</string>

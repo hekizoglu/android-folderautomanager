@@ -94,6 +94,9 @@ interface NotificationEventDao {
     @Query("SELECT * FROM notification_events WHERE postedAt >= :since")
     suspend fun eventsSince(since: Long): List<NotificationEvent>
 
+    @Query("SELECT * FROM notification_events WHERE postedAt >= :since AND postedAt < :until ORDER BY postedAt DESC")
+    suspend fun eventsBetween(since: Long, until: Long): List<NotificationEvent>
+
     @Query("SELECT COUNT(*) FROM notification_events WHERE postedAt >= :since")
     suspend fun totalSince(since: Long): Int
 

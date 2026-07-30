@@ -40,6 +40,7 @@ import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunch
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationHistoryUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportViewModel
+import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportRange
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -62,6 +63,9 @@ fun NotificationReportScreen(
         NotificationReportLaunchContract.consumeInitialTab(context)
     }
     var selectedTab by rememberSaveable { mutableIntStateOf(initialTab) }
+    val selectedRange by viewModel.range.collectAsState()
+    var customPickerTarget by remember { mutableStateOf<CustomPickerTarget?>(null) }
+    var customStartMillis by rememberSaveable { mutableStateOf<Long?>(null) }
 
     // D257: "Bildirim raporunu incele" gorevi — ekran ziyareti gorev tamamlama sayilir.
     LaunchedEffect(Unit) {
@@ -156,8 +160,19 @@ fun NotificationReportScreen(
                     is NotificationReportUiState.Ready -> ReportContent(
                         padding = PaddingValues(0.dp),
                         state = s,
+                        selectedRange = selectedRange,
                         onGrantPermission = { openNotificationListenerSettings(context) },
-                        onEnableAnalytics = { viewModel.enableAnalytics() }
+                        onEnableAnalytics = { viewModel.enableAnalytics() },
+                        onRangeSelected = { range ->
+                            if (range == NotificationReportRange.CUSTOM) {
+                                customPickerTarget = CustomPickerTarget.START
+                            } else {
+                                viewModel.setRange(range)
+                            }
+                        },
+                        onExport = { report ->
+                            shareNotificationReport(context, report, reportRangeLabel(selectedRange))
+                        },
                     )
                 }
             } else {
@@ -165,6 +180,42 @@ fun NotificationReportScreen(
             }
         }
     }
+
+    customPickerTarget?.let { target ->
+        val pickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { customPickerTarget = null },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val selected = pickerState.selectedDateMillis ?: return@TextButton
+                        if (target == CustomPickerTarget.START) {
+                            customStartMillis = selected
+                            customPickerTarget = CustomPickerTarget.END
+                        } else {
+                            customStartMillis?.let { start -> viewModel.setCustomRange(start, selected) }
+                            customPickerTarget = null
+                        }
+                    },
+                ) { Text(stringResource(R.string.notif_report_date_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { customPickerTarget = null }) {
+                    Text(stringResource(R.string.notif_report_date_cancel))
+                }
+            },
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
+}
+
+private enum class CustomPickerTarget { START, END }
+
+private fun reportRangeLabel(range: NotificationReportRange): String = when (range) {
+    NotificationReportRange.LAST_24_HOURS -> "Son 24 saat"
+    NotificationReportRange.LAST_7_DAYS -> "Son 7 gün"
+    NotificationReportRange.CUSTOM -> "Özel tarih"
 }
 
 @Composable
@@ -209,6 +260,12 @@ private fun NotificationHistoryTab(viewModel: NotificationReportViewModel) {
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+        Text(
+            text = stringResource(R.string.notif_history_retention_hint),
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp),
         )
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -411,8 +468,11 @@ private fun ReportStatusPane(
 private fun ReportContent(
     padding: PaddingValues,
     state: NotificationReportUiState.Ready,
+    selectedRange: NotificationReportRange,
     onGrantPermission: () -> Unit,
-    onEnableAnalytics: () -> Unit
+    onEnableAnalytics: () -> Unit,
+    onRangeSelected: (NotificationReportRange) -> Unit,
+    onExport: (NotificationAnalyzer.Report) -> Unit,
 ) {
     val r = state.report
     LazyColumn(
@@ -420,6 +480,12 @@ private fun ReportContent(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        item {
+            NotificationReportRangeSelector(
+                selectedRange = selectedRange,
+                onRangeSelected = onRangeSelected,
+            )
+        }
         if (state.permissionMissing) {
             item {
                 WarningBanner(
@@ -439,7 +505,17 @@ private fun ReportContent(
             }
         }
 
-        item { SummaryCard(r) }
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                OutlinedButton(onClick = { onExport(r) }) {
+                    Text(stringResource(R.string.notif_report_export_txt))
+                }
+            }
+        }
+        item { SummaryCard(r, reportRangeLabel(selectedRange)) }
         item { NotificationReportV2Overview(r) }
 
         item { SectionTitle(stringResource(R.string.notif_report_section_talkative)) }
@@ -500,7 +576,73 @@ private fun WarningBanner(text: String, buttonText: String, onClick: () -> Unit)
 }
 
 @Composable
-private fun SummaryCard(report: NotificationAnalyzer.Report) {
+private fun NotificationReportRangeSelector(
+    selectedRange: NotificationReportRange,
+    onRangeSelected: (NotificationReportRange) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            stringResource(R.string.notif_report_period_title),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 14.sp,
+        )
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            item {
+                FilterChip(
+                    selected = selectedRange == NotificationReportRange.LAST_24_HOURS,
+                    onClick = { onRangeSelected(NotificationReportRange.LAST_24_HOURS) },
+                    label = { Text(stringResource(R.string.notif_report_period_24h)) },
+                )
+            }
+            item {
+                FilterChip(
+                    selected = selectedRange == NotificationReportRange.LAST_7_DAYS,
+                    onClick = { onRangeSelected(NotificationReportRange.LAST_7_DAYS) },
+                    label = { Text(stringResource(R.string.notif_report_period_7d)) },
+                )
+            }
+            item {
+                FilterChip(
+                    selected = selectedRange == NotificationReportRange.CUSTOM,
+                    onClick = { onRangeSelected(NotificationReportRange.CUSTOM) },
+                    label = { Text(stringResource(R.string.notif_report_period_custom)) },
+                )
+            }
+        }
+    }
+}
+
+private fun shareNotificationReport(
+    context: Context,
+    report: NotificationAnalyzer.Report,
+    periodLabel: String,
+) {
+    val text = buildString {
+        appendLine("AppOrganizer - Bildirim Raporu")
+        appendLine("Dönem: $periodLabel")
+        appendLine("Toplam bildirim: ${report.totalNotifications}")
+        appendLine("Eyleme geçirilebilir: ${report.actionableCount}")
+        appendLine("Bastırılan: ${report.suppressedCount}")
+        appendLine()
+        appendLine("En çok bildirim gönderen uygulamalar:")
+        report.mostTalkative.forEach { stat ->
+            appendLine("- ${stat.appName}: ${stat.total}")
+        }
+        appendLine()
+        appendLine("Bu rapordaki toplam, seçilen dönemdeki tüm olayları kapsar.")
+        appendLine("Ayrıntılı bildirim geçmişi cihazda en fazla 500 kayıtla sınırlıdır.")
+    }
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer Bildirim Raporu - $periodLabel")
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    runCatching {
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.notif_report_export_txt)))
+    }
+}
+
+private fun SummaryCard(report: NotificationAnalyzer.Report, periodLabel: String) {
     val topApp = report.mostTalkative.firstOrNull()
     Surface(
         shape = RoundedCornerShape(20.dp),
@@ -509,7 +651,7 @@ private fun SummaryCard(report: NotificationAnalyzer.Report) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                stringResource(R.string.notif_report_summary_period),
+                periodLabel,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp
             )

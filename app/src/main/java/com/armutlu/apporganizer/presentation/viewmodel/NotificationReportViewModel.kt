@@ -33,6 +33,12 @@ data class NotificationHistoryFilterOption(
     val count: Int,
 )
 
+enum class NotificationReportRange {
+    LAST_24_HOURS,
+    LAST_7_DAYS,
+    CUSTOM,
+}
+
 data class NotificationHistoryUiState(
     val entries: List<NotificationHistoryEntity> = emptyList(),
     val filters: List<NotificationHistoryFilterOption> = emptyList(),
@@ -145,6 +151,11 @@ class NotificationReportViewModel @Inject constructor(
         MutableStateFlow<NotificationReportUiState>(NotificationReportUiState.Loading)
     val uiState: StateFlow<NotificationReportUiState> = _uiState.asStateFlow()
 
+    private val _range = MutableStateFlow(NotificationReportRange.LAST_7_DAYS)
+    val range: StateFlow<NotificationReportRange> = _range.asStateFlow()
+    private var customStartMillis: Long? = null
+    private var customEndMillis: Long? = null
+
     /** D242c — Bildirim Geçmişi sekmesi: gerçek başlık/metin, yalnızca ayar açıkken dolu. */
     val historyEnabled: Boolean get() = AppPrefs.isNotificationTextEnabled(context)
 
@@ -199,8 +210,9 @@ class NotificationReportViewModel @Inject constructor(
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    val since = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
-                    val events = notificationEventDao.eventsSince(since)
+                    val now = System.currentTimeMillis()
+                    val (since, until) = resolveRange(now)
+                    val events = notificationEventDao.eventsBetween(since, until)
                     val appNames = appDao.getAllApps().associate { it.packageName to it.appName }
                     val usageMs = if (UsageStatsHelper.hasPermission(context)) {
                         UsageStatsHelper.getUsageCounts(context, days = 7)
@@ -219,6 +231,29 @@ class NotificationReportViewModel @Inject constructor(
                     NotificationReportUiState.Error("Bildirim raporu su anda yuklenemedi.")
                 }
             )
+        }
+    }
+
+    fun setRange(range: NotificationReportRange) {
+        if (range == NotificationReportRange.CUSTOM) return
+        _range.value = range
+        refresh()
+    }
+
+    fun setCustomRange(startMillis: Long, endMillis: Long) {
+        customStartMillis = minOf(startMillis, endMillis)
+        customEndMillis = maxOf(startMillis, endMillis) + TimeUnit.DAYS.toMillis(1)
+        _range.value = NotificationReportRange.CUSTOM
+        refresh()
+    }
+
+    private fun resolveRange(now: Long): Pair<Long, Long> = when (_range.value) {
+        NotificationReportRange.LAST_24_HOURS -> now - TimeUnit.HOURS.toMillis(24) to now
+        NotificationReportRange.LAST_7_DAYS -> now - TimeUnit.DAYS.toMillis(7) to now
+        NotificationReportRange.CUSTOM -> {
+            val start = customStartMillis ?: (now - TimeUnit.DAYS.toMillis(7))
+            val end = customEndMillis ?: now
+            start to end
         }
     }
 
