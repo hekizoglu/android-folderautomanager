@@ -1071,6 +1071,7 @@
     <string name="hero_daily_control_notifications_count">%1$d bildirim</string>
     <string name="hero_daily_control_notifications_empty">Bildirim yok</string>
     <string name="hero_daily_control_last_24_hours">Son 24 saat</string>
+    <string name="hero_daily_control_last_24_hours_with_history_limit">Son 24 saat · ayrıntılı geçmiş en fazla 500 kayıt</string>
     <string name="hero_daily_control_access_required">Erişim gerekli</string>
     <string name="hero_daily_control_digital_description">Dijital Yaşam, %1$s. Ayrıntıları aç.</string>
     <string name="hero_daily_control_missions_description">Görevler, %1$s. Görevleri aç.</string>

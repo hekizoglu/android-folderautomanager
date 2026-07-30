@@ -114,7 +114,7 @@ internal fun HeroDailyControlCenterCard(
                     modifier = Modifier.testTag("hero_daily_control_notifications"),
                     title = stringResource(R.string.hero_daily_control_notifications),
                     value = notificationPrimaryValue(notificationCount24h, notificationAccessGranted),
-                    detail = if (notificationAccessGranted) stringResource(R.string.hero_daily_control_last_24_hours)
+                    detail = if (notificationAccessGranted) stringResource(R.string.hero_daily_control_last_24_hours_with_history_limit)
                     else stringResource(R.string.hero_daily_control_access_required),
                     icon = { Icon(Icons.Default.Notifications, null, tint = NotificationOrange, modifier = Modifier.size(20.dp)) },
                     accent = NotificationOrange,
