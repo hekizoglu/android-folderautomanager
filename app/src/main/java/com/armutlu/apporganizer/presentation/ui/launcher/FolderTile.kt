@@ -47,6 +47,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import com.armutlu.apporganizer.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -334,12 +336,13 @@ fun FolderTile(
             // uygulamadan bildirim geldigini net gorsun. Metin varsa "AppAdi: mesaj",
             // metin yoksa jenerik "N yeni bildirim" yerine "AppAdi • N bildirim" formati.
             val appNotifCount = latestNotifApp.notificationCount.coerceAtLeast(1)
-            val notifDisplayText = when {
+            val innerText = when {
                 latestNotifApp.notificationText.isNotBlank() ->
                     "${latestNotifApp.appName}: ${latestNotifApp.notificationText}"
                 else ->
                     "${latestNotifApp.appName} • $appNotifCount bildirim"
             }
+            val notifDisplayText = stringResource(R.string.folder_tile_notification_summary_prefix, innerText)
             Text(
                 text = notifDisplayText,
                 color = effectiveLabelColor.copy(alpha = 0.65f * textAlpha),

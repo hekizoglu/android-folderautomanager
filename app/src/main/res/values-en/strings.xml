@@ -824,6 +824,9 @@
     <string name="drawer_filter_menu_content_description">App filter</string>
     <string name="drawer_settings_content_description">Drawer settings</string>
     <string name="notification_text_enabled_title">Show notification text</string>
+    <string name="settings_folder_page_notifications_title">Show folder page notification summary</string>
+    <string name="settings_folder_page_notifications_desc">Show active notifications on this page as a compact total count with app names</string>
+    <string name="folder_tile_notification_summary_prefix">Notification summary: %1$s</string>
     <string name="missions_home_chip_title">Missions</string>
     <string name="missions_home_chip_subtitle">Today\'s missions and your score</string>
     <string name="home_page_indicator_dashboard_selected">Smart Home, selected</string>

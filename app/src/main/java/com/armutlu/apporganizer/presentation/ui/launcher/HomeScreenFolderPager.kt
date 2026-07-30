@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import com.armutlu.apporganizer.utils.AppAnalytics
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.telemetry.FolderAppCountBucket
 import com.armutlu.apporganizer.telemetry.TelemetryEvent
 import java.util.concurrent.TimeUnit
@@ -79,6 +81,7 @@ internal fun FolderGridPage(
     folderCountVisible: Boolean,
     folderSwipeHint: Boolean,
     notifTextEnabled: Boolean,
+    pageNotificationsEnabled: Boolean = true,
     unusedInfoEnabled: Boolean = false,
     folderBadgeEnabled: Boolean = false,
     folderShape: String,
@@ -111,7 +114,24 @@ internal fun FolderGridPage(
 ) {
     val context = LocalContext.current
     val pageApps = pageFolders.sumOf { it.apps.size }
-    val pageNotifications = pageFolders.sumOf { folder -> folder.apps.sumOf { it.notificationCount } }
+    val badgeCounts by AppNotificationListenerService.badgeCounts.collectAsState()
+    val pageNotificationApps = remember(pageFolders, badgeCounts, pageNotificationsEnabled) {
+        if (!pageNotificationsEnabled) {
+            emptyList()
+        } else {
+            pageFolders
+                .flatMap { it.apps }
+                .mapNotNull { app ->
+                    val count = badgeCounts[app.packageName] ?: 0
+                    if (count > 0) app to count else null
+                }
+                .sortedByDescending { it.second }
+        }
+    }
+    val pageNotifications = pageNotificationApps.sumOf { it.second }
+    val pageNotificationNames = pageNotificationApps
+        .take(3)
+        .joinToString(", ") { (app, count) -> "${app.appName} $count" }
     var pageInsightsEnabled by remember(context) {
         mutableStateOf(AppPrefs.isFolderPageInsightsEnabled(context))
     }
@@ -230,7 +250,7 @@ internal fun FolderGridPage(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = if (pageInsightText != null) 152.dp else 112.dp)
+                .heightIn(min = if (pageInsightText != null) 128.dp else 80.dp)
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .background(Color(0xFF171717), RoundedCornerShape(12.dp))
                 .padding(horizontal = 14.dp, vertical = 8.dp)
@@ -280,7 +300,15 @@ internal fun FolderGridPage(
                 Spacer(Modifier.width(1.dp))
             }
             Text(
-                text = if (pageNotifications > 0) "$pageNotifications okunmamış bildirim — rapora dokun" else "Bildirim raporunu gör",
+                text = if (pageNotifications > 0) {
+                    if (pageNotificationNames.isNotBlank()) {
+                        "$pageNotifications okunmamış bildirim ($pageNotificationNames) — rapora dokun"
+                    } else {
+                        "$pageNotifications okunmamış bildirim — rapora dokun"
+                    }
+                } else {
+                    "Bildirim raporunu gör"
+                },
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                 fontSize = 11.sp,
                 maxLines = 1,

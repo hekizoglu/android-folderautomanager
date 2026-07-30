@@ -413,6 +413,11 @@ object AppPrefs {
         prefs(context).getBoolean(KEY_FOLDER_PAGE_INSIGHTS_ENABLED, true)
     fun setFolderPageInsightsEnabled(context: Context, enabled: Boolean) =
         prefs(context).edit().putBoolean(KEY_FOLDER_PAGE_INSIGHTS_ENABLED, enabled).apply()
+    const val KEY_FOLDER_PAGE_NOTIFICATIONS_ENABLED = "folder_page_notifications_enabled"
+    fun isFolderPageNotificationsEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FOLDER_PAGE_NOTIFICATIONS_ENABLED, true)
+    fun setFolderPageNotificationsEnabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_PAGE_NOTIFICATIONS_ENABLED, enabled).apply()
     fun getFolderPageInsightsMutedUntil(context: Context): Long =
         prefs(context).getLong(KEY_FOLDER_PAGE_INSIGHTS_MUTED_UNTIL, 0L)
     fun muteFolderPageInsights(context: Context, until: Long) =

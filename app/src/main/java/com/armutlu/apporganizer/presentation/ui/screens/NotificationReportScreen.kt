@@ -642,6 +642,7 @@ private fun shareNotificationReport(
     }
 }
 
+@Composable
 private fun SummaryCard(report: NotificationAnalyzer.Report, periodLabel: String) {
     val topApp = report.mostTalkative.firstOrNull()
     Surface(

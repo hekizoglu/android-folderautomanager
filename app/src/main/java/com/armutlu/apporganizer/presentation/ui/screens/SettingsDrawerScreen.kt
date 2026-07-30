@@ -50,43 +50,43 @@ fun SettingsDrawerScreen(onNavigateBack: () -> Unit) {
         item { SettingsSectionTitle(stringResource(R.string.settings_drawer_title)) }
         item {
             SettingsCard {
-                SettingsSwitchRow(Icons.Default.Star, stringResource(R.string.settings_drawer_favorites_title), stringResource(R.string.settings_drawer_favorites_desc), favorites) {
+                SettingsSwitchRow(Icons.Default.Star, stringResource(R.string.settings_drawer_favorites_title), stringResource(R.string.settings_drawer_favorites_desc), favorites, onCheckedChange = {
                     favorites = it
                     AppPrefs.setFavoritesEnabledAllApps(context, it)
-                }
-                SettingsSwitchRow(Icons.Default.Schedule, stringResource(R.string.settings_drawer_recent_title), stringResource(R.string.settings_drawer_recent_desc), recent) {
+                })
+                SettingsSwitchRow(Icons.Default.Schedule, stringResource(R.string.settings_drawer_recent_title), stringResource(R.string.settings_drawer_recent_desc), recent, onCheckedChange = {
                     recent = it
                     AppPrefs.setRecentAppsEnabledAllApps(context, it)
-                }
-                SettingsSwitchRow(Icons.Default.Notifications, stringResource(R.string.settings_drawer_notifications_title), stringResource(R.string.settings_drawer_notifications_desc), notifications) {
+                })
+                SettingsSwitchRow(Icons.Default.Notifications, stringResource(R.string.settings_drawer_notifications_title), stringResource(R.string.settings_drawer_notifications_desc), notifications, onCheckedChange = {
                     notifications = it
                     AppPrefs.setRecentNotificationAppsRowEnabled(context, it)
-                }
-                SettingsSwitchRow(Icons.Default.Apps, stringResource(R.string.settings_drawer_today_title), stringResource(R.string.settings_drawer_today_desc), today) {
+                })
+                SettingsSwitchRow(Icons.Default.Apps, stringResource(R.string.settings_drawer_today_title), stringResource(R.string.settings_drawer_today_desc), today, onCheckedChange = {
                     today = it
                     AppPrefs.setRecentInstallsEnabled(context, it)
-                }
+                })
             }
         }
         item { SettingsSectionTitle("Liste ve görünüm") }
         item {
             SettingsCard {
-                SettingsSwitchRow(Icons.Default.Apps, stringResource(R.string.settings_drawer_system_title), stringResource(R.string.settings_drawer_system_desc), systemApps) {
+                SettingsSwitchRow(Icons.Default.Apps, stringResource(R.string.settings_drawer_system_title), stringResource(R.string.settings_drawer_system_desc), systemApps, onCheckedChange = {
                     systemApps = it
                     AppPrefs.setShowSystemApps(context, it)
-                }
-                SettingsSwitchRow(Icons.Default.Tune, stringResource(R.string.settings_drawer_chips_title), stringResource(R.string.settings_drawer_chips_desc), chips) {
+                })
+                SettingsSwitchRow(Icons.Default.Tune, stringResource(R.string.settings_drawer_chips_title), stringResource(R.string.settings_drawer_chips_desc), chips, onCheckedChange = {
                     chips = it
                     AppPrefs.setDrawerChipRowsEnabled(context, it)
-                }
-                SettingsSwitchRow(Icons.Default.Notifications, stringResource(R.string.settings_drawer_text_title), stringResource(R.string.settings_drawer_text_desc), notificationText) {
+                })
+                SettingsSwitchRow(Icons.Default.Notifications, stringResource(R.string.settings_drawer_text_title), stringResource(R.string.settings_drawer_text_desc), notificationText, onCheckedChange = {
                     notificationText = it
                     AppPrefs.setNotificationTextEnabled(context, it)
-                }
-                SettingsSwitchRow(Icons.Default.Palette, stringResource(R.string.settings_drawer_pixel_title), stringResource(R.string.settings_drawer_pixel_desc), pixelLook) {
+                })
+                SettingsSwitchRow(Icons.Default.Palette, stringResource(R.string.settings_drawer_pixel_title), stringResource(R.string.settings_drawer_pixel_desc), pixelLook, onCheckedChange = {
                     pixelLook = it
                     AppPrefs.setPixelLookEnabled(context, it)
-                }
+                })
             }
         }
     }

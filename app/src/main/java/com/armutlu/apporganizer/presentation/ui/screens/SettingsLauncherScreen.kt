@@ -152,6 +152,25 @@ fun SettingsLauncherScreen(
             }
         }
         item {
+            var folderPageNotifications by rememberBooleanPreferenceState(
+                context = context,
+                key = AppPrefs.KEY_FOLDER_PAGE_NOTIFICATIONS_ENABLED,
+                read = { AppPrefs.isFolderPageNotificationsEnabled(context) }
+            )
+            SettingsCard {
+                SettingsSwitchRow(
+                    icon = Icons.Default.Notifications,
+                    title = stringResource(R.string.settings_folder_page_notifications_title),
+                    subtitle = stringResource(R.string.settings_folder_page_notifications_desc),
+                    checked = folderPageNotifications,
+                    onCheckedChange = {
+                        folderPageNotifications = it
+                        AppPrefs.setFolderPageNotificationsEnabled(context, it)
+                    }
+                )
+            }
+        }
+        item {
             var dockPkgs by remember { mutableStateOf(DockPrefs.getDockPackages(context)) }
             val pm = context.packageManager
             SettingsCard {
