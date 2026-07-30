@@ -821,6 +821,9 @@
     <string name="drawer_sort_filter_menu_content_description">Sort and filter menu</string>
     <string name="drawer_sort_menu_section_title">Sort</string>
     <string name="drawer_filter_menu_section_title">Filter</string>
+    <string name="drawer_filter_menu_content_description">App filter</string>
+    <string name="drawer_settings_content_description">Drawer settings</string>
+    <string name="notification_text_enabled_title">Show notification text</string>
     <string name="missions_home_chip_title">Missions</string>
     <string name="missions_home_chip_subtitle">Today\'s missions and your score</string>
     <string name="home_page_indicator_dashboard_selected">Smart Home, selected</string>

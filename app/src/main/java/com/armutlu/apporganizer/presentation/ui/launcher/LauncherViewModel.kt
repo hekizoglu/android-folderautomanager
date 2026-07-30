@@ -834,53 +834,6 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
-    /*
-    fun onPackageRemoved(packageName: String) {
-        // Icon cache'ten bu pakete ait tüm boyut varyantlarını temizle
-        iconCacheInternal.snapshot().keys
-            .filter { it.startsWith("${packageName}_") }
-            .forEach { iconCacheInternal.remove(it) }
-        // Silinen uygulama dock'taysa hemen kaldır — geri dönüşte kırık ikon görünmez
-        val current = _dockPackages.value
-        if (packageName in current) {
-            _dockPackages.value = current - packageName
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteApp(packageName)
-        }
-    }
-
-    /** Yeni kurulan veya güncellenen uygulamayı DB'ye ekler/günceller. */
-    fun onPackageAdded(@Suppress("UNUSED_PARAMETER") context: Context, packageName: String) {
-        // Uygulama güncellemelerinde ikon değişmiş olabilir — cache'i temizle
-        iconCacheInternal.snapshot().keys
-            .filter { it.startsWith("${packageName}_") }
-            .forEach { iconCacheInternal.remove(it) }
-        viewModelScope.launch(Dispatchers.IO) {
-            runCatching {
-                // Tam tarama yerine tek paket fetch: ~5x daha hızlı
-                // Kök neden (EX01 bug): PACKAGE_ADDED bazen PackageManager paketi tam commit
-                // etmeden tetiklenir — getAppInfo null donebilir. Kisa backoff ile 3 deneme.
-                var app = packageManagerHelper.getAppInfo(packageName)
-                var attempt = 0
-                while (app == null && attempt < 2) {
-                    delay(150L * (attempt + 1))
-                    app = packageManagerHelper.getAppInfo(packageName)
-                    attempt++
-                }
-                if (app == null) {
-                    Timber.w("onPackageAdded: getAppInfo $attempt denemeden sonra hala null, $packageName atlandi")
-                    return@launch
-                }
-                repository.insertApps(listOf(app))
-                Timber.d("onPackageAdded: $packageName eklendi/güncellendi")
-            }.onFailure { Timber.e(it, "onPackageAdded failed: $packageName") }
-        }
-    }
-
-    }
-    */
-
     // Widget ID listesi — SharedPrefs'ten yüklenir, ekleme/silmede güncellenir
     private val _widgetIds = MutableStateFlow<List<Int>>(emptyList())
     val widgetIds: StateFlow<List<Int>> = _widgetIds.asStateFlow()

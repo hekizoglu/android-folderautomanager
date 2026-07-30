@@ -49,6 +49,12 @@ class PackageChangeReceiver : BroadcastReceiver() {
         isReplacing: Boolean,
         pendingResult: BroadcastReceiver.PendingResult
     ) {
+        // Güncellemede (isReplacing) ikon değişmiş olabilir — cache'i hemen temizle, yeniden çizilsin.
+        if (isReplacing) {
+            com.armutlu.apporganizer.presentation.ui.launcher.iconCacheInternal.snapshot().keys
+                .filter { it.startsWith("${packageName}_") }
+                .forEach { com.armutlu.apporganizer.presentation.ui.launcher.iconCacheInternal.remove(it) }
+        }
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)
@@ -98,6 +104,12 @@ class PackageChangeReceiver : BroadcastReceiver() {
     }
 
     private fun onPackageRemoved(context: Context, packageName: String, pendingResult: BroadcastReceiver.PendingResult) {
+        // Icon cache'ten bu pakete ait tüm boyut varyantlarını hemen temizle — sync, UI thread'i bloklamaz (LruCache).
+        com.armutlu.apporganizer.presentation.ui.launcher.iconCacheInternal.snapshot().keys
+            .filter { it.startsWith("${packageName}_") }
+            .forEach { com.armutlu.apporganizer.presentation.ui.launcher.iconCacheInternal.remove(it) }
+        // Silinen uygulama dock'taysa hemen kaldır — geri dönüşte kırık ikon görünmez
+        com.armutlu.apporganizer.utils.DockPrefs.removeFromDock(context, packageName)
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val repo = getRepository(context)

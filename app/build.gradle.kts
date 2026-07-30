@@ -42,8 +42,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 176
-        versionName = "1.4.52"
+        versionCode = 177
+        versionName = "1.4.53"
         buildConfigField(
             "boolean",
             "FIREBASE_BUILD_ENABLED",

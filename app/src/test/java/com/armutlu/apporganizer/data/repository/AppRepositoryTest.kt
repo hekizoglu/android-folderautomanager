@@ -162,13 +162,22 @@ class AppRepositoryTest {
     }
 
     @Test
-    fun `insertApps silently handles exception`() = runTest {
+    fun `insertApps rethrows dao exception (no silent failure)`() = runTest {
+        // insertApps artik hatayi yutmuyor — PackageChangeReceiver/LauncherViewModel.reconcileIfNeeded
+        // gibi cagiranlar kendi try/catch'inde yakalayip loglar, DB'ye hic yazilmamis app
+        // cekmecede/aramada sessizce kaybolmaz (bkz. AppRepository.kt insertApps catch bloğu).
         coEvery { mockAppDao.insertApps(any()) } throws RuntimeException("insert failed")
         every { mockClassifier.classifyAppDecision(any(), any<AppPrefs.ClassificationMode>()) } returns decision("social")
 
-        // Should not throw
-        repository.insertApps(listOf(app("com.a", "App A")))
-        advanceUntilIdle()
+        var thrown: Throwable? = null
+        try {
+            repository.insertApps(listOf(app("com.a", "App A")))
+            advanceUntilIdle()
+        } catch (e: Throwable) {
+            thrown = e
+        }
+
+        assertTrue("insertApps should rethrow the dao exception", thrown is RuntimeException)
     }
 
     // ── updateAppCategory ─────────────────────────────────────────────────────

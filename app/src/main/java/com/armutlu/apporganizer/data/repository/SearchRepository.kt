@@ -378,7 +378,7 @@ class SearchRepository(
 
     /**
      * Yeni yüklenen uygulamayı indekse ekler.
-     * LauncherViewModel.onPackageAdded()'den çağrılır.
+     * PackageChangeReceiver.onPackageAdded() ve LauncherViewModel.reconcileIfNeeded()'den çağrılır.
      */
     suspend fun indexApp(app: com.armutlu.apporganizer.domain.models.AppInfo) = withContext(Dispatchers.IO) {
         runCatching {
@@ -395,7 +395,7 @@ class SearchRepository(
 
     /**
      * Kaldırılan uygulamayı indeksten siler.
-     * LauncherViewModel.onPackageRemoved()'den çağrılır.
+     * PackageChangeReceiver.onPackageRemoved()'den çağrılır.
      */
     suspend fun removeApp(packageName: String) = withContext(Dispatchers.IO) {
         runCatching {
