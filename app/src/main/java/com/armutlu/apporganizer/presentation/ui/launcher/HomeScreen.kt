@@ -1609,6 +1609,10 @@ fun HomeScreen(
             homeLongPressOpen = false
             dockEditOpen = true
         },
+        onAddFolder = {
+            homeLongPressOpen = false
+            vm.createCustomFolder(context)
+        },
         onAddWidget = {
             homeLongPressOpen = false
             onLaunchWidgetPicker()

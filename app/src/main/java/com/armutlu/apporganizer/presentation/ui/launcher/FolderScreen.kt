@@ -356,6 +356,7 @@ fun FolderScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .navigationBarsPadding()
                 .then(
                     if (folderCarouselEnabled && folders.size > 1) {

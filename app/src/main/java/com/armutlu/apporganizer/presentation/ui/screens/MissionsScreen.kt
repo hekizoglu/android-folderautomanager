@@ -68,6 +68,17 @@ fun MissionsScreen(
     val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.refresh() }
 
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     // Tebrik karti birkac saniye sonra kendini kapatir.
     LaunchedEffect(uiState.celebrateStars) {
         if (uiState.celebrateStars != null) {
@@ -76,32 +87,33 @@ fun MissionsScreen(
         }
     }
 
-    SettingsSubScreenScaffold(
-        title = stringResource(R.string.missions_screen_title),
-        onNavigateBack = onNavigateBack,
-    ) {
-        item {
-            StarsHeader(
-                totalStars = uiState.totalStars,
-                taskScore = uiState.taskScore,
-                taskScoreDelta = uiState.taskScoreDelta,
-                taskScoreLastEvent = uiState.taskScoreLastEvent,
-                currentStreak = uiState.currentStreak,
-                bestStreak = uiState.bestStreak,
-                goldenStreak = uiState.goldenStreak,
-                streakFrozenYesterday = uiState.streakFrozenYesterday,
-            )
-        }
-
-        item {
-            AnimatedVisibility(
-                visible = uiState.celebrateStars != null,
-                enter = slideInVertically { -it } + fadeIn(),
-                exit = fadeOut(),
-            ) {
-                CelebrationCard(stars = uiState.celebrateStars ?: 0)
+    androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
+        SettingsSubScreenScaffold(
+            title = stringResource(R.string.missions_screen_title),
+            onNavigateBack = onNavigateBack,
+        ) {
+            item {
+                StarsHeader(
+                    totalStars = uiState.totalStars,
+                    taskScore = uiState.taskScore,
+                    taskScoreDelta = uiState.taskScoreDelta,
+                    taskScoreLastEvent = uiState.taskScoreLastEvent,
+                    currentStreak = uiState.currentStreak,
+                    bestStreak = uiState.bestStreak,
+                    goldenStreak = uiState.goldenStreak,
+                    streakFrozenYesterday = uiState.streakFrozenYesterday,
+                )
             }
-        }
+
+            item {
+                AnimatedVisibility(
+                    visible = uiState.celebrateStars != null,
+                    enter = slideInVertically { -it } + fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    CelebrationCard(stars = uiState.celebrateStars ?: 0)
+                }
+            }
 
         // P8 — "Bugünün Tavsiyesi": yıldız alanının hemen altında, TodayCard'ın (P7b) kompakt
         // kullanımı — ikinci bir kart deseni YAZILMADI, aynı composable/spec kullanılır.
@@ -181,6 +193,10 @@ fun MissionsScreen(
                     )
                 }
             }
+        }
+
+        if (uiState.celebrateStars != null || uiState.daily.any { it.justCompleted } || uiState.weekly.any { it.justCompleted }) {
+            ConfettiExplosion()
         }
     }
 }
@@ -438,3 +454,49 @@ private fun MissionDivider() {
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
     )
 }
+
+@Composable
+private fun ConfettiExplosion() {
+    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "confetti")
+    val alpha by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.2f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(1500, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+    val particles = remember {
+        List(40) {
+            ConfettiParticle(
+                x = (10..90).random() / 100f,
+                y = (10..60).random() / 100f,
+                color = listOf(
+                    androidx.compose.ui.graphics.Color(0xFFFFD700),
+                    androidx.compose.ui.graphics.Color(0xFFFF4500),
+                    androidx.compose.ui.graphics.Color(0xFF1E90FF),
+                    androidx.compose.ui.graphics.Color(0xFF32CD32),
+                    androidx.compose.ui.graphics.Color(0xFFFF69B4)
+                ).random(),
+                radius = (4..10).random().toFloat()
+            )
+        }
+    }
+    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+        particles.forEach { p ->
+            drawCircle(
+                color = p.color.copy(alpha = alpha),
+                radius = p.radius.dp.toPx(),
+                center = androidx.compose.ui.geometry.Offset(size.width * p.x, size.height * p.y)
+            )
+        }
+    }
+}
+
+private data class ConfettiParticle(
+    val x: Float,
+    val y: Float,
+    val color: androidx.compose.ui.graphics.Color,
+    val radius: Float
+)

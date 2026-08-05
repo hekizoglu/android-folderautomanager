@@ -173,6 +173,9 @@ fun NotificationReportScreen(
                         onExport = { report ->
                             shareNotificationReport(context, report, reportRangeLabel(selectedRange))
                         },
+                        onExportAi = { report ->
+                            shareAiNotificationData(context, report, reportRangeLabel(selectedRange))
+                        },
                     )
                 }
             } else {
@@ -470,9 +473,9 @@ private fun ReportContent(
     state: NotificationReportUiState.Ready,
     selectedRange: NotificationReportRange,
     onGrantPermission: () -> Unit,
-    onEnableAnalytics: () -> Unit,
     onRangeSelected: (NotificationReportRange) -> Unit,
     onExport: (NotificationAnalyzer.Report) -> Unit,
+    onExportAi: (NotificationAnalyzer.Report) -> Unit,
 ) {
     val r = state.report
     LazyColumn(
@@ -508,10 +511,13 @@ private fun ReportContent(
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             ) {
                 OutlinedButton(onClick = { onExport(r) }) {
                     Text(stringResource(R.string.notif_report_export_txt))
+                }
+                Button(onClick = { onExportAi(r) }) {
+                    Text("AI Dışarı Aktar")
                 }
             }
         }
@@ -621,16 +627,13 @@ private fun shareNotificationReport(
         appendLine("AppOrganizer - Bildirim Raporu")
         appendLine("Dönem: $periodLabel")
         appendLine("Toplam bildirim: ${report.totalNotifications}")
-        appendLine("Eyleme geçirilebilir: ${report.actionableCount}")
+        appendLine("Eyleme değer: ${report.actionableCount}")
         appendLine("Bastırılan: ${report.suppressedCount}")
         appendLine()
         appendLine("En çok bildirim gönderen uygulamalar:")
         report.mostTalkative.forEach { stat ->
             appendLine("- ${stat.appName}: ${stat.total}")
         }
-        appendLine()
-        appendLine("Bu rapordaki toplam, seçilen dönemdeki tüm olayları kapsar.")
-        appendLine("Ayrıntılı bildirim geçmişi cihazda en fazla 500 kayıtla sınırlıdır.")
     }
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
@@ -639,6 +642,36 @@ private fun shareNotificationReport(
     }
     runCatching {
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.notif_report_export_txt)))
+    }
+}
+
+private fun shareAiNotificationData(
+    context: Context,
+    report: NotificationAnalyzer.Report,
+    periodLabel: String,
+) {
+    val text = buildString {
+        appendLine("--- APPORGANIZER BİLDİRİM VERİSİ (YAPAY ZEKA ANALİZİ İÇİN) ---")
+        appendLine("Dönem: $periodLabel")
+        appendLine("Özet Metrics:")
+        appendLine("- Toplam Bildirim: ${report.totalNotifications}")
+        appendLine("- Eyleme Değer Bildirim: ${report.actionableCount}")
+        appendLine("- Bastırılan Bildirim: ${report.suppressedCount}")
+        appendLine()
+        appendLine("Uygulama İstatistikleri:")
+        report.mostTalkative.forEach { stat ->
+            appendLine("App: ${stat.appName} (${stat.packageName}) | Toplam: ${stat.total} | Gece Oranı: ${(stat.nightRatio * 100).toInt()}% | Dikkat Dağıtma Skoru: %.1f".format(stat.distractionScore))
+        }
+        appendLine()
+        appendLine("--- VERİ SONU ---")
+    }
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer AI Bildirim Verisi Export - $periodLabel")
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    runCatching {
+        context.startActivity(Intent.createChooser(intent, "Yapay Zeka İçin Dışarı Aktar"))
     }
 }
 
@@ -700,15 +733,26 @@ private fun EmptyStateText(text: String) {
     )
 }
 
+private fun launchAppOrSettings(context: Context, packageName: String) {
+    val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+    if (launchIntent != null) {
+        runCatching { context.startActivity(launchIntent) }
+            .onFailure { openAppInfoSettings(context, packageName) }
+    } else {
+        openAppInfoSettings(context, packageName)
+    }
+}
+
 @Composable
 private fun TalkativeRow(stat: NotificationAnalyzer.AppNotifStats) {
     val context = LocalContext.current
+    val dayInitials = remember { listOf("P", "S", "Ç", "P", "C", "C", "P") }
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { openAppInfoSettings(context, stat.packageName) }
+            .clickable { launchAppOrSettings(context, stat.packageName) }
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
@@ -731,16 +775,27 @@ private fun TalkativeRow(stat: NotificationAnalyzer.AppNotifStats) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
-                stat.dailyCounts.forEach { count ->
+                stat.dailyCounts.forEachIndexed { index, count ->
                     val fraction = count.toFloat() / maxCount
                     val height = (24.dp * fraction).coerceAtLeast(2.dp)
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(height)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(height)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = dayInitials.getOrElse(index % 7) { "" },
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -755,7 +810,7 @@ private fun DisturbingRow(stat: NotificationAnalyzer.AppNotifStats) {
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { openAppInfoSettings(context, stat.packageName) }
+            .clickable { launchAppOrSettings(context, stat.packageName) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -787,7 +842,7 @@ private fun DistractingRow(stat: NotificationAnalyzer.AppNotifStats) {
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { openAppInfoSettings(context, stat.packageName) }
+            .clickable { launchAppOrSettings(context, stat.packageName) }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),

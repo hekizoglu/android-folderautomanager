@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.DashboardCustomize
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewModule
@@ -35,6 +36,7 @@ fun HomeLongPressSheet(
     onSettings: () -> Unit,
     onDockEdit: () -> Unit,
     onAddWidget: () -> Unit = {},
+    onAddFolder: () -> Unit = {},
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -99,6 +101,17 @@ fun HomeLongPressSheet(
                 label = "Dock Düzenle",
                 subtitle = "Alt kısımdaki uygulamaları seç",
                 onClick = onDockEdit
+            )
+            Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
+
+            HomeLongPressAction(
+                icon = androidx.compose.material.icons.filled.CreateNewFolder,
+                label = "Yeni Klasör",
+                subtitle = "Ana ekrana yeni klasör ekle (en sona)",
+                onClick = {
+                    onDismiss()
+                    onAddFolder()
+                }
             )
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 

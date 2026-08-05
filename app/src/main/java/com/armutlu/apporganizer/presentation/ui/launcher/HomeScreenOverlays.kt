@@ -44,6 +44,7 @@ internal fun HomeScreenOverlays(
     onSettings: () -> Unit,
     onDockEdit: () -> Unit,
     onAddWidget: () -> Unit,
+    onAddFolder: () -> Unit = {},
 ) {
     if (dockEditOpen) {
         DockEditSheet(
@@ -89,6 +90,7 @@ internal fun HomeScreenOverlays(
             onSettings = onSettings,
             onDockEdit = onDockEdit,
             onAddWidget = onAddWidget,
+            onAddFolder = onAddFolder,
         )
     }
 

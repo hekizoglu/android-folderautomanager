@@ -557,6 +557,20 @@ class LauncherViewModel @Inject constructor(
         _openFolderId.value = folder.category.categoryId
     }
 
+    fun createCustomFolder(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val newCatId = "custom_folder_${System.currentTimeMillis()}"
+            val newCategory = com.armutlu.apporganizer.domain.models.Category(
+                categoryId = newCatId,
+                categoryName = "Yeni Klasör",
+                iconEmoji = "📁",
+                sortOrder = 999,
+            )
+            repository.addCategory(newCategory)
+            _toastMessage.emit("Yeni Klasör oluşturuldu")
+        }
+    }
+
     /**
      * F6: cekmece arama sonucundaki kategori satirindan klasor acma — categoryId ile.
      * openFolder StateFlow'u zaten id'yi folders listesinden cozer; klasor yoksa

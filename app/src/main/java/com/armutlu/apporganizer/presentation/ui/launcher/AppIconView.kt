@@ -206,8 +206,9 @@ fun AppIconView(
                 val daysSinceUse = (System.currentTimeMillis() - app.lastUsedTimestamp) / (1000L * 60 * 60 * 24)
                 daysSinceUse >= unusedGreyDays
             }
-        val iconAlpha = if (isUnused) 0.45f else 1f
-        val greyFilter = if (isUnused)
+        val isUninstalled = !app.isInstalled
+        val iconAlpha = if (isUnused || isUninstalled) 0.45f else 1f
+        val greyFilter = if (isUnused || isUninstalled)
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
         else null
 
@@ -244,8 +245,24 @@ fun AppIconView(
                     )
                 }
             }
-            // "YENİ" badge — bildirim yoksa ve 7 gün içinde kurulmuşsa göster
-            if (isNew && app.notificationCount == 0) {
+            if (isUninstalled) {
+                Box(
+                    modifier = Modifier
+                        .height(14.dp)
+                        .align(Alignment.TopEnd)
+                        .clip(RoundedCornerShape(7.dp))
+                        .background(Color.Gray)
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Silindi",
+                        color = Color.White,
+                        fontSize = 7.sp,
+                        style = TextStyle(textAlign = TextAlign.Center)
+                    )
+                }
+            } else if (isNew && app.notificationCount == 0) {
                 Box(
                     modifier = Modifier
                         .height(14.dp)
