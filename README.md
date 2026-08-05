@@ -91,11 +91,11 @@ app/
 
 | Teknoloji | Versiyon | Amaç |
 |-----------|----------|------|
-| Jetpack Compose | BOM 2023.10 | UI |
+| Jetpack Compose | BOM 2024.12.01 | UI |
 | Room | 2.6.1 | Yerel veritabanı |
-| Hilt | 2.48 | Dependency Injection |
+| Hilt | 2.52 | Dependency Injection |
 | DataStore | 1.0.0 | Tema/font tercihleri |
-| Accompanist DrawablePainter | 0.32.0 | Async uygulama ikonu |
+| Coil | 2.7.0 | Async uygulama ikonu |
 | Coroutines + Flow | 1.7.3 | Async işlemler |
 | Timber | 5.0.1 | Loglama |
 
@@ -129,18 +129,13 @@ app/
 ## Build & Çalıştırma
 
 ```powershell
-# Build
-cd "c:\Users\huseyinekizoglu\android-folderautomanager"
-.\gradlew assembleDebug
-
-# Emülatör (Pixel6_AOSP33)
-$em = "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe"
-Start-Process $em -ArgumentList "-avd","Pixel6_AOSP33","-no-snapshot-save"
+# Build (Google Services atlanarak - yerel test için)
+.\gradlew assembleDebug -PskipGoogleServices
 
 # Cihaza yükle
-$adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
-& $adb install -r app\build\outputs\apk\debug\app-debug.apk
-& $adb shell am start -n "com.armutlu.apporganizer/.presentation.ui.launcher.LauncherActivity"
+# Not: adb.exe yolunun PATH'de olduğunu varsayar.
+adb install -r app\build\outputs\apk\debug\app-debug.apk
+adb shell am start -n "com.armutlu.apporganizer/com.armutlu.apporganizer.presentation.ui.launcher.LauncherActivity"
 ```
 
 ---

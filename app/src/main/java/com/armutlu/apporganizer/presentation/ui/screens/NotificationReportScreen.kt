@@ -473,6 +473,7 @@ private fun ReportContent(
     state: NotificationReportUiState.Ready,
     selectedRange: NotificationReportRange,
     onGrantPermission: () -> Unit,
+    onEnableAnalytics: () -> Unit,
     onRangeSelected: (NotificationReportRange) -> Unit,
     onExport: (NotificationAnalyzer.Report) -> Unit,
     onExportAi: (NotificationAnalyzer.Report) -> Unit,

@@ -24,7 +24,7 @@ import timber.log.Timber
  */
 @Database(
     entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class, UndoMergeEntity::class, com.armutlu.apporganizer.domain.models.NotificationHistoryEntity::class],
-    version = 26,
+    version = 28,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -411,6 +411,35 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        internal val MIGRATION_26_27 = object : Migration(26, 27) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.addColumnIfNotExists("apps", "lastNotificationPostedAt", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "appSizeBytes", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "notificationImportance", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "isInstalled", "INTEGER NOT NULL DEFAULT 1")
+                db.addColumnIfNotExists("apps", "installTime", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "lastUpdated", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "iconUrl", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("apps", "isSystemApp", "INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        internal val MIGRATION_27_28 = object : Migration(27, 28) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Migration 26->27 icerigini 27->28'e de kopyala (D239); eger kullanıcı
+                // v27'ye destructive ile gecmisse 26->27 calısmaz ama eksik kolonlar
+                // hala lazım olabilir. addColumnIfNotExists zaten varlık kontrolü yapar.
+                db.addColumnIfNotExists("apps", "lastNotificationPostedAt", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "appSizeBytes", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "notificationImportance", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "isInstalled", "INTEGER NOT NULL DEFAULT 1")
+                db.addColumnIfNotExists("apps", "installTime", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "lastUpdated", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("apps", "iconUrl", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("apps", "isSystemApp", "INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         internal fun SupportSQLiteDatabase.addColumnIfNotExists(
             table: String,
             column: String,
@@ -521,7 +550,10 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_23_24,
                         MIGRATION_24_25,
                         MIGRATION_25_26,
+                        MIGRATION_26_27,
+                        MIGRATION_27_28,
                     )
+                    .fallbackToDestructiveMigration()
                     .build()
 
                 INSTANCE = instance

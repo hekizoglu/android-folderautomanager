@@ -46,18 +46,21 @@ class AppOrganizerApp : Application() {
         // google-services.json yoksa initializeApp null döner — Firebase çağrıları o durumda atlanır
         // (skipGoogleServices ile alınan build'ler açılışta ÇÖKMEZ; json eklenince otomatik aktifleşir)
         val firebaseApp = runCatching { FirebaseApp.initializeApp(this) }.getOrNull()
-        if (firebaseApp != null) {
-            runCatching {
-                TelemetryConsentManager.initialize(this)
-            }.onFailure { Timber.w(it, "Firebase servisleri başlatılamadı") }
-        } else {
+        if (firebaseApp == null) {
             Timber.w("Firebase devre dışı — google-services.json bulunamadı")
         }
+
         // Cold start optimizasyonu (D234): asagidaki isler ilk frame yolunda olmak zorunda degil —
         // WorkManager enqueue disk IO yapar, kanallar binder cagrisi.
-        // Crash guvenligi icin Timber/CrashReporter/Firebase init yukarida main thread'de kaldi.
+        // Crash guvenligi icin Timber/CrashReporter yukarida main thread'de kaldi.
         Thread({
             runCatching {
+                if (firebaseApp != null) {
+                    runCatching {
+                        TelemetryConsentManager.initialize(this)
+                    }.onFailure { Timber.w(it, "Firebase servisleri başlatılamadı") }
+                }
+
                 AppAnalytics.appStarted(this)
                 if (AppPrefs.isAutoBackupEnabled(this)) {
                     BackupWorker.schedule(this)

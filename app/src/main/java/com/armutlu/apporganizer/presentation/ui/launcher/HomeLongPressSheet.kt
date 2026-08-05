@@ -105,7 +105,7 @@ fun HomeLongPressSheet(
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 
             HomeLongPressAction(
-                icon = androidx.compose.material.icons.filled.CreateNewFolder,
+                icon = Icons.Default.CreateNewFolder,
                 label = "Yeni Klasör",
                 subtitle = "Ana ekrana yeni klasör ekle (en sona)",
                 onClick = {

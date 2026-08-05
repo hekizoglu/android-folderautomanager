@@ -37,6 +37,7 @@ val keystoreProps = Properties().also { props ->
 android {
     namespace = "com.armutlu.apporganizer"
     compileSdk = 35
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.armutlu.apporganizer"

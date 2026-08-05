@@ -25,6 +25,7 @@ import com.armutlu.apporganizer.AppOrganizerApp
 import com.armutlu.apporganizer.utils.StartupHealthPrefs
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -88,9 +89,12 @@ class MainActivity : ComponentActivity() {
         window.decorView.doOnPreDraw {
             StartupHealthPrefs.markReady(this, if (coldStart) AppOrganizerApp.processStartedAtElapsed else activityStartedAt, coldStart, home = false)
             reportFullyDrawn()
+            // D234: scanApps cold start'ta ilk frame'i bloke etmesin diye pre-draw sonrasına ötelendi
+            lifecycleScope.launch {
+                delay(800) // UI'ın stabil hale gelmesi için tampon
+                scanApps()
+            }
         }
-
-        scanApps()
 
         pendingRoute.value = intent?.getStringExtra(EXTRA_OPEN_ROUTE)
         applyOpenCategoryIntent(intent)

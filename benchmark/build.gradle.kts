@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "com.armutlu.apporganizer.benchmark"
     compileSdk = 35
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         minSdk = 28

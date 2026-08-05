@@ -564,7 +564,7 @@ class LauncherViewModel @Inject constructor(
                 categoryId = newCatId,
                 categoryName = "Yeni Klasör",
                 iconEmoji = "📁",
-                sortOrder = 999,
+                displayOrder = 999,
             )
             repository.addCategory(newCategory)
             _toastMessage.emit("Yeni Klasör oluşturuldu")

@@ -77,17 +77,34 @@ fun OnboardingScreen(
         OnboardingStep.RESTORE_BACKUP,
         OnboardingStep.DONE,
     )
-    val currentStep by rememberUpdatedState(steps[stepIndex])
+    val currentStep = steps.getOrElse(stepIndex) { OnboardingStep.DONE }
+
+    fun nextStep() {
+        if (stepIndex < steps.lastIndex) {
+            stepIndex++
+        }
+    }
+
+    fun prevStep() {
+        if (stepIndex > 0) {
+            stepIndex--
+        }
+    }
 
     // ── State ────────────────────────────────────────────────────────────
-    var launcherSet by remember { mutableStateOf(isDefaultLauncherApp(context)) }
+    var launcherSet by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            launcherSet = isDefaultLauncherApp(context)
+        }
+    }
     var selectedTheme by rememberSaveable { mutableStateOf(AppTheme.TEAL) }
     var selectedFont by rememberSaveable { mutableStateOf(AppFont.DEFAULT) }
     var restoreLoading by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val themePrefs = remember { ThemePreferences(context) }
 
-    // SET_LAUNCHER'da ON_RESUME ve ActivityResult callback'i aynı anda stepIndex++ tetikleyebilir
+    // SET_LAUNCHER'da ON_RESUME ve ActivityResult callback'i aynı anda nextStep() tetikleyebilir
     // (Activity result sırası garantili değil) — bu bayrak çift artışı engeller (D209 fix).
     var launcherStepAdvanced by rememberSaveable { mutableStateOf(false) }
 
@@ -96,7 +113,7 @@ fun OnboardingScreen(
         launcherSet = isDefaultLauncherApp(context)
         if (launcherSet && !launcherStepAdvanced) {
             launcherStepAdvanced = true
-            stepIndex++
+            nextStep()
         }
     }
     val backupFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -116,7 +133,7 @@ fun OnboardingScreen(
                         context.getString(R.string.onb_restore_success, result.updatedCount),
                         Toast.LENGTH_SHORT
                     ).show()
-                    stepIndex++
+                    nextStep()
                 } else {
                     Toast.makeText(
                         context,
@@ -144,7 +161,7 @@ fun OnboardingScreen(
                 launcherSet = isDefaultLauncherApp(context)
                 if (launcherSet && currentStep == OnboardingStep.SET_LAUNCHER && !launcherStepAdvanced) {
                     launcherStepAdvanced = true
-                    stepIndex++
+                    nextStep()
                 }
             }
         }
@@ -152,9 +169,11 @@ fun OnboardingScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    BackHandler(enabled = stepIndex > 0) { stepIndex-- }
+    BackHandler(enabled = stepIndex > 0) { prevStep() }
 
     // ── UI ───────────────────────────────────────────────────────────────
+    val safeStepIndex = stepIndex.coerceIn(steps.indices)
+
     Box(Modifier.fillMaxSize().background(OnboardingBackgroundGradient)) {
         Column(
             modifier = Modifier
@@ -167,11 +186,11 @@ fun OnboardingScreen(
             Spacer(Modifier.height(56.dp))
 
             if (currentStep != OnboardingStep.ORGANIZATION_PREVIEW) {
-                OnboardingStepIcon(steps, stepIndex)
+                OnboardingStepIcon(steps, safeStepIndex)
                 Spacer(Modifier.height(32.dp))
-                OnboardingStepDots(steps, stepIndex)
+                OnboardingStepDots(steps, safeStepIndex)
                 Spacer(Modifier.height(28.dp))
-                OnboardingStepHeader(steps, stepIndex)
+                OnboardingStepHeader(steps, safeStepIndex)
                 Spacer(Modifier.height(24.dp))
             }
 
@@ -256,14 +275,14 @@ fun OnboardingScreen(
             if (currentStep == OnboardingStep.ORGANIZATION_PREVIEW) {
                 com.armutlu.apporganizer.presentation.ui.screens.onboarding.OnboardingCategoryPreview(
                     viewModel = viewModel,
-                    onUseLayout = { stepIndex++ },
+                    onUseLayout = { nextStep() },
                     onEditFolders = {
                         // Güvenli klasör düzenleme moduna geçiş veya sonraki adım
-                        stepIndex++
+                        nextStep()
                     },
                     onReviewPending = {
                         // Güvenli sınıflandırma onay alanına yönlendirme
-                        stepIndex++
+                        nextStep()
                     }
                 )
             }
@@ -284,16 +303,16 @@ fun OnboardingScreen(
                         .clip(RoundedCornerShape(16.dp)).background(buttonGradient)
                         .clickable {
                             when (currentStep) {
-                                OnboardingStep.WELCOME -> stepIndex++
+                                OnboardingStep.WELCOME -> nextStep()
 
                                 OnboardingStep.SET_LAUNCHER -> {
                                     if (launcherSet) {
-                                        stepIndex++
+                                        nextStep()
                                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                         val rm = context.getSystemService(RoleManager::class.java)
                                         if (rm?.isRoleAvailable(RoleManager.ROLE_HOME) == true)
                                             roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
-                                        else stepIndex++
+                                        else nextStep()
                                     } else {
                                         context.startActivity(Intent(Intent.ACTION_MAIN)
                                             .addCategory(Intent.CATEGORY_HOME)
@@ -303,11 +322,11 @@ fun OnboardingScreen(
 
                                 OnboardingStep.THEME_SELECT -> {
                                     scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }
-                                    stepIndex++
+                                    nextStep()
                                 }
 
-                                OnboardingStep.QUICK_SETTINGS -> stepIndex++
-                                OnboardingStep.ORGANIZATION_PREVIEW -> stepIndex++
+                                OnboardingStep.QUICK_SETTINGS -> nextStep()
+                                OnboardingStep.ORGANIZATION_PREVIEW -> nextStep()
                                 OnboardingStep.RESTORE_BACKUP -> {
                                     if (!restoreLoading) {
                                         backupFileLauncher.launch(arrayOf("application/json", "text/*", "application/octet-stream"))
@@ -337,7 +356,7 @@ fun OnboardingScreen(
                 if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet) {
                     Spacer(Modifier.height(12.dp))
                     Box(
-                        modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
+                        modifier = Modifier.clickable { nextStep() }.padding(vertical = 12.dp, horizontal = 24.dp),
                         contentAlignment = Alignment.Center
                     ) { Text(stringResource(R.string.onb_skip_now), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
                 }
@@ -346,7 +365,7 @@ fun OnboardingScreen(
                 if (currentStep.isSkippable) {
                     Spacer(Modifier.height(4.dp))
                     Box(
-                        modifier = Modifier.clickable { stepIndex++ }.padding(vertical = 12.dp, horizontal = 24.dp),
+                        modifier = Modifier.clickable { nextStep() }.padding(vertical = 12.dp, horizontal = 24.dp),
                         contentAlignment = Alignment.Center
                     ) { Text(stringResource(R.string.onb_skip), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
                 } else {

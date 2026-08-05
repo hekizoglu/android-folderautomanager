@@ -44,7 +44,7 @@ internal fun OnboardingStepIcon(steps: List<OnboardingStep>, stepIndex: Int) {
         },
         label = "icon"
     ) { idx ->
-        val s = steps[idx]
+        val s = steps.getOrElse(idx) { steps.last() }
         val isLauncher = s == OnboardingStep.SET_LAUNCHER
         val iconBg = if (isLauncher) OnboardingTealGradient else null
         Box(contentAlignment = Alignment.Center) {
@@ -89,7 +89,7 @@ internal fun OnboardingStepDots(steps: List<OnboardingStep>, stepIndex: Int) {
 @Composable
 internal fun OnboardingStepHeader(steps: List<OnboardingStep>, stepIndex: Int) {
     AnimatedContent(targetState = stepIndex, label = "text") { idx ->
-        val s = steps[idx]
+        val s = steps.getOrElse(idx) { steps.last() }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)

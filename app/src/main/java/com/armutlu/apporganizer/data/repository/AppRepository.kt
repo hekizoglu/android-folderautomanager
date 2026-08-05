@@ -297,6 +297,16 @@ class AppRepository @Inject constructor(
             Timber.e(e, "Error updating app")
         }
     }
+
+    suspend fun updateApps(apps: List<AppInfo>) {
+        if (apps.isEmpty()) return
+        try {
+            appDao.updateApps(apps)
+            Timber.d("Updated metadata for ${apps.size} apps")
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating multiple apps")
+        }
+    }
     
     /**
      * Update multiple apps' category — FINDING-003: tekli updateAppCategory() ile aynı
@@ -471,7 +481,7 @@ class AppRepository @Inject constructor(
                 insertApps(appsToInsert)
             }
 
-            var updatedCount = 0
+            val appsToUpdate = mutableListOf<AppInfo>()
             installedApps.forEach { scannedApp ->
                 val existing = existingByPackage[scannedApp.packageName] ?: return@forEach
                 val merged = scannedApp.copy(
@@ -503,9 +513,11 @@ class AppRepository @Inject constructor(
                     lastUpdated = System.currentTimeMillis(),
                 )
                 if (merged != existing) {
-                    updateApp(merged)
-                    updatedCount++
+                    appsToUpdate.add(merged)
                 }
+            }
+            if (appsToUpdate.isNotEmpty()) {
+                updateApps(appsToUpdate)
             }
 
             var removedCount = 0
@@ -517,7 +529,7 @@ class AppRepository @Inject constructor(
             }
 
             Timber.d(
-                "Synced installed apps - Added: ${appsToInsert.size}, Updated: $updatedCount, Removed: $removedCount",
+                "Synced installed apps - Added: ${appsToInsert.size}, Updated: ${appsToUpdate.size}, Removed: $removedCount",
             )
         } catch (e: Exception) {
             Timber.e(e, "Error syncing installed apps")

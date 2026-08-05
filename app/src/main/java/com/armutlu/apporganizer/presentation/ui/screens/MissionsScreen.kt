@@ -5,9 +5,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.clickable
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -87,7 +91,7 @@ fun MissionsScreen(
         }
     }
 
-    androidx.compose.foundation.layout.Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         SettingsSubScreenScaffold(
             title = stringResource(R.string.missions_screen_title),
             onNavigateBack = onNavigateBack,
@@ -194,11 +198,12 @@ fun MissionsScreen(
                 }
             }
         }
-
-        if (uiState.celebrateStars != null || uiState.daily.any { it.justCompleted } || uiState.weekly.any { it.justCompleted }) {
-            ConfettiExplosion()
-        }
     }
+
+    if (uiState.celebrateStars != null || uiState.daily.any { it.justCompleted } || uiState.weekly.any { it.justCompleted }) {
+        ConfettiExplosion()
+    }
+}
 }
 
 /**

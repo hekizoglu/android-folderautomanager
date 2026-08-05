@@ -30,6 +30,12 @@ interface AppDao {
     suspend fun updateApp(app: AppInfo)
     
     /**
+     * Update multiple apps
+     */
+    @Update
+    suspend fun updateApps(apps: List<AppInfo>)
+    
+    /**
      * Update app category
      */
     @Query("UPDATE apps SET categoryId = :categoryId, lastUpdated = :timestamp WHERE packageName = :packageName")
