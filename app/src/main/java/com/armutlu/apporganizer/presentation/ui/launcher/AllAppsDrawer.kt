@@ -69,6 +69,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.onClick
@@ -607,7 +609,8 @@ private fun DrawerAppList(
     filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
     onEnableFilesSource: () -> Unit = {},
-    onCategoryClick: (String) -> Unit = {}
+    onCategoryClick: (String) -> Unit = {},
+    maxShownAppsCount: Int = 4,
 ) {
     val onSurface     = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
@@ -658,8 +661,8 @@ private fun DrawerAppList(
             if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
                 item(key = "recent_fav_section") {
                     DrawerRecentFavSection(
-                        recentApps = if (recentAppsEnabled) recentApps.take(4) else emptyList(),
-                        favoriteApps = if (favoritesEnabled) favoriteApps.take(4) else emptyList(),
+                        recentApps = if (recentAppsEnabled) recentApps.take(maxShownAppsCount) else emptyList(),
+                        favoriteApps = if (favoritesEnabled) favoriteApps.take(maxShownAppsCount) else emptyList(),
                         iconPackPkg = state.iconPackPkg,
                         onRecentAppClick = onRecentAppClick,
                         onFavoriteAppClick = onFavoriteAppClick,
@@ -670,7 +673,7 @@ private fun DrawerAppList(
             if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
                 item(key = "recent_notification_apps_section") {
                     DrawerRecentNotificationSection(
-                        apps = recentNotificationApps.take(4),
+                        apps = recentNotificationApps.take(maxShownAppsCount),
                         notificationCounts = recentNotificationCounts,
                         iconPackPkg = state.iconPackPkg,
                         onAppClick = onAppClick,
@@ -681,7 +684,7 @@ private fun DrawerAppList(
             if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
                 item(key = "today_installed_apps_section") {
                     DrawerTodayInstalledSection(
-                        apps = todayInstalledApps.take(4),
+                        apps = todayInstalledApps.take(maxShownAppsCount),
                         iconPackPkg = state.iconPackPkg,
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
@@ -720,8 +723,8 @@ private fun DrawerAppList(
             if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
                 item(key = "recent_fav_section_flat") {
                     DrawerRecentFavSection(
-                        recentApps = if (recentAppsEnabled) recentApps.take(4) else emptyList(),
-                        favoriteApps = if (favoritesEnabled) favoriteApps.take(4) else emptyList(),
+                        recentApps = if (recentAppsEnabled) recentApps.take(maxShownAppsCount) else emptyList(),
+                        favoriteApps = if (favoritesEnabled) favoriteApps.take(maxShownAppsCount) else emptyList(),
                         iconPackPkg = state.iconPackPkg,
                         onRecentAppClick = onRecentAppClick,
                         onFavoriteAppClick = onFavoriteAppClick,
@@ -732,7 +735,7 @@ private fun DrawerAppList(
             if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
                 item(key = "recent_notification_apps_section_flat") {
                     DrawerRecentNotificationSection(
-                        apps = recentNotificationApps.take(4),
+                        apps = recentNotificationApps.take(maxShownAppsCount),
                         notificationCounts = recentNotificationCounts,
                         iconPackPkg = state.iconPackPkg,
                         onAppClick = onAppClick,
@@ -743,7 +746,7 @@ private fun DrawerAppList(
             if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
                 item(key = "today_installed_apps_section_flat") {
                     DrawerTodayInstalledSection(
-                        apps = todayInstalledApps.take(4),
+                        apps = todayInstalledApps.take(maxShownAppsCount),
                         iconPackPkg = state.iconPackPkg,
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
@@ -898,8 +901,8 @@ private fun DrawerAppList(
 }
 
 // ── Recent + Favorites combined section ──────────────────────────────────────
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
 private fun DrawerRecentFavSection(
     recentApps: List<AppInfo>,
     favoriteApps: List<AppInfo>,
@@ -910,18 +913,24 @@ private fun DrawerRecentFavSection(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val onSurface = MaterialTheme.colorScheme.onSurface
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val itemWidth = (screenWidth - 32.dp - 24.dp) / 4
+
     Column(modifier = Modifier.fillMaxWidth()) {
         if (recentApps.isNotEmpty()) {
             NiagaraLetterHeader(letter = '★', label = stringResource(R.string.recent_apps))
-            Row(
+            androidx.compose.foundation.layout.FlowRow(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxItemsInEachRow = 4
             ) {
                 val recentHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                 recentApps.forEach { app ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.weight(1f).combinedClickable(
+                        modifier = Modifier.width(itemWidth).combinedClickable(
                             onClick = { onRecentAppClick(app.packageName) },
                             onLongClick = {
                                 recentHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -953,20 +962,21 @@ private fun DrawerRecentFavSection(
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                repeat(maxOf(0, 4 - recentApps.size)) { Spacer(Modifier.weight(1f)) }
             }
         }
         if (favoriteApps.isNotEmpty()) {
             NiagaraLetterHeader(letter = '♥', label = "Favoriler")
-            Row(
+            androidx.compose.foundation.layout.FlowRow(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxItemsInEachRow = 4
             ) {
                 val favHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                 favoriteApps.forEach { app ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.weight(1f).combinedClickable(
+                        modifier = Modifier.width(itemWidth).combinedClickable(
                             onClick = { onFavoriteAppClick(app.packageName) },
                             onLongClick = {
                                 favHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -998,7 +1008,6 @@ private fun DrawerRecentFavSection(
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                repeat(maxOf(0, 4 - favoriteApps.size)) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
@@ -1048,7 +1057,7 @@ private fun DrawerTodayInstalledSection(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun DrawerAppIconRowSection(
     apps: List<AppInfo>,
@@ -1063,16 +1072,22 @@ private fun DrawerAppIconRowSection(
     val context = LocalContext.current
     val onSurface = MaterialTheme.colorScheme.onSurface
     val rowHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val itemWidth = (screenWidth - 32.dp - 24.dp) / 4
+
     Column(modifier = Modifier.fillMaxWidth()) {
         NiagaraLetterHeader(letter = letter, label = label)
-        Row(
+        androidx.compose.foundation.layout.FlowRow(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            maxItemsInEachRow = 4
         ) {
             apps.forEach { app ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(1f).combinedClickable(
+                    modifier = Modifier.width(itemWidth).combinedClickable(
                         onClick = { onAppClick(app.packageName) },
                         onLongClick = {
                             rowHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1122,7 +1137,6 @@ private fun DrawerAppIconRowSection(
                     )
                 }
             }
-            repeat(maxOf(0, 4 - apps.size)) { Spacer(Modifier.weight(1f)) }
         }
     }
 }
@@ -1244,6 +1258,7 @@ fun AllAppsDrawer(
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
     onEnableFilesSource: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
+    maxShownAppsCount: Int = 4,
 ) {
     var dragOffset        by remember { mutableFloatStateOf(0f) }
     val context           = LocalContext.current
@@ -1417,7 +1432,8 @@ fun AllAppsDrawer(
                         recentNotificationCounts = recentNotificationCounts,
                         filesIndexState = filesIndexState,
                         onEnableFilesSource = onEnableFilesSource,
-                        onCategoryClick = onCategoryClick
+                        onCategoryClick = onCategoryClick,
+                        maxShownAppsCount = maxShownAppsCount
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {

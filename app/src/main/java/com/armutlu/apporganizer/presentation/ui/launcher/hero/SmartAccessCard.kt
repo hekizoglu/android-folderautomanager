@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -35,6 +39,7 @@ import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
 import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import com.armutlu.apporganizer.domain.models.AppInfo
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun SmartAccessCard(
     state: SmartAccessUiState,
@@ -51,7 +56,7 @@ internal fun SmartAccessCard(
         modifier = modifier
             .testTag("hero_smart_access_card")
             .fillMaxWidth()
-            .height(spec.smartAccessHeightDp.dp),
+            .heightIn(min = spec.smartAccessHeightDp.dp),
     ) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(
@@ -133,6 +138,7 @@ internal fun SmartAccessCard(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SmartAccessContent(
     state: SmartAccessUiState,
@@ -173,19 +179,29 @@ private fun SmartAccessContent(
         )
         return
     }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val itemWidth = (screenWidth - 24.dp - 24.dp) / 4
+
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        maxItemsInEachRow = 4
     ) {
-        apps.take(5).forEach { (app, count) ->
+        apps.forEach { (app, count) ->
             key(selectedTab, app.packageName) {
-                SmartAccessAppItem(
-                    app = app,
-                    notificationCount = count,
-                    onClick = { onLaunchApp(app.packageName) },
-                    onLongClick = { onAppLongClick(app.packageName) },
-                )
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier.width(itemWidth),
+                    contentAlignment = Alignment.Center
+                ) {
+                    SmartAccessAppItem(
+                        app = app,
+                        notificationCount = count,
+                        onClick = { onLaunchApp(app.packageName) },
+                        onLongClick = { onAppLongClick(app.packageName) },
+                    )
+                }
             }
         }
     }

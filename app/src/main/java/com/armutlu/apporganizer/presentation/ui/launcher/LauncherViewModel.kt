@@ -203,6 +203,39 @@ class LauncherViewModel @Inject constructor(
     // Favori paket seti — toggleFavorite() ile güncellenir, allApps ile combine edilir
     private val _favoritePkgs = MutableStateFlow<Set<String>>(emptySet())
 
+    private val _hiddenFromNotifications = MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNotifications(application))
+    val hiddenFromNotifications: StateFlow<Set<String>> = _hiddenFromNotifications.asStateFlow()
+
+    private val _hiddenFromRecents = MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromRecents(application))
+    val hiddenFromRecents: StateFlow<Set<String>> = _hiddenFromRecents.asStateFlow()
+
+    private val _hiddenFromNow = MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNow(application))
+    val hiddenFromNow: StateFlow<Set<String>> = _hiddenFromNow.asStateFlow()
+
+    private val _maxShownAppsCount = MutableStateFlow(com.armutlu.apporganizer.utils.AppPrefs.getShownAppsCount(application))
+    val maxShownAppsCount: StateFlow<Int> = _maxShownAppsCount.asStateFlow()
+
+    private val smartAccessPrefKeys = setOf(
+        com.armutlu.apporganizer.utils.AppPrefs.KEY_SHOWN_APPS_COUNT,
+        "hidden_from_notifications",
+        "hidden_from_recents",
+        "hidden_from_now"
+    )
+    private val smartAccessPrefsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in smartAccessPrefKeys) {
+            val ctx = getApplication<Application>()
+            when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_SHOWN_APPS_COUNT -> _maxShownAppsCount.value = com.armutlu.apporganizer.utils.AppPrefs.getShownAppsCount(ctx)
+                "hidden_from_notifications" -> _hiddenFromNotifications.value = com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNotifications(ctx)
+                "hidden_from_recents" -> _hiddenFromRecents.value = com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromRecents(ctx)
+                "hidden_from_now" -> _hiddenFromNow.value = com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNow(ctx)
+            }
+        }
+    }.also { listener ->
+        application.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(listener)
+    }
+
     private val _allAppsOpen = MutableStateFlow(false)
     val allAppsOpen: StateFlow<Boolean> = _allAppsOpen.asStateFlow()
 
@@ -711,6 +744,23 @@ class LauncherViewModel @Inject constructor(
             // gercek bildirimleri launcher tarafindan silinmemeli, yalnizca "gorulmedi" isareti
             // kalkiyor. (Kod tarandi: bu projede daha once de cancelNotification cagrisi yoktu.)
             com.armutlu.apporganizer.utils.NotificationReadPrefs.markRead(context, packageName, ts)
+            
+            // Gizleme listelerinden temizle
+            if (packageName in _hiddenFromNotifications.value) {
+                val next = _hiddenFromNotifications.value - packageName
+                _hiddenFromNotifications.value = next
+                com.armutlu.apporganizer.utils.AppPrefs.setHiddenFromNotifications(context, next)
+            }
+            if (packageName in _hiddenFromRecents.value) {
+                val next = _hiddenFromRecents.value - packageName
+                _hiddenFromRecents.value = next
+                com.armutlu.apporganizer.utils.AppPrefs.setHiddenFromRecents(context, next)
+            }
+            if (packageName in _hiddenFromNow.value) {
+                val next = _hiddenFromNow.value - packageName
+                _hiddenFromNow.value = next
+                com.armutlu.apporganizer.utils.AppPrefs.setHiddenFromNow(context, next)
+            }
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
         }
@@ -896,6 +946,35 @@ class LauncherViewModel @Inject constructor(
     /** LauncherActivity.onCreate'de bir kez çağrılır; SharedPrefs'ten favori seti yüklenir. */
     fun initFavorites(context: Context) {
         _favoritePkgs.value = com.armutlu.apporganizer.utils.AppPrefs.getFavorites(context)
+    }
+
+    fun initSmartAccessPreferences(context: Context) {
+        val ctx = getApplication<Application>()
+        _hiddenFromNotifications.value = com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNotifications(ctx)
+        _hiddenFromRecents.value = com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromRecents(ctx)
+        _hiddenFromNow.value = com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNow(ctx)
+        _maxShownAppsCount.value = com.armutlu.apporganizer.utils.AppPrefs.getShownAppsCount(ctx)
+    }
+
+    fun hideAppFromNotifications(context: Context, packageName: String) {
+        val current = _hiddenFromNotifications.value
+        val updated = current + packageName
+        _hiddenFromNotifications.value = updated
+        com.armutlu.apporganizer.utils.AppPrefs.setHiddenFromNotifications(context, updated)
+    }
+
+    fun hideAppFromRecents(context: Context, packageName: String) {
+        val current = _hiddenFromRecents.value
+        val updated = current + packageName
+        _hiddenFromRecents.value = updated
+        com.armutlu.apporganizer.utils.AppPrefs.setHiddenFromRecents(context, updated)
+    }
+
+    fun hideAppFromNow(context: Context, packageName: String) {
+        val current = _hiddenFromNow.value
+        val updated = current + packageName
+        _hiddenFromNow.value = updated
+        com.armutlu.apporganizer.utils.AppPrefs.setHiddenFromNow(context, updated)
     }
 
     /** Favori toggle — memory-first: StateFlow anlık güncellenir, SharedPrefs'e async persist. */
@@ -1158,13 +1237,13 @@ class LauncherViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     // Son kullanılan 5 uygulama — Hero Akıllı Erişim ile ortak gerçek timestamp sırası.
-    val recentApps: StateFlow<List<AppInfo>> = allAppsSource
-        .map { apps ->
-            apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L }
-                .sortedByDescending { it.lastUsedTimestamp }
-                .take(SmartAccessRanker.MAX_ITEMS)
-        }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    val recentApps: StateFlow<List<AppInfo>> = combine(
+        allAppsSource,
+        _hiddenFromRecents
+    ) { apps, hidden ->
+        apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L && it.packageName !in hidden }
+            .sortedByDescending { it.lastUsedTimestamp }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _smartAccessPermissionTick = MutableStateFlow(0)
 
@@ -1203,28 +1282,45 @@ class LauncherViewModel @Inject constructor(
         Triple(notificationSummaries, loaded, lastReadAt)
     }
 
+    val smartAccessFilters: Flow<Triple<Set<String>, Set<String>, Int>> = combine(
+        _hiddenFromNotifications,
+        _hiddenFromNow,
+        _maxShownAppsCount
+    ) { hiddenNotifs, hiddenNow, maxCount ->
+        Triple(hiddenNotifs, hiddenNow, maxCount)
+    }
+
     /** Hero Akıllı Erişim için tek state; varsayılan sekme her ViewModel oturumunda Favoriler'dir. */
     val smartAccessState: StateFlow<SmartAccessUiState> = combine(
         allAppsSource,
         suggestedApps,
         recentApps,
         smartAccessRefreshContext,
-    ) { apps, suggested, recent, refreshContext ->
+        smartAccessFilters
+    ) { apps, suggested, recent, refreshContext, filters ->
         val (notificationSummaries, loaded, lastReadAt) = refreshContext
+        val (hiddenNotifs, hiddenNow, maxCount) = filters
         val context = getApplication<Application>()
         val byPackage = apps.associateBy { it.packageName }
         val favorites = _favoritePkgs.value.mapNotNull(byPackage::get)
+        
+        val filteredSuggested = suggested.filter { it.packageName !in hiddenNow }
+        val filteredRecent = recent.filter { it.packageName !in hiddenNow }
+        val filteredFavorites = favorites.filter { it.packageName !in hiddenNow }
         val nowApps = SmartAccessDedupePolicy.visibleUnique(
-            apps = suggested + recent + favorites,
+            apps = filteredSuggested + filteredRecent + filteredFavorites,
             ownPackageName = context.packageName,
-        ).take(SmartAccessRanker.MAX_ITEMS)
+        ).take(maxCount)
+        
         val rankedRecentApps = SmartAccessRanker.recent(
-            apps = apps,
+            apps = apps.filter { it.packageName !in _hiddenFromRecents.value },
             ownPackageName = context.packageName,
+            limit = maxCount
         )
         val notificationNow = System.currentTimeMillis()
         val notificationApps = notificationSummaries
             .filter {
+                it.packageName !in hiddenNotifs &&
                 SmartAccessNotificationPolicy.isWithinWindow(
                     lastPostedAt = it.lastPostedAt,
                     nowMillis = notificationNow,
@@ -1235,12 +1331,13 @@ class LauncherViewModel @Inject constructor(
                 )
             }
             .mapNotNull { summary ->
-            byPackage[summary.packageName]
-                ?.takeIf { it.isInstalled && !it.isHidden && it.packageName != context.packageName }
-                ?.let { NotificationAccessItem(it, summary.count, summary.lastPostedAt) }
+                byPackage[summary.packageName]
+                    ?.takeIf { it.isInstalled && !it.isHidden && it.packageName != context.packageName }
+                    ?.let { NotificationAccessItem(it, summary.count, summary.lastPostedAt) }
             }
+            .take(maxCount)
         SmartAccessUiState(
-            favoriteApps = favorites,
+            favoriteApps = favorites.take(maxCount),
             nowApps = nowApps,
             recentApps = rankedRecentApps,
             notificationApps = notificationApps,
@@ -1362,8 +1459,9 @@ class LauncherViewModel @Inject constructor(
     // P1-21 FIX: SharedPreferences listener cleanup — ViewModel destroy'da listener'ı unregister et
     override fun onCleared() {
         super.onCleared()
-        getApplication<Application>()
-            .getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-            .unregisterOnSharedPreferenceChangeListener(smartTickerPrefsListener)
+        val prefs = getApplication<Application>()
+            .getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        prefs.unregisterOnSharedPreferenceChangeListener(smartTickerPrefsListener)
+        prefs.unregisterOnSharedPreferenceChangeListener(smartAccessPrefsListener)
     }
 }

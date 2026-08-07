@@ -1052,4 +1052,13 @@
     <string name="hero_daily_control_notifications_description">Notifications, %1$d in the last 24 hours. Open notification history.</string>
     <string name="hero_daily_control_notifications_access_description">Notifications, access required. Open notification access settings.</string>
     <string name="home_section_daily_control_center">Daily Control Center</string>
+    <!-- Shown Apps Count Preference & Temporary Hiding Context Menu Actions -->
+    <string name="settings_shown_apps_count_title">Quick Access Limits</string>
+    <string name="settings_shown_apps_count_desc">Show at most %1$d apps in the drawer and smart access</string>
+    <string name="settings_shown_apps_count_option_4">4 apps</string>
+    <string name="settings_shown_apps_count_option_8">8 apps</string>
+    <string name="settings_shown_apps_count_option_12">12 apps</string>
+    <string name="context_menu_remove_from_notifications">Remove from recent notifications temporarily</string>
+    <string name="context_menu_remove_from_recents">Remove from recent apps temporarily</string>
+    <string name="context_menu_remove_from_now">Remove from suggestions temporarily</string>
 </resources>

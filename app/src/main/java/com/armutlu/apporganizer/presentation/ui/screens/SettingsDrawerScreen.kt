@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.common.rememberBooleanPreferenceState
+import com.armutlu.apporganizer.presentation.ui.common.rememberIntPreferenceState
 import com.armutlu.apporganizer.utils.AppPrefs
 
 @Composable
@@ -41,6 +42,9 @@ fun SettingsDrawerScreen(onNavigateBack: () -> Unit) {
     }
     var pixelLook by rememberBooleanPreferenceState(context, AppPrefs.KEY_PIXEL_LOOK_ENABLED) {
         AppPrefs.isPixelLookEnabled(context)
+    }
+    var shownAppsCount by rememberIntPreferenceState(context, AppPrefs.KEY_SHOWN_APPS_COUNT) {
+        AppPrefs.getShownAppsCount(context)
     }
 
     SettingsSubScreenScaffold(
@@ -87,6 +91,22 @@ fun SettingsDrawerScreen(onNavigateBack: () -> Unit) {
                     pixelLook = it
                     AppPrefs.setPixelLookEnabled(context, it)
                 })
+                SettingsListPreferenceRow(
+                    icon = Icons.Default.Apps,
+                    title = stringResource(R.string.settings_shown_apps_count_title),
+                    subtitle = stringResource(R.string.settings_shown_apps_count_desc, shownAppsCount),
+                    currentValue = shownAppsCount.toString(),
+                    options = listOf(
+                        "4" to stringResource(R.string.settings_shown_apps_count_option_4),
+                        "8" to stringResource(R.string.settings_shown_apps_count_option_8),
+                        "12" to stringResource(R.string.settings_shown_apps_count_option_12)
+                    ),
+                    onValueSelected = { value ->
+                        val count = value.toIntOrNull() ?: 4
+                        shownAppsCount = count
+                        AppPrefs.setShownAppsCount(context, count)
+                    }
+                )
             }
         }
     }

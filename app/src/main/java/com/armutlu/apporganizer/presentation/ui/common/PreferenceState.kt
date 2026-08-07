@@ -46,3 +46,22 @@ fun rememberStringPreferenceState(
     }
     return state
 }
+
+@Composable
+fun rememberIntPreferenceState(
+    context: Context,
+    key: String,
+    read: () -> Int
+): MutableState<Int> {
+    val state = remember(key) { mutableStateOf(read()) }
+    DisposableEffect(context, key) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+            if (changedKey == key) state.value = read()
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        state.value = read()
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    return state
+}

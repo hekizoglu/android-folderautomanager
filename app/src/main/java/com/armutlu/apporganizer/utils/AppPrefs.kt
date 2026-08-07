@@ -1647,5 +1647,29 @@ object AppPrefs {
         }
     }
 
+    // ── Hızlı Erişim Limitleri ve Gizleme ──
+    const val KEY_SHOWN_APPS_COUNT = "shown_apps_count"
+
+    fun getShownAppsCount(context: Context): Int = prefs(context).getInt(KEY_SHOWN_APPS_COUNT, 4)
+    fun setShownAppsCount(context: Context, count: Int) = prefs(context).edit().putInt(KEY_SHOWN_APPS_COUNT, count).apply()
+
+    fun getHiddenFromNotifications(context: Context): Set<String> =
+        prefs(context).getStringSet("hidden_from_notifications", emptySet()) ?: emptySet()
+
+    fun setHiddenFromNotifications(context: Context, pkgs: Set<String>) =
+        prefs(context).edit().putStringSet("hidden_from_notifications", pkgs).apply()
+
+    fun getHiddenFromRecents(context: Context): Set<String> =
+        prefs(context).getStringSet("hidden_from_recents", emptySet()) ?: emptySet()
+
+    fun setHiddenFromRecents(context: Context, pkgs: Set<String>) =
+        prefs(context).edit().putStringSet("hidden_from_recents", pkgs).apply()
+
+    fun getHiddenFromNow(context: Context): Set<String> =
+        prefs(context).getStringSet("hidden_from_now", emptySet()) ?: emptySet()
+
+    fun setHiddenFromNow(context: Context, pkgs: Set<String>) =
+        prefs(context).edit().putStringSet("hidden_from_now", pkgs).apply()
+
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

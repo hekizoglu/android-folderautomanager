@@ -45,6 +45,12 @@ internal fun HomeScreenOverlays(
     onDockEdit: () -> Unit,
     onAddWidget: () -> Unit,
     onAddFolder: () -> Unit = {},
+    showRemoveFromNotifications: Boolean = false,
+    showRemoveFromRecents: Boolean = false,
+    showRemoveFromNow: Boolean = false,
+    onRemoveFromNotifications: (String) -> Unit = {},
+    onRemoveFromRecents: (String) -> Unit = {},
+    onRemoveFromNow: (String) -> Unit = {},
 ) {
     if (dockEditOpen) {
         DockEditSheet(
@@ -70,6 +76,12 @@ internal fun HomeScreenOverlays(
             onHideApp = { hidden -> onHideApp(app, hidden) },
             onSaveNote = { note -> onSaveNote(app, note) },
             onToggleFavorite = { _ -> onToggleFavorite(app) },
+            showRemoveFromNotifications = showRemoveFromNotifications,
+            showRemoveFromRecents = showRemoveFromRecents,
+            showRemoveFromNow = showRemoveFromNow,
+            onRemoveFromNotifications = { onRemoveFromNotifications(app.packageName) },
+            onRemoveFromRecents = { onRemoveFromRecents(app.packageName) },
+            onRemoveFromNow = { onRemoveFromNow(app.packageName) },
         )
     }
 

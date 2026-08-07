@@ -357,6 +357,7 @@ fun HomeScreen(
     val composeView = LocalView.current
     val dockPackages by vm.dockPackages.collectAsState()
     val dockDefaultCategory by vm.dockDefaultCategory.collectAsState()
+    val maxShownAppsCount by vm.maxShownAppsCount.collectAsState()
     var dockEditOpen by remember { mutableStateOf(false) }
     var contextMenuPkg by remember { mutableStateOf<String?>(null) }
     // allApps flow'undan güncel app al — isHidden, notificationCount vs. stale olmaz
@@ -959,6 +960,7 @@ fun HomeScreen(
                 ) {
                     AllAppsDrawer(
                         apps = allApps,
+                        maxShownAppsCount = maxShownAppsCount,
                         searchQuery = searchQuery,
                         onSearchQueryChange = vm::setSearchQuery,
                         onAppClick = { pkg ->
@@ -1542,6 +1544,12 @@ fun HomeScreen(
         folderContextMenu = folderContextMenu,
         haptic = haptic,
         scope = scope,
+        showRemoveFromNotifications = smartAccessState.notificationApps.any { it.app.packageName == contextMenuPkg },
+        showRemoveFromRecents = smartAccessState.recentApps.any { it.packageName == contextMenuPkg },
+        showRemoveFromNow = smartAccessState.nowApps.any { it.packageName == contextMenuPkg },
+        onRemoveFromNotifications = { pkg -> vm.hideAppFromNotifications(context, pkg) },
+        onRemoveFromRecents = { pkg -> vm.hideAppFromRecents(context, pkg) },
+        onRemoveFromNow = { pkg -> vm.hideAppFromNow(context, pkg) },
         onDockEditDismiss = { dockEditOpen = false },
         onContextMenuDismiss = { contextMenuPkg = null },
         onCategoryPickerDismiss = { categoryPickerApp = null },

@@ -205,6 +205,7 @@ class LauncherActivity : ComponentActivity() {
         viewModel.loadAppsIfEmpty()
         viewModel.reconcileIfNeeded(this)
         viewModel.initFavorites(this)
+        viewModel.initSmartAccessPreferences(this)
         viewModel.syncUsageStats(this) { AppPrefs.markUsageStatsSynced(this) }
         viewModel.syncAppSizes(this)
         viewModel.loadWidgetIds(this)

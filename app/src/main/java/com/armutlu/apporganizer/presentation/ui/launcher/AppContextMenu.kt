@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.presentation.ui.launcher
+package com.armutlu.apporganizer.presentation.ui.launcher
 
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import com.armutlu.apporganizer.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -68,6 +70,12 @@ fun AppContextMenu(
     onHideApp: ((Boolean) -> Unit)? = null,
     onSaveNote: ((String) -> Unit)? = null,
     onToggleFavorite: ((isFavNow: Boolean) -> Unit)? = null,
+    showRemoveFromNotifications: Boolean = false,
+    showRemoveFromRecents: Boolean = false,
+    showRemoveFromNow: Boolean = false,
+    onRemoveFromNotifications: (() -> Unit)? = null,
+    onRemoveFromRecents: (() -> Unit)? = null,
+    onRemoveFromNow: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val haptic  = LocalHapticFeedback.current
@@ -251,6 +259,30 @@ fun AppContextMenu(
                     icon = if (app.isHidden) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                     label = if (app.isHidden) "Gizlemeyi Kaldır" else "Gizle",
                     onClick = { hideCallback(!app.isHidden); onDismiss() }
+                )
+            }
+
+            if (showRemoveFromNotifications) {
+                ContextAction(
+                    icon = Icons.Default.NotificationsOff,
+                    label = stringResource(R.string.context_menu_remove_from_notifications),
+                    onClick = { onRemoveFromNotifications?.invoke(); onDismiss() }
+                )
+            }
+
+            if (showRemoveFromRecents) {
+                ContextAction(
+                    icon = Icons.Default.History,
+                    label = stringResource(R.string.context_menu_remove_from_recents),
+                    onClick = { onRemoveFromRecents?.invoke(); onDismiss() }
+                )
+            }
+
+            if (showRemoveFromNow) {
+                ContextAction(
+                    icon = Icons.Default.Block,
+                    label = stringResource(R.string.context_menu_remove_from_now),
+                    onClick = { onRemoveFromNow?.invoke(); onDismiss() }
                 )
             }
 

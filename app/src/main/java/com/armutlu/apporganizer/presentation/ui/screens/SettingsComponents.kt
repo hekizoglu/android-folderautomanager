@@ -218,6 +218,67 @@ internal fun SettingsSubScreenScaffold(
 // ── Geriye dönük uyumluluk (dış API) ─────────────────────────────────────
 
 @Composable
+internal fun SettingsListPreferenceRow(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    currentValue: String,
+    options: List<Pair<String, String>>,
+    onValueSelected: (String) -> Unit
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    SettingsButtonRow(
+        icon = icon,
+        title = title,
+        subtitle = subtitle,
+        showChevron = true,
+        onClick = { showDialog = true }
+    )
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(title) },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    options.forEach { (value, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onValueSelected(value)
+                                    showDialog = false
+                                }
+                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (value == currentValue),
+                                onClick = {
+                                    onValueSelected(value)
+                                    showDialog = false
+                                }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("İptal")
+                }
+            }
+        )
+    }
+}
+
+@Composable
 fun SectionHeader(title: String) = SettingsSectionTitle(title)
 
 @Composable

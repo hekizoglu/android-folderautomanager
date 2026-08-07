@@ -1101,4 +1101,13 @@
     <string name="hero_daily_control_notifications_description">Bildirimler, son 24 saatte %1$d bildirim. Bildirim geçmişini aç.</string>
     <string name="hero_daily_control_notifications_access_description">Bildirimler, erişim gerekli. Bildirim erişimi ayarlarını aç.</string>
     <string name="home_section_daily_control_center">Günlük Kontrol Merkezi</string>
+    <!-- Shown Apps Count Preference & Temporary Hiding Context Menu Actions -->
+    <string name="settings_shown_apps_count_title">Hızlı erişim limitleri</string>
+    <string name="settings_shown_apps_count_desc">Çekmece ve akıllı erişimde en fazla %1$d uygulama göster</string>
+    <string name="settings_shown_apps_count_option_4">4 uygulama</string>
+    <string name="settings_shown_apps_count_option_8">8 uygulama</string>
+    <string name="settings_shown_apps_count_option_12">12 uygulama</string>
+    <string name="context_menu_remove_from_notifications">Bildirim gelenlerden geçici olarak kaldır</string>
+    <string name="context_menu_remove_from_recents">Son kullanılanlardan geçici olarak kaldır</string>
+    <string name="context_menu_remove_from_now">Sıradakilerden geçici olarak kaldır</string>
 </resources>
