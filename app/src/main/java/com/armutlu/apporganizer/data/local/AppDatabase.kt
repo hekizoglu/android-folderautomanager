@@ -305,22 +305,30 @@ abstract class AppDatabase : RoomDatabase() {
 
         private val MIGRATION_21_22 = object : Migration(21, 22) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("DROP TABLE IF EXISTS operations")
+                db.execSQL("DROP TABLE IF EXISTS `operations`")
                 db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `operations` (
                         `id` TEXT NOT NULL PRIMARY KEY,
-                        `type` TEXT NOT NULL,
-                        `timestamp` INTEGER NOT NULL,
-                        `sourceCategoryId` TEXT NOT NULL,
+                        `type` TEXT NOT NULL DEFAULT '',
+                        `timestamp` INTEGER NOT NULL DEFAULT 0,
+                        `sourceCategoryId` TEXT NOT NULL DEFAULT '',
                         `targetCategoryId` TEXT,
-                        `movedPackageNames` TEXT NOT NULL,
-                        `oldCategoryMapping` TEXT NOT NULL,
-                        `rolledBack` INTEGER NOT NULL,
+                        `movedPackageNames` TEXT NOT NULL DEFAULT '',
+                        `oldCategoryMapping` TEXT NOT NULL DEFAULT '',
+                        `rolledBack` INTEGER NOT NULL DEFAULT 0,
                         `rolledBackAt` INTEGER
                     )
                     """
                 )
+                db.addColumnIfNotExists("operations", "type", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("operations", "timestamp", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("operations", "sourceCategoryId", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("operations", "targetCategoryId", "TEXT")
+                db.addColumnIfNotExists("operations", "movedPackageNames", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("operations", "oldCategoryMapping", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("operations", "rolledBack", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("operations", "rolledBackAt", "INTEGER")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_timestamp` ON `operations`(`timestamp`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_type` ON `operations`(`type`)")
             }
@@ -332,14 +340,19 @@ abstract class AppDatabase : RoomDatabase() {
                     """
                     CREATE TABLE IF NOT EXISTS `undo_merges` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        `sourceCategoryId` TEXT NOT NULL,
-                        `targetCategoryId` TEXT NOT NULL,
-                        `affectedPackages` TEXT NOT NULL,
-                        `timestamp` INTEGER NOT NULL,
-                        `mergedAt` INTEGER NOT NULL
+                        `sourceCategoryId` TEXT NOT NULL DEFAULT '',
+                        `targetCategoryId` TEXT NOT NULL DEFAULT '',
+                        `affectedPackages` TEXT NOT NULL DEFAULT '',
+                        `timestamp` INTEGER NOT NULL DEFAULT 0,
+                        `mergedAt` INTEGER NOT NULL DEFAULT 0
                     )
                     """
                 )
+                db.addColumnIfNotExists("undo_merges", "sourceCategoryId", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("undo_merges", "targetCategoryId", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("undo_merges", "affectedPackages", "TEXT NOT NULL DEFAULT ''")
+                db.addColumnIfNotExists("undo_merges", "timestamp", "INTEGER NOT NULL DEFAULT 0")
+                db.addColumnIfNotExists("undo_merges", "mergedAt", "INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_undo_merges_timestamp` ON `undo_merges`(`timestamp`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_undo_merges_source` ON `undo_merges`(`sourceCategoryId`)")
             }
