@@ -47,7 +47,25 @@ class LauncherViewModelLogicTest {
     fun `buildFolders_bos_kategorileri_dislar`() {
         val apps = listOf(app("com.instagram", "Instagram", "social"))
         val folders = buildFolders(apps, categories)
-        assertFalse("Oyun uygulaması yokken games klasörü olmamalı",
+        assertFalse("Oyun uygulaması yokken sistem games klasörü olmamalı",
+            folders.any { it.category.categoryId == "games" })
+    }
+
+    @Test
+    fun `buildFolders_ozel_bos_kategorileri_korur_sistem_bos_kategorilerini_dislar`() {
+        val customCat = Category(
+            categoryId = "custom_1",
+            categoryName = "Yeni Klasör",
+            isSystemCategory = false
+        )
+        val allCategories = categories + customCat
+        val apps = listOf(app("com.instagram", "Instagram", "social"))
+
+        val folders = buildFolders(apps, allCategories)
+
+        assertTrue("Kullanıcı tarafından oluşturulan boş özel klasör listede olmalı",
+            folders.any { it.category.categoryId == "custom_1" })
+        assertFalse("Uygulaması olmayan sistem klasörleri listede olmamalı",
             folders.any { it.category.categoryId == "games" })
     }
 

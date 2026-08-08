@@ -1,4 +1,4 @@
-﻿import java.util.Properties
+import java.util.Properties
 
 import com.google.firebase.perf.plugin.FirebasePerfExtension
 
@@ -43,8 +43,8 @@ android {
         applicationId = "com.armutlu.apporganizer"
         minSdk = 26
         targetSdk = 35
-        versionCode = 178
-        versionName = "1.4.54"
+        versionCode = 179
+        versionName = "1.4.55"
         buildConfigField(
             "boolean",
             "FIREBASE_BUILD_ENABLED",

@@ -107,7 +107,7 @@ internal fun buildFolders(apps: List<AppInfo>, categories: List<Category>): List
                     .sortedBy { it.appName }
             )
         }
-        .filter { it.apps.isNotEmpty() }
+        .filter { it.apps.isNotEmpty() || !it.category.isSystemCategory }
 
 /** Tüm uygulamaları ada göre sıralı döndürür. Gizli uygulamalar hariç. */
 internal fun buildAllApps(apps: List<AppInfo>): List<AppInfo> =
@@ -597,9 +597,11 @@ class LauncherViewModel @Inject constructor(
                 categoryId = newCatId,
                 categoryName = "Yeni Klasör",
                 iconEmoji = "📁",
+                isSystemCategory = false,
                 displayOrder = 999,
             )
             repository.addCategory(newCategory)
+            _openFolderId.value = newCatId
             _toastMessage.emit("Yeni Klasör oluşturuldu")
         }
     }

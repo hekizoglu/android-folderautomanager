@@ -299,33 +299,35 @@ internal fun FolderGridPage(
                 }
                 Spacer(Modifier.width(1.dp))
             }
-            Text(
-                text = if (pageNotifications > 0) {
-                    if (pageNotificationNames.isNotBlank()) {
-                        "$pageNotifications okunmamış bildirim ($pageNotificationNames) — rapora dokun"
-                    } else {
-                        "$pageNotifications okunmamış bildirim — rapora dokun"
-                    }
-                } else {
-                    "Bildirim raporunu gör"
-                },
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                fontSize = 11.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .heightIn(min = 48.dp)
-                    .fillMaxWidth()
-                    .clickable(onClick = onNotificationSummaryTap)
-                    .semantics {
-                        role = Role.Button
-                        contentDescription = if (pageNotifications > 0) {
-                            "$pageNotifications okunmamış bildirim. Bildirim raporunu açmak için dokun."
+            if (pageNotificationsEnabled) {
+                Text(
+                    text = if (pageNotifications > 0) {
+                        if (pageNotificationNames.isNotBlank()) {
+                            "$pageNotifications okunmamış bildirim ($pageNotificationNames) — rapora dokun"
                         } else {
-                            "Bildirim raporunu açmak için dokun."
+                            "$pageNotifications okunmamış bildirim — rapora dokun"
                         }
-                    }
-            )
+                    } else {
+                        "Bildirim raporunu gör"
+                    },
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .heightIn(min = 48.dp)
+                        .fillMaxWidth()
+                        .clickable(onClick = onNotificationSummaryTap)
+                        .semantics {
+                            role = Role.Button
+                            contentDescription = if (pageNotifications > 0) {
+                                "$pageNotifications okunmamış bildirim. Bildirim raporunu açmak için dokun."
+                            } else {
+                                "Bildirim raporunu açmak için dokun."
+                            }
+                        }
+                )
+            }
         }
     }
 }

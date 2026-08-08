@@ -38,6 +38,7 @@ import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.NotificationHistoryEntity
 import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunchContract
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationHistoryUiState
+import timber.log.Timber
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportViewModel
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportRange
@@ -624,25 +625,28 @@ private fun shareNotificationReport(
     report: NotificationAnalyzer.Report,
     periodLabel: String,
 ) {
-    val text = buildString {
-        appendLine("AppOrganizer - Bildirim Raporu")
-        appendLine("Dönem: $periodLabel")
-        appendLine("Toplam bildirim: ${report.totalNotifications}")
-        appendLine("Eyleme değer: ${report.actionableCount}")
-        appendLine("Bastırılan: ${report.suppressedCount}")
-        appendLine()
-        appendLine("En çok bildirim gönderen uygulamalar:")
-        report.mostTalkative.forEach { stat ->
-            appendLine("- ${stat.appName}: ${stat.total}")
-        }
-    }
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer Bildirim Raporu - $periodLabel")
-        putExtra(Intent.EXTRA_TEXT, text)
-    }
     runCatching {
+        val text = buildString {
+            appendLine("AppOrganizer - Bildirim Raporu")
+            appendLine("Dönem: $periodLabel")
+            appendLine("Toplam bildirim: ${report.totalNotifications}")
+            appendLine("Eyleme değer: ${report.actionableCount}")
+            appendLine("Bastırılan: ${report.suppressedCount}")
+            appendLine()
+            appendLine("En çok bildirim gönderen uygulamalar:")
+            report.mostTalkative.forEach { stat ->
+                appendLine("- ${stat.appName}: ${stat.total}")
+            }
+        }
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer Bildirim Raporu - $periodLabel")
+            putExtra(Intent.EXTRA_TEXT, text)
+        }
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.notif_report_export_txt)))
+    }.onFailure { e ->
+        Timber.e(e, "Notification report export failed")
+        android.widget.Toast.makeText(context, "Dışa aktarma başarısız", android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -651,28 +655,32 @@ private fun shareAiNotificationData(
     report: NotificationAnalyzer.Report,
     periodLabel: String,
 ) {
-    val text = buildString {
-        appendLine("--- APPORGANIZER BİLDİRİM VERİSİ (YAPAY ZEKA ANALİZİ İÇİN) ---")
-        appendLine("Dönem: $periodLabel")
-        appendLine("Özet Metrics:")
-        appendLine("- Toplam Bildirim: ${report.totalNotifications}")
-        appendLine("- Eyleme Değer Bildirim: ${report.actionableCount}")
-        appendLine("- Bastırılan Bildirim: ${report.suppressedCount}")
-        appendLine()
-        appendLine("Uygulama İstatistikleri:")
-        report.mostTalkative.forEach { stat ->
-            appendLine("App: ${stat.appName} (${stat.packageName}) | Toplam: ${stat.total} | Gece Oranı: ${(stat.nightRatio * 100).toInt()}% | Dikkat Dağıtma Skoru: %.1f".format(stat.distractionScore))
-        }
-        appendLine()
-        appendLine("--- VERİ SONU ---")
-    }
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer AI Bildirim Verisi Export - $periodLabel")
-        putExtra(Intent.EXTRA_TEXT, text)
-    }
     runCatching {
+        val text = buildString {
+            appendLine("--- APPORGANIZER BİLDİRİM VERİSİ (YAPAY ZEKA ANALİZİ İÇİN) ---")
+            appendLine("Dönem: $periodLabel")
+            appendLine("Özet Metrics:")
+            appendLine("- Toplam Bildirim: ${report.totalNotifications}")
+            appendLine("- Eyleme Değer Bildirim: ${report.actionableCount}")
+            appendLine("- Bastırılan Bildirim: ${report.suppressedCount}")
+            appendLine()
+            appendLine("Uygulama İstatistikleri:")
+            report.mostTalkative.forEach { stat ->
+                val distractionFormatted = String.format(java.util.Locale.US, "%.1f", stat.distractionScore)
+                appendLine("App: ${stat.appName} (${stat.packageName}) | Toplam: ${stat.total} | Gece Oranı: ${(stat.nightRatio * 100).toInt()}% | Dikkat Dağıtma Skoru: $distractionFormatted")
+            }
+            appendLine()
+            appendLine("--- VERİ SONU ---")
+        }
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer AI Bildirim Verisi Export - $periodLabel")
+            putExtra(Intent.EXTRA_TEXT, text)
+        }
         context.startActivity(Intent.createChooser(intent, "Yapay Zeka İçin Dışarı Aktar"))
+    }.onFailure { e ->
+        Timber.e(e, "AI notification export failed")
+        android.widget.Toast.makeText(context, "Dışa aktarma başarısız", android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 
