@@ -339,10 +339,17 @@ internal fun formatUsageMetric(value: Long, metric: UsageMetric): String = when 
 /** Uygulamanın sistem "Uygulama Bilgisi" ekranını açar (bazı cihazlarda desteklenmeyebilir). */
 internal fun openAppInfoSettings(context: Context, packageName: String) {
     runCatching {
-        val intent = Intent(
-            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-            Uri.fromParts("package", packageName, null)
-        ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-        context.startActivity(intent)
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)?.apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        if (launchIntent != null) {
+            context.startActivity(launchIntent)
+        } else {
+            val intent = Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", packageName, null)
+            ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+            context.startActivity(intent)
+        }
     }
 }

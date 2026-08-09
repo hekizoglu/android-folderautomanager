@@ -1,14 +1,19 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.TrendingUp
@@ -16,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -874,12 +880,12 @@ private fun InterestingStatsGrid(stats: WrappedEngine.InterestingStats) {
     val newestInstalledTitle = stringResource(R.string.wrapped_stat_newest_installed)
     val longestUnusedTitle = stringResource(R.string.wrapped_stat_longest_unused)
     val entries = buildList {
-        stats.mostOpenedApp?.let { add(Triple(mostOpenedTitle, it.appName, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
-        stats.leastOpenedApp?.let { add(Triple(leastOpenedTitle, it.appName, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
-        stats.largestApp?.let { add(Triple(largestAppTitle, it.appName, formatSizeMb(it.appSizeBytes))) }
-        stats.oldestInstalledApp?.let { add(Triple(oldestInstalledTitle, it.appName, null)) }
-        stats.newestInstalledApp?.let { add(Triple(newestInstalledTitle, it.appName, null)) }
-        stats.longestUnusedApp?.let { add(Triple(longestUnusedTitle, it.appName, null)) }
+        stats.mostOpenedApp?.let { add(Triple(mostOpenedTitle, it, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
+        stats.leastOpenedApp?.let { add(Triple(leastOpenedTitle, it, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
+        stats.largestApp?.let { add(Triple(largestAppTitle, it, formatSizeMb(it.appSizeBytes))) }
+        stats.oldestInstalledApp?.let { add(Triple(oldestInstalledTitle, it, null)) }
+        stats.newestInstalledApp?.let { add(Triple(newestInstalledTitle, it, null)) }
+        stats.longestUnusedApp?.let { add(Triple(longestUnusedTitle, it, null)) }
     }
     if (entries.isEmpty()) return
 
@@ -888,8 +894,8 @@ private fun InterestingStatsGrid(stats: WrappedEngine.InterestingStats) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             entries.chunked(2).forEach { rowEntries ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    rowEntries.forEach { (title, appName, extra) ->
-                        StatTile(title, appName, extra, modifier = Modifier.weight(1f))
+                    rowEntries.forEach { (title, app, extra) ->
+                        StatTile(title, app, extra, modifier = Modifier.weight(1f))
                     }
                     if (rowEntries.size == 1) Spacer(Modifier.weight(1f))
                 }
@@ -899,16 +905,39 @@ private fun InterestingStatsGrid(stats: WrappedEngine.InterestingStats) {
 }
 
 @Composable
-private fun StatTile(title: String, appName: String, extra: String?, modifier: Modifier = Modifier) {
+private fun StatTile(title: String, app: WrappedEngine.AppSnapshot, extra: String?, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = modifier,
+        modifier = modifier.clickable {
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(app.packageName)
+            if (launchIntent != null) {
+                context.startActivity(launchIntent)
+            } else {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", app.packageName, null)
+                }
+                context.startActivity(intent)
+            }
+        },
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    imageVector = Icons.Default.Launch,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.size(12.dp)
+                )
+            }
             Spacer(Modifier.height(4.dp))
-            Text(appName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            Text(app.appName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
             if (extra != null) {
                 Text(extra, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
             }
