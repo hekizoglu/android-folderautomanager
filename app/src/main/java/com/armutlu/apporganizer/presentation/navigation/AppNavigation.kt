@@ -134,7 +134,7 @@ fun AppNavigation(
         onExternalRouteConsumed()
     }
 
-    NavHost(navController = navController, startDestination = Routes.APP_LIST) {
+    NavHost(navController = navController, startDestination = Routes.SETTINGS) {
         composable(Routes.APP_LIST) {
             AppListScreen(
                 viewModel = viewModel,

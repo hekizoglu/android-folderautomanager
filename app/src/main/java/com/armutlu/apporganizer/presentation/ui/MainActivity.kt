@@ -67,15 +67,7 @@ class MainActivity : ComponentActivity() {
                 if (showOnboarding) {
                     OnboardingScreen(onFinish = {
                         AppPrefs.markOnboardingDone(this@MainActivity)
-                        // Onboarding bitince MainActivity'nin kendi NavHost'u (Routes.APP_LIST =
-                        // uygulama listesi ekranı) değil, gerçek ana ekran (LauncherActivity,
-                        // HOME+DEFAULT launcher) gösterilmeli — kullanıcı kurulum sihirbazını
-                        // bitirince doğrudan launcher'a düşmeli, "Ayarlar"a benzeyen bir listeye değil.
-                        startActivity(
-                            Intent(this@MainActivity, com.armutlu.apporganizer.presentation.ui.launcher.LauncherActivity::class.java)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        )
-                        finish()
+                        showOnboarding = false
                     })
                 } else {
                     AppNavigation(

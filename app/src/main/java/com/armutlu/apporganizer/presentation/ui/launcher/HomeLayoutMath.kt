@@ -22,11 +22,18 @@ object HomeLayoutMath {
 
     /**
      * Verilen yükseklikte kırpılmadan sığan klasör sayısı. En az 1 satır garanti edilir
-     * (aşırı küçük pencere durumunda bile grid boş kalmaz).
+     * (aşırı küçük pencere durumunda bile grid boş kalmaz). Bildirim/bilgi paneli kapalıysa (infoPanelVisible=false)
+     * alttaki 112dp pay sıfırlanır ve açılan dikey alan klasör gridine kazandırılır.
      */
-    fun folderCapacity(availableHeightDp: Int, folderSizeDp: Int, columns: Int): Int {
+    fun folderCapacity(
+        availableHeightDp: Int,
+        folderSizeDp: Int,
+        columns: Int,
+        infoPanelVisible: Boolean = true
+    ): Int {
         val rowHeight = folderSizeDp + LABEL_HEIGHT_DP
-        val usable = availableHeightDp - GRID_VERTICAL_PADDING_DP - INDICATOR_RESERVE_DP - INFO_PANEL_RESERVE_DP
+        val infoReserve = if (infoPanelVisible) INFO_PANEL_RESERVE_DP else 0
+        val usable = availableHeightDp - GRID_VERTICAL_PADDING_DP - INDICATOR_RESERVE_DP - infoReserve
         if (usable <= rowHeight) return max(MIN_VISIBLE_FOLDERS, columns)
         // n satır koşulu: n*rowHeight + (n-1)*spacing <= usable
         val rows = max(1, (usable + ROW_SPACING_DP) / (rowHeight + ROW_SPACING_DP))

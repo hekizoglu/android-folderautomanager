@@ -1086,8 +1086,13 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
             val availableHeightDp = with(density) { constraints.maxHeight.toDp().value.toInt() }
-            val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns) {
-                HomeLayoutMath.folderCapacity(availableHeightDp, effectiveFolderSizeDp, screenColumns)
+            val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns, folderPageNotificationsEnabled) {
+                HomeLayoutMath.folderCapacity(
+                    availableHeightDp = availableHeightDp,
+                    folderSizeDp = effectiveFolderSizeDp,
+                    columns = screenColumns,
+                    infoPanelVisible = folderPageNotificationsEnabled
+                )
             }
             // 8, yeni kurulumdaki otomatik düzen değeridir; kapasiteyi 8 ile sınırlamak
             // geniş tabletlerde gereksiz klasör sayfaları üretiyordu. Manuel 4/6/8/12
@@ -1445,15 +1450,13 @@ fun HomeScreen(
                         onFolderLongClick = { folderContextMenu = it },
                         onSwipeUp = { pkg -> vm.launchApp(context, pkg) },
                         onNotificationTap = { pkg -> vm.launchApp(context, pkg) },
-                        // EX02 — "N okunmamış bildirim" alt bilgi satırı Bildirim Raporu ekranını açar
-                        // MainActivity route deseniyle haftalık raporu açar.
+                        // EX02 — "N okunmamış bildirim" alt bilgi satırı Bildirim Raporu Geçmiş ekranını açar (en yeniden eskiye doğru)
                         onNotificationSummaryTap = {
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            val intent = Intent(context, MainActivity::class.java).apply {
-                                putExtra(MainActivity.EXTRA_OPEN_ROUTE, Routes.NOTIFICATION_REPORT)
-                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
-                            runCatching { context.startActivity(intent) }
+                            NotificationReportLaunchContract.openHistory(context)
+                        },
+                        onDisableNotifications = {
+                            folderPageNotificationsEnabled = false
                         },
                         onDragStart = { index ->
                             dragFromIndex = index

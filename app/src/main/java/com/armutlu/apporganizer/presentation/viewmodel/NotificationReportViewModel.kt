@@ -62,11 +62,12 @@ data class NotificationHistoryUiState(
                 )
             }.sortedBy { it.appName.lowercase(Locale("tr", "TR")) }
 
+            val sortedEntries = entries.sortedByDescending { it.postedAt }
             return NotificationHistoryUiState(
                 entries = if (effectiveSelection == null) {
-                    entries
+                    sortedEntries
                 } else {
-                    entries.filter { it.packageName == effectiveSelection }
+                    sortedEntries.filter { it.packageName == effectiveSelection }
                 },
                 filters = filters,
                 selectedPackageName = effectiveSelection,

@@ -1,7 +1,9 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -97,6 +100,7 @@ internal fun FolderGridPage(
     // pageNotifications == 0 iken de (ipucu metni gösterilirken) dokunulabilir kalır; tek
     // hedef olduğundan davranış tutarlıdır.
     onNotificationSummaryTap: () -> Unit = {},
+    onDisableNotifications: () -> Unit = {},
     onDragStart: (index: Int) -> Unit,
     onDrag: (dragAmount: Offset) -> Unit,
     onDragEnd: () -> Unit,
@@ -300,6 +304,33 @@ internal fun FolderGridPage(
                 Spacer(Modifier.width(1.dp))
             }
             if (pageNotificationsEnabled) {
+                var showDismissDialog by remember { mutableStateOf(false) }
+
+                if (showDismissDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDismissDialog = false },
+                        title = { Text("Bildirim Özeti Bandını Kapat") },
+                        text = { Text("Klasör sayfasındaki bildirim özet bandı kapatılsın mı? Kapatıldığında alttaki alan klasörlere kazandırılır.") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showDismissDialog = false
+                                    AppPrefs.setFolderPageNotificationsEnabled(context, false)
+                                    onDisableNotifications()
+                                }
+                            ) {
+                                Text("Kapat")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDismissDialog = false }) {
+                                Text("Vazgeç")
+                            }
+                        }
+                    )
+                }
+
+                @OptIn(ExperimentalFoundationApi::class)
                 Text(
                     text = if (pageNotifications > 0) {
                         if (pageNotificationNames.isNotBlank()) {
@@ -317,13 +348,19 @@ internal fun FolderGridPage(
                     modifier = Modifier
                         .heightIn(min = 48.dp)
                         .fillMaxWidth()
-                        .clickable(onClick = onNotificationSummaryTap)
+                        .combinedClickable(
+                            onClick = onNotificationSummaryTap,
+                            onLongClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                showDismissDialog = true
+                            }
+                        )
                         .semantics {
                             role = Role.Button
                             contentDescription = if (pageNotifications > 0) {
-                                "$pageNotifications okunmamış bildirim. Bildirim raporunu açmak için dokun."
+                                "$pageNotifications okunmamış bildirim. Bildirim raporunu açmak için dokun. Kapatmak için basılı tut."
                             } else {
-                                "Bildirim raporunu açmak için dokun."
+                                "Bildirim raporunu açmak için dokun. Kapatmak için basılı tut."
                             }
                         }
                 )
