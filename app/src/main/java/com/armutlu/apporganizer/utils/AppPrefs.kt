@@ -407,6 +407,12 @@ object AppPrefs {
 
     // Klasor sayfasi duzen onerileri: kucuk klasorleri birlestirme ve tanim bekleyen
     // uygulamalari hatirlatma. Kullanici kapatabilir ya da gecici sessize alabilir.
+    const val KEY_FOLDER_PAGE_STRIP_ENABLED = "folder_page_strip_enabled"
+    fun isFolderPageStripEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FOLDER_PAGE_STRIP_ENABLED, true)
+    fun setFolderPageStripEnabled(context: Context, enabled: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FOLDER_PAGE_STRIP_ENABLED, enabled).apply()
+
     const val KEY_FOLDER_PAGE_INSIGHTS_ENABLED = "folder_page_insights_enabled"
     const val KEY_FOLDER_PAGE_INSIGHTS_MUTED_UNTIL = "folder_page_insights_muted_until"
     fun isFolderPageInsightsEnabled(context: Context): Boolean =

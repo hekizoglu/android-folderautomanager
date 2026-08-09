@@ -174,8 +174,8 @@ fun NotificationReportScreen(
                         onExport = { report ->
                             shareNotificationReport(context, report, reportRangeLabel(selectedRange))
                         },
-                        onExportAi = { report ->
-                            shareAiNotificationData(context, report, reportRangeLabel(selectedRange))
+                        onExportAi = {
+                            shareAiNotificationDataCsv(context, viewModel)
                         },
                     )
                 }
@@ -650,37 +650,22 @@ private fun shareNotificationReport(
     }
 }
 
-private fun shareAiNotificationData(
+private fun shareAiNotificationDataCsv(
     context: Context,
-    report: NotificationAnalyzer.Report,
-    periodLabel: String,
+    viewModel: NotificationReportViewModel,
 ) {
-    runCatching {
-        val text = buildString {
-            appendLine("--- APPORGANIZER BİLDİRİM VERİSİ (YAPAY ZEKA ANALİZİ İÇİN) ---")
-            appendLine("Dönem: $periodLabel")
-            appendLine("Özet Metrics:")
-            appendLine("- Toplam Bildirim: ${report.totalNotifications}")
-            appendLine("- Eyleme Değer Bildirim: ${report.actionableCount}")
-            appendLine("- Bastırılan Bildirim: ${report.suppressedCount}")
-            appendLine()
-            appendLine("Uygulama İstatistikleri:")
-            report.mostTalkative.forEach { stat ->
-                val distractionFormatted = String.format(java.util.Locale.US, "%.1f", stat.distractionScore)
-                appendLine("App: ${stat.appName} (${stat.packageName}) | Toplam: ${stat.total} | Gece Oranı: ${(stat.nightRatio * 100).toInt()}% | Dikkat Dağıtma Skoru: $distractionFormatted")
+    viewModel.exportAllNotificationsCsv(context) { uri ->
+        if (uri != null) {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/csv"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer Ham Bildirim Verisi (.csv)")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            appendLine()
-            appendLine("--- VERİ SONU ---")
+            context.startActivity(Intent.createChooser(intent, "Yapay Zeka İçin CSV Dışarı Aktar"))
+        } else {
+            android.widget.Toast.makeText(context, "Dışa aktarma başarısız", android.widget.Toast.LENGTH_SHORT).show()
         }
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "AppOrganizer AI Bildirim Verisi Export - $periodLabel")
-            putExtra(Intent.EXTRA_TEXT, text)
-        }
-        context.startActivity(Intent.createChooser(intent, "Yapay Zeka İçin Dışarı Aktar"))
-    }.onFailure { e ->
-        Timber.e(e, "AI notification export failed")
-        android.widget.Toast.makeText(context, "Dışa aktarma başarısız", android.widget.Toast.LENGTH_SHORT).show()
     }
 }
 

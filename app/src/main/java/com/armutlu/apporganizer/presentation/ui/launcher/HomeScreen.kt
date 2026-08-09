@@ -9,6 +9,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageSpec.FolderPage
 import com.armutlu.apporganizer.presentation.ui.launcher.model.HomePageAnchor
+import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.HomePagePrefs
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Button
@@ -1086,12 +1087,13 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
             val availableHeightDp = with(density) { constraints.maxHeight.toDp().value.toInt() }
-            val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns, folderPageNotificationsEnabled) {
+            val folderPageStripEnabled = remember(context) { AppPrefs.isFolderPageStripEnabled(context) }
+            val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns, folderPageNotificationsEnabled, folderPageStripEnabled) {
                 HomeLayoutMath.folderCapacity(
                     availableHeightDp = availableHeightDp,
                     folderSizeDp = effectiveFolderSizeDp,
                     columns = screenColumns,
-                    infoPanelVisible = folderPageNotificationsEnabled
+                    infoPanelVisible = folderPageNotificationsEnabled && folderPageStripEnabled
                 )
             }
             // 8, yeni kurulumdaki otomatik düzen değeridir; kapasiteyi 8 ile sınırlamak

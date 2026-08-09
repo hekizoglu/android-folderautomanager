@@ -279,4 +279,48 @@ class NotificationReportViewModel @Inject constructor(
     private fun checkListenerPermission(): Boolean {
         return NotificationAccessUtils.isNotificationListenerEnabled(context)
     }
+
+    /**
+     * Tüm ham bildirim verilerini özet geçmeden ham CSV formatında (Yapay zeka analizi için)
+     * dışarı aktarır.
+     */
+    fun exportAllNotificationsCsv(context: Context, onComplete: (android.net.Uri?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val uri = runCatching {
+                val appNames = appDao.getAllApps().associate { it.packageName to it.appName }
+                val (since, until) = resolveRange(System.currentTimeMillis())
+                val events = notificationEventDao.eventsBetween(since, until)
+                val historyMap = historyUiState.value.entries.associateBy { Pair(it.packageName, it.postedAt) }
+                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+
+                val csv = buildString {
+                    appendLine("id,package_name,app_name,title,text,posted_at,date_time,category,importance_score,was_suppressed")
+                    events.forEach { event ->
+                        val appName = appNames[event.packageName] ?: event.packageName
+                        val history = historyMap[Pair(event.packageName, event.postedAt)]
+                        val title = history?.title?.replace("\"", "\"\"")?.replace("\n", " ") ?: ""
+                        val text = history?.text?.replace("\"", "\"\"")?.replace("\n", " ") ?: ""
+                        val dateStr = sdf.format(java.util.Date(event.postedAt))
+                        appendLine("${event.id},\"${event.packageName}\",\"${appName.replace("\"", "\"\"")}\",\"$title\",\"$text\",${event.postedAt},\"$dateStr\",\"${event.category}\",${event.importanceScore},${event.wasSuppressed}")
+                    }
+                }
+
+                val fileName = "apporganizer_notifications_ai_export_${System.currentTimeMillis()}.csv"
+                val file = java.io.File(context.cacheDir, fileName)
+                file.writeText(csv, Charsets.UTF_8)
+
+                androidx.core.content.FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    file
+                )
+            }.onFailure { e ->
+                Timber.e(e, "CSV export hatası")
+            }.getOrNull()
+
+            withContext(Dispatchers.Main) {
+                onComplete(uri)
+            }
+        }
+    }
 }

@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material3.Text
+import com.armutlu.apporganizer.utils.AppPrefs
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -106,7 +107,13 @@ fun FolderTile(
         label = "folderTileScale"
     )
 
-    val previewApps = folder.apps.take(4)
+    val folderSortMode = remember(context) {
+        val saved = AppPrefs.getFolderSortMode(context)
+        AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA
+    }
+    val previewApps = remember(folder.apps, folderSortMode) {
+        folder.apps.sortedByMode(folderSortMode).take(4)
+    }
     val totalBadge  = folder.apps.sumOf { it.notificationCount }
     val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
     val folderLabel = remember(folder, customName, topApp, totalBadge) {

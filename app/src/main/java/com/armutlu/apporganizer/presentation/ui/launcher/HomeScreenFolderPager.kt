@@ -30,6 +30,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
@@ -136,6 +142,9 @@ internal fun FolderGridPage(
     val pageNotificationNames = pageNotificationApps
         .take(3)
         .joinToString(", ") { (app, count) -> "${app.appName} $count" }
+    var pageStripEnabled by remember(context) {
+        mutableStateOf(AppPrefs.isFolderPageStripEnabled(context))
+    }
     var pageInsightsEnabled by remember(context) {
         mutableStateOf(AppPrefs.isFolderPageInsightsEnabled(context))
     }
@@ -251,119 +260,143 @@ internal fun FolderGridPage(
         }
             }
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = if (pageInsightText != null) 128.dp else 80.dp)
-                .padding(horizontal = 16.dp, vertical = 4.dp)
-                .background(Color(0xFF171717), RoundedCornerShape(12.dp))
-                .padding(horizontal = 14.dp, vertical = 8.dp)
-        ) {
-            Text(
-                text = "Bu sayfadaki klasörler",
-                color = Color.White,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "${pageFolders.size} klasör · $pageApps uygulama",
-                color = Color.White.copy(alpha = 0.72f),
-                fontSize = 11.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            if (pageInsightText != null) {
+        if (pageStripEnabled) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = if (pageInsightText != null) 128.dp else 80.dp)
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .background(Color(0xFF171717), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 14.dp, vertical = 8.dp)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = pageInsightText,
-                        color = Color.White.copy(alpha = 0.78f),
-                        fontSize = 11.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                    TextButton(
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Bu sayfadaki klasörler",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "${pageFolders.size} klasör · $pageApps uygulama",
+                            color = Color.White.copy(alpha = 0.72f),
+                            fontSize = 11.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    IconButton(
                         onClick = {
-                            val until = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(7)
-                            AppPrefs.muteFolderPageInsights(context, until)
-                            pageInsightsMutedUntil = until
-                        }
-                    ) { Text("Sessize al") }
-                    TextButton(
-                        onClick = {
-                            AppPrefs.setFolderPageInsightsEnabled(context, false)
-                            pageInsightsEnabled = false
-                        }
-                    ) { Text("Kapat") }
-                }
-                Spacer(Modifier.width(1.dp))
-            }
-            if (pageNotificationsEnabled) {
-                var showDismissDialog by remember { mutableStateOf(false) }
-
-                if (showDismissDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDismissDialog = false },
-                        title = { Text("Bildirim Özeti Bandını Kapat") },
-                        text = { Text("Klasör sayfasındaki bildirim özet bandı kapatılsın mı? Kapatıldığında alttaki alan klasörlere kazandırılır.") },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    showDismissDialog = false
-                                    AppPrefs.setFolderPageNotificationsEnabled(context, false)
-                                    onDisableNotifications()
-                                }
-                            ) {
-                                Text("Kapat")
-                            }
+                            AppPrefs.setFolderPageStripEnabled(context, false)
+                            pageStripEnabled = false
                         },
-                        dismissButton = {
-                            TextButton(onClick = { showDismissDialog = false }) {
-                                Text("Vazgeç")
-                            }
-                        }
-                    )
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Kapat",
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
+                if (pageInsightText != null) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = pageInsightText,
+                            color = Color.White.copy(alpha = 0.78f),
+                            fontSize = 11.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(
+                            onClick = {
+                                val until = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(7)
+                                AppPrefs.muteFolderPageInsights(context, until)
+                                pageInsightsMutedUntil = until
+                            }
+                        ) { Text("Sessize al") }
+                        TextButton(
+                            onClick = {
+                                AppPrefs.setFolderPageInsightsEnabled(context, false)
+                                pageInsightsEnabled = false
+                            }
+                        ) { Text("Kapat") }
+                    }
+                    Spacer(Modifier.width(1.dp))
+                }
+                if (pageNotificationsEnabled) {
+                    var showDismissDialog by remember { mutableStateOf(false) }
 
-                @OptIn(ExperimentalFoundationApi::class)
-                Text(
-                    text = if (pageNotifications > 0) {
-                        if (pageNotificationNames.isNotBlank()) {
-                            "$pageNotifications okunmamış bildirim ($pageNotificationNames) — rapora dokun"
-                        } else {
-                            "$pageNotifications okunmamış bildirim — rapora dokun"
-                        }
-                    } else {
-                        "Bildirim raporunu gör"
-                    },
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                    fontSize = 11.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .heightIn(min = 48.dp)
-                        .fillMaxWidth()
-                        .combinedClickable(
-                            onClick = onNotificationSummaryTap,
-                            onLongClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                showDismissDialog = true
+                    if (showDismissDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showDismissDialog = false },
+                            title = { Text("Bildirim Özeti Bandını Kapat") },
+                            text = { Text("Klasör sayfasındaki bildirim özet bandı kapatılsın mı? Kapatıldığında alttaki alan klasörlere kazandırılır.") },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        showDismissDialog = false
+                                        AppPrefs.setFolderPageNotificationsEnabled(context, false)
+                                        onDisableNotifications()
+                                    }
+                                ) {
+                                    Text("Kapat")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDismissDialog = false }) {
+                                    Text("Vazgeç")
+                                }
                             }
                         )
-                        .semantics {
-                            role = Role.Button
-                            contentDescription = if (pageNotifications > 0) {
-                                "$pageNotifications okunmamış bildirim. Bildirim raporunu açmak için dokun. Kapatmak için basılı tut."
+                    }
+
+                    @OptIn(ExperimentalFoundationApi::class)
+                    Text(
+                        text = if (pageNotifications > 0) {
+                            if (pageNotificationNames.isNotBlank()) {
+                                "$pageNotifications okunmamış bildirim ($pageNotificationNames) — rapora dokun"
                             } else {
-                                "Bildirim raporunu açmak için dokun. Kapatmak için basılı tut."
+                                "$pageNotifications okunmamış bildirim — rapora dokun"
                             }
-                        }
-                )
+                        } else {
+                            "Bildirim raporunu gör"
+                        },
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .heightIn(min = 48.dp)
+                            .fillMaxWidth()
+                            .combinedClickable(
+                                onClick = onNotificationSummaryTap,
+                                onLongClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    showDismissDialog = true
+                                }
+                            )
+                            .semantics {
+                                role = Role.Button
+                                contentDescription = if (pageNotifications > 0) {
+                                    "$pageNotifications okunmamış bildirim. Bildirim raporunu açmak için dokun. Kapatmak için basılı tut."
+                                } else {
+                                    "Bildirim raporunu açmak için dokun. Kapatmak için basılı tut."
+                                }
+                            }
+                    )
+                }
             }
         }
     }

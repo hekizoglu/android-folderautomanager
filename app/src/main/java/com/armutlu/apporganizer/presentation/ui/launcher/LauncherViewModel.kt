@@ -354,12 +354,15 @@ class LauncherViewModel @Inject constructor(
     // ilk Room emit'ine kadar HomeScreen "Uygulamalar yukleniyor..." flasi gosteriyordu.
     val initialLoadDone: StateFlow<Boolean> = _initialLoadDone.asStateFlow()
 
-    val recentNotificationCounts: StateFlow<Map<String, Int>> = flow {
-        val windowStart = System.currentTimeMillis() - RECENT_NOTIFICATIONS_WINDOW_MS
-        emitAll(notificationEventDao.observeCountsSince(windowStart))
-    }
-        .map { counts -> counts.associate { it.packageName to it.count } }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+    val recentNotificationCounts: StateFlow<Map<String, Int>> = combine(
+        AppNotificationListenerService.badgeCounts,
+        AppNotificationListenerService.lastPostedAt,
+    ) { active, posted ->
+        val ctx = getApplication<Application>()
+        val lastReadAt = com.armutlu.apporganizer.utils.NotificationReadPrefs.getAll(ctx)
+        com.armutlu.apporganizer.domain.usecase.notification.UnreadNotificationModel
+            .computeUnreadCounts(active, posted, lastReadAt)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     val recentNotificationApps: StateFlow<List<AppInfo>> = combine(
         allAppsSource,

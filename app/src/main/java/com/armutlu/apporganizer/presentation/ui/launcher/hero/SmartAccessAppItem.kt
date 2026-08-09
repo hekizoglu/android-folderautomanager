@@ -30,11 +30,10 @@ internal fun SmartAccessAppItem(
     val labelColor = remember(labelColorHex) {
         runCatching { Color(android.graphics.Color.parseColor(labelColorHex)) }.getOrDefault(Color.White)
     }
-    Box(
+    androidx.compose.foundation.layout.Column(
         modifier = modifier
-            .testTag("smart_access_item_${app.packageName}")
-            .size(width = 52.dp, height = 66.dp),
-        contentAlignment = Alignment.Center,
+            .testTag("smart_access_item_${app.packageName}"),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         BadgedBox(
             badge = {
@@ -54,7 +53,7 @@ internal fun SmartAccessAppItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
                 showLabel = true,
-                iconSize = 48.dp,
+                iconSize = 44.dp,
                 newBadgeEnabled = false,
                 notificationBadgeEnabled = false,
                 labelColor = labelColor,
