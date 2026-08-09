@@ -15,6 +15,9 @@ interface NotificationHistoryDao {
     @Query("SELECT * FROM notification_history ORDER BY postedAt DESC LIMIT :limit")
     fun observeRecent(limit: Int = 500): Flow<List<NotificationHistoryEntity>>
 
+    @Query("SELECT * FROM notification_history ORDER BY postedAt DESC LIMIT :limit")
+    suspend fun getRecentHistory(limit: Int = 5000): List<NotificationHistoryEntity>
+
     @Query("UPDATE notification_history SET isRead = 1 WHERE id = :id")
     suspend fun markRead(id: Long)
 

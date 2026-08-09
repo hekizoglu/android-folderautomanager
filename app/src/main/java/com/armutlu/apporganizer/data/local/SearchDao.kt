@@ -79,4 +79,10 @@ interface SearchDao {
      */
     @Query("DELETE FROM search_documents WHERE source_type = :type")
     suspend fun deleteBySource(type: String): Int
+
+    /**
+     * Belirli bir kaynaktaki döküman sayısını döndürür.
+     */
+    @Query("SELECT COUNT(*) FROM search_documents WHERE source_type = :type")
+    suspend fun countBySource(type: String): Int
 }

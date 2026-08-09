@@ -290,18 +290,37 @@ class NotificationReportViewModel @Inject constructor(
                 val appNames = appDao.getAllApps().associate { it.packageName to it.appName }
                 val (since, until) = resolveRange(System.currentTimeMillis())
                 val events = notificationEventDao.eventsBetween(since, until)
-                val historyMap = historyUiState.value.entries.associateBy { Pair(it.packageName, it.postedAt) }
+                val rawHistory = notificationHistoryDao.getRecentHistory(5000)
                 val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+
+                val historyByPkg = rawHistory.groupBy { it.packageName }
+                val processedHistoryIds = mutableSetOf<Long>()
 
                 val csv = buildString {
                     appendLine("id,package_name,app_name,title,text,posted_at,date_time,category,importance_score,was_suppressed")
+
+                    // 1. Olayları ve eşleşen bildirim metinlerini (başlık + içerik) CSV'ye ekle
                     events.forEach { event ->
                         val appName = appNames[event.packageName] ?: event.packageName
-                        val history = historyMap[Pair(event.packageName, event.postedAt)]
-                        val title = history?.title?.replace("\"", "\"\"")?.replace("\n", " ") ?: ""
-                        val text = history?.text?.replace("\"", "\"\"")?.replace("\n", " ") ?: ""
+                        val pkgHistory = historyByPkg[event.packageName] ?: emptyList()
+                        val match = pkgHistory.minByOrNull { kotlin.math.abs(it.postedAt - event.postedAt) }
+                            ?.takeIf { kotlin.math.abs(it.postedAt - event.postedAt) <= 15000L }
+
+                        if (match != null) processedHistoryIds.add(match.id)
+
+                        val title = (match?.title ?: "").replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
+                        val text = (match?.text ?: "").replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
                         val dateStr = sdf.format(java.util.Date(event.postedAt))
                         appendLine("${event.id},\"${event.packageName}\",\"${appName.replace("\"", "\"\"")}\",\"$title\",\"$text\",${event.postedAt},\"$dateStr\",\"${event.category}\",${event.importanceScore},${event.wasSuppressed}")
+                    }
+
+                    // 2. Olay tablosunda henüz eşleşmemiş bağımsız bildirim metni kayıtlarını da ekle
+                    rawHistory.filter { it.id !in processedHistoryIds && it.postedAt in since..until }.forEach { h ->
+                        val appName = appNames[h.packageName] ?: h.packageName
+                        val title = h.title.replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
+                        val text = h.text.replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
+                        val dateStr = sdf.format(java.util.Date(h.postedAt))
+                        appendLine("${h.id},\"${h.packageName}\",\"${appName.replace("\"", "\"\"")}\",\"$title\",\"$text\",${h.postedAt},\"$dateStr\",\"GENERAL\",35,false")
                     }
                 }
 

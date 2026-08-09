@@ -145,7 +145,7 @@ class SearchRepository(
      */
     suspend fun warmUpIndex() {
         withContext(Dispatchers.IO) {
-            runCatching { ensureSettingsIndexedIfNeeded(enabledSources()) }
+            runCatching { ensureSourcesIndexedIfNeeded(enabledSources()) }
         }
     }
 
@@ -176,30 +176,17 @@ class SearchRepository(
         if (trimmed.isEmpty()) return emptyMap()
 
         return withContext(Dispatchers.IO) {
-            val allowedSources = buildList {
-                if (AppPrefs.isSearchSourceSettingsEnabled(context)) add(SourceType.SETTING.key)
-                if (AppPrefs.isSearchSourceContactsEnabled(context)) add(SourceType.CONTACT.key)
-                if (AppPrefs.isSearchSourceFilesEnabled(context)) add(SourceType.FILE.key)
-            }
+            val allowedSources = enabledSources()
             if (allowedSources.isEmpty()) return@withContext emptyMap()
 
-            ensureSettingsIndexedIfNeeded(allowedSources)
+            ensureSourcesIndexedIfNeeded(allowedSources)
             runCatching {
-                val docs = if (fts5Available) {
-                    val ftsQuery = trimmed.split("\\s+".toRegex())
-                        .filter { it.isNotBlank() }
-                        .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
-                    searchDao.search(buildFts5Query(ftsQuery, limit, allowedSources))
-                } else {
-                    searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
-                }
+                val pattern = buildLikePattern(trimmed)
+                val docs = searchDao.search(buildLikeQuery(pattern, limit, allowedSources))
                 docs.groupBy { SourceType.fromKey(it.sourceType) }
             }.getOrElse { e ->
-                Timber.w(e, "debouncedSearch hatası, LIKE fallback deneniyor")
-                runCatching {
-                    val docs = searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
-                    docs.groupBy { SourceType.fromKey(it.sourceType) }
-                }.getOrDefault(emptyMap())
+                Timber.w(e, "debouncedSearch hatası")
+                emptyMap()
             }
         }
     }
@@ -211,16 +198,10 @@ class SearchRepository(
             result = withContext(Dispatchers.IO) {
                 val allowedSources = enabledSources()
                 if (allowedSources.isEmpty()) return@withContext emptyMap()
-                ensureSettingsIndexedIfNeeded(allowedSources)
+                ensureSourcesIndexedIfNeeded(allowedSources)
                 runCatching {
-                    val docs = if (fts5Available) {
-                        val ftsQuery = trimmed.split("\\s+".toRegex())
-                            .filter { it.isNotBlank() }
-                            .joinToString(" ") { "\"${it.replace("\"", "\"\"")}\"*" }
-                        searchDao.search(buildFts5Query(ftsQuery, limit, allowedSources))
-                    } else {
-                        searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
-                    }
+                    val pattern = buildLikePattern(trimmed)
+                    val docs = searchDao.search(buildLikeQuery(pattern, limit, allowedSources))
 
                     // P1.5: Sonuçlara skor ekle, yüksek puandan başla sırala
                     val scored = docs
@@ -235,11 +216,8 @@ class SearchRepository(
 
                     scored.groupBy { SourceType.fromKey(it.sourceType) }
                 }.getOrElse { e ->
-                    Timber.w(e, "search hatası, LIKE fallback deneniyor")
-                    runCatching {
-                        val docs = searchDao.search(buildLikeQuery(trimmed, limit, allowedSources))
-                        docs.groupBy { SourceType.fromKey(it.sourceType) }
-                    }.getOrDefault(emptyMap())
+                    Timber.w(e, "search hatası")
+                    emptyMap()
                 }
             }
         }
@@ -260,11 +238,28 @@ class SearchRepository(
         if (AppPrefs.isSearchSourceFilesEnabled(context)) add(SourceType.FILE.key)
     }
 
-    private suspend fun ensureSettingsIndexedIfNeeded(allowedSources: List<String>) {
-        if (settingsSeeded || SourceType.SETTING.key !in allowedSources) return
-        searchDao.deleteBySource(SourceType.SETTING.key)
-        searchDao.insertAll(SystemSettingsCatalog.documents())
-        settingsSeeded = true
+    private suspend fun ensureSourcesIndexedIfNeeded(allowedSources: List<String>) {
+        if (SourceType.SETTING.key in allowedSources && !settingsSeeded) {
+            searchDao.deleteBySource(SourceType.SETTING.key)
+            searchDao.insertAll(SystemSettingsCatalog.documents())
+            settingsSeeded = true
+        }
+        if (SourceType.CONTACT.key in allowedSources) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.READ_CONTACTS
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                if (searchDao.countBySource(SourceType.CONTACT.key) == 0) {
+                    contactsIndexer.indexAll()
+                }
+            }
+        }
+        if (SourceType.FILE.key in allowedSources) {
+            if (searchDao.countBySource(SourceType.FILE.key) == 0) {
+                filesIndexer.indexAll()
+            }
+        }
     }
 
     private fun buildFts5Query(ftsQuery: String, limit: Int, allowedSources: List<String>): SimpleSQLiteQuery {

@@ -901,7 +901,7 @@ private fun DrawerAppList(
 }
 
 // ── Recent + Favorites combined section ──────────────────────────────────────
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DrawerRecentFavSection(
     recentApps: List<AppInfo>,
@@ -913,99 +913,114 @@ private fun DrawerRecentFavSection(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val onSurface = MaterialTheme.colorScheme.onSurface
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val itemWidth = (screenWidth - 32.dp - 24.dp) / 4
 
     Column(modifier = Modifier.fillMaxWidth()) {
         if (recentApps.isNotEmpty()) {
             NiagaraLetterHeader(letter = '★', label = stringResource(R.string.recent_apps))
-            androidx.compose.foundation.layout.FlowRow(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                maxItemsInEachRow = 4
-            ) {
-                val recentHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-                recentApps.forEach { app ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.width(itemWidth).combinedClickable(
-                            onClick = { onRecentAppClick(app.packageName) },
-                            onLongClick = {
-                                recentHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onAppLongClick?.invoke(app)
+            recentApps.chunked(4).forEach { rowApps ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    val recentHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+                    rowApps.forEach { app ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .weight(1f)
+                                .combinedClickable(
+                                    onClick = { onRecentAppClick(app.packageName) },
+                                    onLongClick = {
+                                        recentHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        onAppLongClick?.invoke(app)
+                                    }
+                                )
+                        ) {
+                            val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                                if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                                else "${app.packageName}_48_${app.lastUpdatedTime}"
                             }
-                        )
-                    ) {
-                        val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
-                            if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
-                            else "${app.packageName}_48_${app.lastUpdatedTime}"
-                        }
-                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
-                            value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                val cached = iconCacheInternal[cacheKey]
-                                if (cached != null) cached
-                                else {
-                                    val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
-                                    if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
-                                    bmp
+                            val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
+                                value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                    val cached = iconCacheInternal[cacheKey]
+                                    if (cached != null) cached
+                                    else {
+                                        val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
+                                        if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                        bmp
+                                    }
                                 }
                             }
+                            bitmap?.let {
+                                androidx.compose.foundation.Image(bitmap = it, contentDescription = app.appName,
+                                    modifier = Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
+                            } ?: Box(Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                            Spacer(Modifier.height(3.dp))
+                            Text(app.appName, color = onSurface, fontSize = 10.sp, maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                         }
-                        bitmap?.let {
-                            androidx.compose.foundation.Image(bitmap = it, contentDescription = app.appName,
-                                modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
-                        } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
-                        Spacer(Modifier.height(3.dp))
-                        Text(app.appName, color = onSurface, fontSize = 10.sp, maxLines = 1,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    }
+                    repeat(4 - rowApps.size) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
         }
         if (favoriteApps.isNotEmpty()) {
             NiagaraLetterHeader(letter = '♥', label = "Favoriler")
-            androidx.compose.foundation.layout.FlowRow(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                maxItemsInEachRow = 4
-            ) {
-                val favHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-                favoriteApps.forEach { app ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.width(itemWidth).combinedClickable(
-                            onClick = { onFavoriteAppClick(app.packageName) },
-                            onLongClick = {
-                                favHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onAppLongClick?.invoke(app)
+            favoriteApps.chunked(4).forEach { rowApps ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    val favHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+                    rowApps.forEach { app ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .weight(1f)
+                                .combinedClickable(
+                                    onClick = { onFavoriteAppClick(app.packageName) },
+                                    onLongClick = {
+                                        favHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        onAppLongClick?.invoke(app)
+                                    }
+                                )
+                        ) {
+                            val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                                if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                                else "${app.packageName}_48_${app.lastUpdatedTime}"
                             }
-                        )
-                    ) {
-                        val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
-                            if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
-                            else "${app.packageName}_48_${app.lastUpdatedTime}"
-                        }
-                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
-                            value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                val cached = iconCacheInternal[cacheKey]
-                                if (cached != null) cached
-                                else {
-                                    val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
-                                    if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
-                                    bmp
+                            val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
+                                value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                    val cached = iconCacheInternal[cacheKey]
+                                    if (cached != null) cached
+                                    else {
+                                        val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
+                                        if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                        bmp
+                                    }
                                 }
                             }
+                            bitmap?.let {
+                                androidx.compose.foundation.Image(bitmap = it, contentDescription = app.appName,
+                                    modifier = Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
+                            } ?: Box(Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+                            Spacer(Modifier.height(3.dp))
+                            Text(app.appName, color = onSurface, fontSize = 10.sp, maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
                         }
-                        bitmap?.let {
-                            androidx.compose.foundation.Image(bitmap = it, contentDescription = app.appName,
-                                modifier = Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)))
-                        } ?: Box(Modifier.size(48.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
-                        Spacer(Modifier.height(3.dp))
-                        Text(app.appName, color = onSurface, fontSize = 10.sp, maxLines = 1,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    }
+                    repeat(4 - rowApps.size) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
@@ -1057,7 +1072,7 @@ private fun DrawerTodayInstalledSection(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DrawerAppIconRowSection(
     apps: List<AppInfo>,
@@ -1072,69 +1087,74 @@ private fun DrawerAppIconRowSection(
     val context = LocalContext.current
     val onSurface = MaterialTheme.colorScheme.onSurface
     val rowHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val itemWidth = (screenWidth - 32.dp - 24.dp) / 4
 
     Column(modifier = Modifier.fillMaxWidth()) {
         NiagaraLetterHeader(letter = letter, label = label)
-        androidx.compose.foundation.layout.FlowRow(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            maxItemsInEachRow = 4
-        ) {
-            apps.forEach { app ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(itemWidth).combinedClickable(
-                        onClick = { onAppClick(app.packageName) },
-                        onLongClick = {
-                            rowHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onAppLongClick?.invoke(app)
-                        }
-                    )
-                ) {
-                    val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
-                        if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
-                        else "${app.packageName}_48_${app.lastUpdatedTime}"
-                    }
-                    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
-                        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                            val cached = iconCacheInternal[cacheKey]
-                            if (cached != null) cached
-                            else {
-                                val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
-                                if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
-                                bmp
-                            }
-                        }
-                    }
-                    Box(contentAlignment = Alignment.TopEnd) {
-                        bitmap?.let {
-                            androidx.compose.foundation.Image(
-                                bitmap = it,
-                                contentDescription = app.appName,
-                                modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
+        apps.chunked(4).forEach { rowApps ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.Top
+            ) {
+                rowApps.forEach { app ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .weight(1f)
+                            .combinedClickable(
+                                onClick = { onAppClick(app.packageName) },
+                                onLongClick = {
+                                    rowHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onAppLongClick?.invoke(app)
+                                }
                             )
-                        } ?: Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.1f)))
-                        val notificationCount = notificationCounts[app.packageName] ?: 0
-                        if (notificationCount > 0) {
-                            Badge {
-                                Text(if (notificationCount > 99) "99+" else notificationCount.toString())
+                    ) {
+                        val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+                            if (iconPackPkg.isNotEmpty()) "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+                            else "${app.packageName}_48_${app.lastUpdatedTime}"
+                        }
+                        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
+                            value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                val cached = iconCacheInternal[cacheKey]
+                                if (cached != null) cached
+                                else {
+                                    val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
+                                    if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                                    bmp
+                                }
                             }
                         }
+                        Box(contentAlignment = Alignment.TopEnd) {
+                            bitmap?.let {
+                                androidx.compose.foundation.Image(
+                                    bitmap = it,
+                                    contentDescription = app.appName,
+                                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
+                                )
+                            } ?: Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.1f)))
+                            val notificationCount = notificationCounts[app.packageName] ?: 0
+                            if (notificationCount > 0) {
+                                Badge {
+                                    Text(if (notificationCount > 99) "99+" else notificationCount.toString())
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(3.dp))
+                        Text(
+                            app.appName,
+                            color = onSurface,
+                            fontSize = 10.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
-                    Spacer(Modifier.height(3.dp))
-                    Text(
-                        app.appName,
-                        color = onSurface,
-                        fontSize = 10.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                }
+                repeat(4 - rowApps.size) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
