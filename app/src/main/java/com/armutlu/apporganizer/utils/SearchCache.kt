@@ -167,7 +167,7 @@ object SearchCache {
      */
     fun searchApps(
         query: String,
-        maxResults: Int = 6,
+        maxResults: Int = 10000,
         phonetic: Boolean = true,
         fuzzy: Boolean = true,
         sortByUsage: Boolean = true
@@ -234,7 +234,7 @@ object SearchCache {
      */
     fun searchContacts(
         query: String,
-        maxResults: Int = 4,
+        maxResults: Int = 10000,
         phonetic: Boolean = true,
         fuzzy: Boolean = true
     ): List<ContactEntry> {

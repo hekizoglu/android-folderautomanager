@@ -470,7 +470,7 @@ internal fun HomeAppSearchBar(
                 val displayName = folderCustomNames[folder.category.categoryId]
                     ?: folder.category.categoryName
                 displayName.lowercase(Locale("tr")).contains(q)
-            }.take(4)
+            }
         }
     }
     fun SearchDocument.matchesCurrentQuery(): Boolean {
@@ -482,13 +482,13 @@ internal fun HomeAppSearchBar(
     }
     val contactResults = remember(query, contactsOn, contactsPermGranted) {
         if (!contactsOn || !contactsPermGranted || query.isBlank()) emptyList()
-        else SearchCache.searchContacts(query, 3, phonetic = true, fuzzy = true)
+        else SearchCache.searchContacts(query, 10000, phonetic = true, fuzzy = true)
     }
     // Dosya adları — SearchRepository FTS5 indeksinden (LauncherViewModel.searchResults akışı)
     val fileResults = if (query.isBlank()) emptyList()
-        else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }.take(4)
+        else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }
     val settingResults = if (query.isBlank()) emptyList()
-        else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }.take(4)
+        else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }
     val searchHintRes = if ((contactsOn && contactsPermGranted) || filesOn) {
         R.string.home_search_hint_full
     } else {
@@ -1386,7 +1386,7 @@ internal fun FullScreenSearchOverlayV2(
 
     val appResults = remember(query, allApps, fuzzy, phonetic, sortByUsage, maxResults) {
         if (query.isBlank()) emptyList()
-        else SearchCache.searchApps(query, maxResults.coerceAtLeast(8), phonetic, fuzzy, sortByUsage)
+        else SearchCache.searchApps(query, 10000, phonetic, fuzzy, sortByUsage)
     }
     val folderResults = remember(query, folders, folderCustomNames) {
         if (query.isBlank()) emptyList()
@@ -1395,17 +1395,17 @@ internal fun FullScreenSearchOverlayV2(
             folders.filter { folder ->
                 val displayName = folderCustomNames[folder.category.categoryId] ?: folder.category.categoryName
                 displayName.lowercase(Locale("tr")).contains(q)
-            }.take(8)
+            }
         }
     }
     val contactResults = remember(query, contactsOn, contactsPermGranted) {
         if (!contactsOn || !contactsPermGranted || query.isBlank()) emptyList()
-        else SearchCache.searchContacts(query, 5, phonetic = true, fuzzy = true)
+        else SearchCache.searchContacts(query, 10000, phonetic = true, fuzzy = true)
     }
     val fileResults = if (query.isBlank()) emptyList()
-    else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
+    else searchResults[SourceType.FILE].orEmpty().filter { it.matchesCurrentQuery() }
     val settingResults = if (query.isBlank()) emptyList()
-    else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }.take(8)
+    else searchResults[SourceType.SETTING].orEmpty().filter { it.matchesCurrentQuery() }
 
     val showFilesPermissionHint = SearchOverlayDecisions.shouldShowFilesPermissionHint(
         query = query,

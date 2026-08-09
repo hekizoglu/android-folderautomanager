@@ -180,14 +180,20 @@ private fun SmartAccessContent(
         return
     }
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-    val itemWidth = (screenWidth - 24.dp - 24.dp) / 4
+    val screenWidthDp = configuration.screenWidthDp.dp
+    val availableWidth = screenWidthDp - 24.dp
+    val minItemWidth = 68.dp
+    val spacing = 8.dp
+    val columns = maxOf(4, ((availableWidth + spacing) / (minItemWidth + spacing)).toInt())
+    val itemWidth = (availableWidth - (spacing * (columns - 1))) / columns
 
     FlowRow(
-        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        maxItemsInEachRow = 4
+        maxItemsInEachRow = columns
     ) {
         apps.forEach { (app, count) ->
             key(selectedTab, app.packageName) {

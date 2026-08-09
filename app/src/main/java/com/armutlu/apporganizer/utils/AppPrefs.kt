@@ -1223,7 +1223,7 @@ object AppPrefs {
 
     // Maksimum gösterilecek sonuç sayısı (HomeAppSearchBar için)
     const val KEY_SEARCH_MAX_RESULTS = "search_max_results"
-    fun getSearchMaxResults(context: Context) = prefs(context).getInt(KEY_SEARCH_MAX_RESULTS, 6)
+    fun getSearchMaxResults(context: Context) = prefs(context).getInt(KEY_SEARCH_MAX_RESULTS, 10000)
     fun setSearchMaxResults(context: Context, n: Int) = prefs(context).edit().putInt(KEY_SEARCH_MAX_RESULTS, n).apply()
 
     // Sonuçlarda app ikonunu göster/gizle

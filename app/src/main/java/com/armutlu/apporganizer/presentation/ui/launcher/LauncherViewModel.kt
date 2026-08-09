@@ -286,7 +286,7 @@ class LauncherViewModel @Inject constructor(
             if (trimmed.length < 2) {
                 emptyMap()
             } else {
-                runCatching { searchRepository.instantSearch(trimmed, limit = 24) }
+                runCatching { searchRepository.instantSearch(trimmed, limit = 10000) }
                     .onFailure { Timber.w(it, "Launcher instantSearch failed") }
                     .getOrDefault(emptyMap())
             }
@@ -301,7 +301,7 @@ class LauncherViewModel @Inject constructor(
             if (trimmed.length < 2) {
                 emptyMap()
             } else {
-                runCatching { searchRepository.debouncedSearch(trimmed, limit = 24) }
+                runCatching { searchRepository.debouncedSearch(trimmed, limit = 10000) }
                     .onFailure { Timber.w(it, "Launcher debouncedSearch failed") }
                     .getOrDefault(emptyMap())
             }

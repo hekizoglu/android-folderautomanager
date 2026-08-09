@@ -153,7 +153,7 @@ class SearchRepository(
      * P1.6: Anında arama sonuçları — App ve Category, LIKE veya prefix eşleştirmesi ile.
      * Debounce'siz, yazılan her karakter UI'de gösterilir (< 16ms hedef).
      */
-    suspend fun instantSearch(rawQuery: String, limit: Int = 24): Map<SourceType, List<SearchDocument>> {
+    suspend fun instantSearch(rawQuery: String, limit: Int = 10000): Map<SourceType, List<SearchDocument>> {
         val trimmed = rawQuery.trim()
         if (trimmed.isEmpty()) return emptyMap()
 
@@ -171,7 +171,7 @@ class SearchRepository(
      * P1.6: Gecikmiş arama sonuçları — Contact, File, Setting kaynakları.
      * 120-150ms debounce ile çağrılır (Kullanıcı yazması bitene kadar bekle).
      */
-    suspend fun debouncedSearch(rawQuery: String, limit: Int = 24): Map<SourceType, List<SearchDocument>> {
+    suspend fun debouncedSearch(rawQuery: String, limit: Int = 10000): Map<SourceType, List<SearchDocument>> {
         val trimmed = rawQuery.trim()
         if (trimmed.isEmpty()) return emptyMap()
 
