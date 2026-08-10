@@ -792,6 +792,17 @@ class LauncherViewModel @Inject constructor(
         }
     }
 
+    fun deleteFolder(categoryId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                repository.deleteCategory(categoryId)
+                if (_openFolderId.value == categoryId) {
+                    _openFolderId.value = null
+                }
+            }.onFailure { Timber.e(it, "deleteFolder failed for $categoryId") }
+        }
+    }
+
     fun loadDockPackages(context: Context) {
         val fallbackPackages = allApps.value
             .asSequence()

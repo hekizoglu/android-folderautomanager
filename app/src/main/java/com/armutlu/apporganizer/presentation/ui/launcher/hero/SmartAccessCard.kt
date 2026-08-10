@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.presentation.ui.launcher.hero
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -179,34 +180,35 @@ private fun SmartAccessContent(
         )
         return
     }
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp.dp
-    val availableWidth = screenWidthDp - 24.dp
-    val minItemWidth = 68.dp
-    val spacing = 8.dp
-    val columns = maxOf(4, ((availableWidth + spacing) / (minItemWidth + spacing)).toInt())
-    val itemWidth = (availableWidth - (spacing * (columns - 1))) / columns
-
-    FlowRow(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        maxItemsInEachRow = columns
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        apps.forEach { (app, count) ->
-            key(selectedTab, app.packageName) {
-                androidx.compose.foundation.layout.Box(
-                    modifier = Modifier.width(itemWidth),
-                    contentAlignment = Alignment.Center
-                ) {
-                    SmartAccessAppItem(
-                        app = app,
-                        notificationCount = count,
-                        onClick = { onLaunchApp(app.packageName) },
-                        onLongClick = { onAppLongClick(app.packageName) },
-                    )
+        apps.chunked(4).forEach { rowApps ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.Top
+            ) {
+                rowApps.forEach { (app, count) ->
+                    key(selectedTab, app.packageName) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            SmartAccessAppItem(
+                                app = app,
+                                notificationCount = count,
+                                onClick = { onLaunchApp(app.packageName) },
+                                onLongClick = { onAppLongClick(app.packageName) },
+                            )
+                        }
+                    }
+                }
+                repeat(4 - rowApps.size) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }

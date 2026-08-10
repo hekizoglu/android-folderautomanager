@@ -31,6 +31,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -179,6 +180,7 @@ fun FolderScreen(
             onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
         }
         var showEditDialog by remember { mutableStateOf(false) }
+        var showDeleteConfirmDialog by remember { mutableStateOf(false) }
         var contextMenuApp by remember { mutableStateOf<AppInfo?>(null) }
         // Ekran köküne alındı (P0.1 fix) — eskiden contextMenuApp?.let{} bloğunun İÇİNDE
         // tanımlıydı: "Kategori Değiştir"e basınca contextMenuApp = null olduğu an bu blok
@@ -476,20 +478,39 @@ fun FolderScreen(
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(onSurface.copy(alpha = 0.08f))
-                            .clickable { showEditDialog = true },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            Icons.Default.Edit,
-                            stringResource(R.string.folder_edit),
-                            tint = onSurface.copy(0.6f),
-                            modifier = Modifier.size(18.dp),
-                        )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(onSurface.copy(alpha = 0.08f))
+                                .clickable { showEditDialog = true },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                stringResource(R.string.folder_edit),
+                                tint = onSurface.copy(0.6f),
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                        if (!f.category.isSystemCategory) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.15f))
+                                    .clickable { showDeleteConfirmDialog = true },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    "Klasörü Sil",
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -788,6 +809,30 @@ fun FolderScreen(
                         }
                         showEditDialog = false
                     },
+                )
+            }
+
+            if (showDeleteConfirmDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showDeleteConfirmDialog = false },
+                    title = { Text("Klasörü Sil") },
+                    text = { Text("'${customName.ifBlank { f.category.categoryName }}' klasörü silinsin mi? İçindeki uygulamalar 'Diğer' klasörüne taşınacaktır.") },
+                    confirmButton = {
+                        androidx.compose.material3.TextButton(
+                            onClick = {
+                                showDeleteConfirmDialog = false
+                                viewModel.deleteFolder(f.category.categoryId)
+                                onBack()
+                            }
+                        ) {
+                            Text("Sil", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    dismissButton = {
+                        androidx.compose.material3.TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                            Text("İptal")
+                        }
+                    }
                 )
             }
 

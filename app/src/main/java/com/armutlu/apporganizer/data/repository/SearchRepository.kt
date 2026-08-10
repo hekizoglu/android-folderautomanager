@@ -158,8 +158,9 @@ class SearchRepository(
         if (trimmed.isEmpty()) return emptyMap()
 
         return withContext(Dispatchers.IO) {
-            val allowedSources = listOf(SourceType.APP.key, SourceType.CATEGORY.key)
+            val allowedSources = enabledSources()
             runCatching {
+                ensureSourcesIndexedIfNeeded(allowedSources)
                 val pattern = buildLikePattern(trimmed)
                 val docs = searchDao.search(buildLikeQuery(pattern, limit, allowedSources))
                 docs.groupBy { SourceType.fromKey(it.sourceType) }

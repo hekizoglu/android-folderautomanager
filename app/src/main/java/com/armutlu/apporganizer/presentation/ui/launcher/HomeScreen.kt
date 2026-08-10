@@ -1099,14 +1099,14 @@ fun HomeScreen(
             // 8, yeni kurulumdaki otomatik düzen değeridir; kapasiteyi 8 ile sınırlamak
             // geniş tabletlerde gereksiz klasör sayfaları üretiyordu. Manuel 4/6/8/12
             // tercihlerinde ise kullanıcının seçimi korunur.
-            val pageSize = if (pageFolderCount == 8) {
+            val pageSize = if (pageFolderCount == 0 || pageFolderCount == 8) {
                 HomeLayoutMath.adaptivePageSize(folderCapacity)
             } else {
                 HomeLayoutMath.pageSize(requestedPageSize, folderCapacity)
             }
             // Kullanıcının manuel seçtiği sayfa boyutu ekrana sığmıyorsa görüntüyü bozmadan uyar
             LaunchedEffect(pageFolderCount, folderCapacity) {
-                if (pageFolderCount != 8 && pageFolderCount > folderCapacity &&
+                if (pageFolderCount != 0 && pageFolderCount != 8 && pageFolderCount > folderCapacity &&
                     lastCapacityWarning != pageFolderCount to folderCapacity
                 ) {
                     lastCapacityWarning = pageFolderCount to folderCapacity
@@ -1598,6 +1598,10 @@ fun HomeScreen(
                 vm.reorderFolders(context, currentList)
             }
             folderContextMenu = null
+        },
+        onDeleteFolder = { categoryId ->
+            folderContextMenu = null
+            vm.deleteFolder(categoryId)
         },
         onWallpaper = {
             homeLongPressOpen = false

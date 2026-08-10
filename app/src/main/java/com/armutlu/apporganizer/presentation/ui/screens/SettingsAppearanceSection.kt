@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.presentation.ui.screens
+package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -296,20 +296,21 @@ fun SettingsAppearanceSection(
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
-            val pageSizeOptions = listOf(4, 6, 8, 12)
+            val pageSizeOptions = listOf(0, 4, 6, 8, 12)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.appearance_folders_per_page), fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                Text("$pageFolderCount ${stringResource(R.string.appearance_folder_unit)}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                val displayText = if (pageFolderCount == 0) "Otomatik" else "$pageFolderCount ${stringResource(R.string.appearance_folder_unit)}"
+                Text(displayText, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
-                value = pageSizeOptions.indexOf(pageFolderCount).coerceAtLeast(0).toFloat(),
+                value = pageSizeOptions.indexOf(pageFolderCount).let { if (it < 0) 0 else it }.toFloat(),
                 onValueChange = {
-                    val selected = pageSizeOptions.getOrElse(it.toInt()) { 8 }
+                    val selected = pageSizeOptions.getOrElse(it.toInt()) { 0 }
                     pageFolderCount = selected
                     com.armutlu.apporganizer.utils.AppPrefs.setPageSize(context, selected)
                 },
-                valueRange = 0f..3f,
-                steps = 2
+                valueRange = 0f..4f,
+                steps = 3
             )
         }
     }

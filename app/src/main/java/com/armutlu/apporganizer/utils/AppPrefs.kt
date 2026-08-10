@@ -1165,11 +1165,11 @@ object AppPrefs {
     fun isSearchSourceSettingsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_SETTINGS, true)
     fun setSearchSourceSettingsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_SETTINGS, v).apply()
 
-    fun isSearchSourceContactsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CONTACTS, false)
+    fun isSearchSourceContactsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CONTACTS, true)
     fun hasSearchSourceContactsPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_CONTACTS)
     fun setSearchSourceContactsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CONTACTS, v).apply()
 
-    fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, false)
+    fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, true)
     fun hasSearchSourceFilesPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_FILES)
     fun setSearchSourceFilesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_FILES, v).apply()
 

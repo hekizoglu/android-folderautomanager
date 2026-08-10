@@ -319,32 +319,23 @@ fun AppIconView(
 
         if (showLabel) {
             Spacer(Modifier.height(3.dp))
-            // Scrim + text shadow ile her duvar kağıdında okunabilir label
-            Box(
-                modifier = Modifier
-                    .width(effectiveIconSize + 8.dp)
-                    .clip(RoundedCornerShape(bottomStart = 6.dp, bottomEnd = 6.dp))
-                    .background(LabelScrim)
-                    .padding(horizontal = 2.dp, vertical = 2.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = app.appName,
-                    style = TextStyle(
-                        color = labelColor,
-                        fontSize = 11.sp,
-                        textAlign = TextAlign.Center,
-                        shadow = androidx.compose.ui.graphics.Shadow(
-                            color = Color.Black.copy(alpha = 0.7f),
-                            offset = Offset(0f, 1f),
-                            blurRadius = 4f
-                        )
-                    ),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.width(effectiveIconSize + 4.dp)
-                )
-            }
+            Text(
+                text = app.appName,
+                style = TextStyle(
+                    color = labelColor,
+                    fontSize = 10.sp,
+                    textAlign = TextAlign.Center,
+                    shadow = androidx.compose.ui.graphics.Shadow(
+                        color = Color.Black.copy(alpha = 0.8f),
+                        offset = Offset(0f, 1f),
+                        blurRadius = 4f
+                    )
+                ),
+                softWrap = false,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.width(effectiveIconSize + 16.dp)
+            )
         }
     }
 }

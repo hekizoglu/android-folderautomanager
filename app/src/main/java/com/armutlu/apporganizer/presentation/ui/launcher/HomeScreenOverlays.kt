@@ -39,6 +39,7 @@ internal fun HomeScreenOverlays(
     onOpenFolder: (AppFolder) -> Unit,
     onOpenAllApps: () -> Unit,
     onMoveFolder: (AppFolder, Int) -> Unit,
+    onDeleteFolder: ((String) -> Unit)? = null,
     onWallpaper: () -> Unit,
     onEditHomeLayout: () -> Unit,
     onSettings: () -> Unit,
@@ -114,6 +115,7 @@ internal fun HomeScreenOverlays(
             onOpenFolder = { onOpenFolder(folder) },
             onOpenAllApps = onOpenAllApps,
             onMove = { newIndex -> onMoveFolder(folder, newIndex) },
+            onDeleteFolder = onDeleteFolder,
         )
     }
 }

@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 
+import androidx.compose.material.icons.filled.Delete
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderContextMenuSheet(
@@ -34,6 +36,7 @@ fun FolderContextMenuSheet(
     onOpenFolder: () -> Unit,
     onOpenAllApps: () -> Unit,
     onMove: ((newIndex: Int) -> Unit)? = null,
+    onDeleteFolder: ((categoryId: String) -> Unit)? = null,
 ) {
     val catColor = runCatching {
         Color(android.graphics.Color.parseColor(folder.category.colorHex))
@@ -43,6 +46,7 @@ fun FolderContextMenuSheet(
     val surface   = MaterialTheme.colorScheme.surface
 
     var showMoveDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     var selectedMoveIndex by remember { mutableStateOf(-1) }
     val currentIndex = allFolders.indexOfFirst { it.category.categoryId == folder.category.categoryId }
 
@@ -106,7 +110,43 @@ fun FolderContextMenuSheet(
                 Spacer(Modifier.width(16.dp))
                 Text(stringResource(R.string.folder_goto_all_apps), color = onSurface, fontSize = 15.sp)
             }
+            if (onDeleteFolder != null && !folder.category.isSystemCategory) {
+                Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable { showDeleteConfirm = true }
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Text("Klasörü Sil", color = MaterialTheme.colorScheme.error, fontSize = 15.sp)
+                }
+            }
         }
+    }
+
+    if (showDeleteConfirm) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Klasörü Sil") },
+            text = { Text("'${folder.category.categoryName}' klasörü silinsin mi? İçindeki uygulamalar 'Diğer' klasörüne taşınacaktır.") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        onDeleteFolder?.invoke(folder.category.categoryId)
+                        onDismiss()
+                    }
+                ) {
+                    Text("Sil", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("İptal")
+                }
+            }
+        )
     }
 
     if (showMoveDialog) {
