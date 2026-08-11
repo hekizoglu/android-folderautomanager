@@ -1,11 +1,10 @@
 package com.armutlu.apporganizer.domain.models
 
 /**
- * Cihaz içi akıllı bildirim sınıflandırmasının kullanıcıya dönük kategorileri.
+ * Device-local smart notification categories.
  *
- * UI rengi veya Compose bağımlılığı özellikle burada tutulmaz; domain katmanı Android/Compose
- * ayrıntılarından bağımsız kalır. [defaultImportance] yalnızca sınıflandırıcı için başlangıç
- * puanıdır, nihai skor içerik ve sistem önceliğiyle yeniden hesaplanır.
+ * defaultImportance is only the classifier base score. The final score is calculated
+ * from content, package, urgency, security and Android priority.
  */
 enum class NotificationCategory(
     val defaultImportance: Int,
@@ -18,5 +17,12 @@ enum class NotificationCategory(
     REMINDER(defaultImportance = 64),
     SOCIAL(defaultImportance = 40),
     SYSTEM(defaultImportance = 50),
+    MISSED_CALL(defaultImportance = 82),
+    CALENDAR(defaultImportance = 64),
+    MARKET(defaultImportance = 68),
+    FAMILY(defaultImportance = 76),
+    NEWS(defaultImportance = 38, suppressible = true),
+    MEDIA(defaultImportance = 32, suppressible = true),
+    UPDATE(defaultImportance = 42, suppressible = true),
     OTHER(defaultImportance = 35),
 }
