@@ -96,6 +96,8 @@ internal fun FolderGridPage(
     folderShape: String,
     pixelLookEnabled: Boolean = false,
     folderGlassBorderEnabled: Boolean = true,
+    folderSortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
+    pageStripEnabled: Boolean = true,
     haptic: HapticFeedback,
     onFolderClick: (AppFolder) -> Unit,
     onFolderLongClick: (AppFolder) -> Unit,
@@ -107,6 +109,7 @@ internal fun FolderGridPage(
     // hedef olduğundan davranış tutarlıdır.
     onNotificationSummaryTap: () -> Unit = {},
     onDisableNotifications: () -> Unit = {},
+    onFolderPageStripEnabledChange: (Boolean) -> Unit = {},
     onDragStart: (index: Int) -> Unit,
     onDrag: (dragAmount: Offset) -> Unit,
     onDragEnd: () -> Unit,
@@ -142,9 +145,6 @@ internal fun FolderGridPage(
     val pageNotificationNames = pageNotificationApps
         .take(3)
         .joinToString(", ") { (app, count) -> "${app.appName} $count" }
-    var pageStripEnabled by remember(context) {
-        mutableStateOf(AppPrefs.isFolderPageStripEnabled(context))
-    }
     var pageInsightsEnabled by remember(context) {
         mutableStateOf(AppPrefs.isFolderPageInsightsEnabled(context))
     }
@@ -225,6 +225,7 @@ internal fun FolderGridPage(
                 folderShape = folderShape,
                 pixelLookEnabled = pixelLookEnabled,
                 folderGlassBorderEnabled = folderGlassBorderEnabled,
+                folderSortMode = folderSortMode,
                 modifier = Modifier
                     .then(if (folderGestureMode(editMode) == FolderGestureMode.REORDER) Modifier.pointerInput(index) {
                         detectDragGesturesAfterLongPress(
@@ -294,7 +295,7 @@ internal fun FolderGridPage(
                     IconButton(
                         onClick = {
                             AppPrefs.setFolderPageStripEnabled(context, false)
-                            pageStripEnabled = false
+                            onFolderPageStripEnabledChange(false)
                         },
                         modifier = Modifier.size(24.dp)
                     ) {

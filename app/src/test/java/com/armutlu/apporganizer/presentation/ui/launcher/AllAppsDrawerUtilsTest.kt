@@ -8,6 +8,29 @@ import org.junit.Test
 class AllAppsDrawerUtilsTest {
 
     @Test
+    fun `invalid saved sort mode falls back to alpha`() {
+        assertEquals(AllAppsSortMode.ALPHA, parseAllAppsSortMode("BROKEN"))
+    }
+
+    @Test
+    fun `folder preview ordering changes with sort mode`() {
+        val apps = listOf(
+            AppInfo("com.b", "Beta", usageCount = 10L),
+            AppInfo("com.a", "Alpha", usageCount = 1L),
+            AppInfo("com.c", "Core", usageCount = 30L),
+        )
+
+        assertEquals(
+            listOf("Alpha", "Beta", "Core"),
+            apps.sortedByMode(AllAppsSortMode.ALPHA).map { it.appName }
+        )
+        assertEquals(
+            listOf("Core", "Beta", "Alpha"),
+            apps.sortedByMode(AllAppsSortMode.USAGE).map { it.appName }
+        )
+    }
+
+    @Test
     fun `drawer usage formatter uses foreground duration`() {
         assertEquals("1,0 sa", formatUsageMs(3_600_000L))
     }

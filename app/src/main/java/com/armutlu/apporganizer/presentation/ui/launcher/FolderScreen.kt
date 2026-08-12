@@ -148,7 +148,7 @@ fun FolderScreen(
 
         var sortMode by remember {
             val saved = AppPrefs.getFolderSortMode(context)
-            mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
+            mutableStateOf(parseAllAppsSortMode(saved))
         }
         var searchQuery by remember { mutableStateOf("") }
         val catId = f.category.categoryId

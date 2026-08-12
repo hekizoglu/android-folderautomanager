@@ -89,6 +89,7 @@ fun FolderTile(
     folderBadgeEnabled: Boolean = false,
     pixelLookEnabled: Boolean = false,
     folderGlassBorderEnabled: Boolean = true,
+    folderSortMode: AllAppsSortMode = AllAppsSortMode.ALPHA,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -107,10 +108,6 @@ fun FolderTile(
         label = "folderTileScale"
     )
 
-    val folderSortMode = remember(context) {
-        val saved = AppPrefs.getFolderSortMode(context)
-        AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA
-    }
     val previewApps = remember(folder.apps, folderSortMode) {
         folder.apps.sortedByMode(folderSortMode).take(4)
     }

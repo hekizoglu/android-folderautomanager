@@ -61,6 +61,9 @@ enum class AllAppsSortMode(val label: String) {
     INSTALL_DATE_ASC("Yükleme ↑")
 }
 
+internal fun parseAllAppsSortMode(saved: String): AllAppsSortMode =
+    AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA
+
 internal fun AllAppsSortMode.opposite(): AllAppsSortMode = when (this) {
     AllAppsSortMode.SMART          -> AllAppsSortMode.SMART
     AllAppsSortMode.ALPHA          -> AllAppsSortMode.ALPHA_DESC

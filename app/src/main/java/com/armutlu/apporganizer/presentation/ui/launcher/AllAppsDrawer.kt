@@ -1302,7 +1302,7 @@ fun AllAppsDrawer(
 
     var sortMode by remember {
         val saved = AppPrefs.getAllAppsSortMode(context)
-        mutableStateOf(AllAppsSortMode.entries.firstOrNull { it.name == saved } ?: AllAppsSortMode.ALPHA)
+        mutableStateOf(parseAllAppsSortMode(saved))
     }
     var activeSidebarIdx by remember { mutableIntStateOf(-1) }
     var quickFilter      by remember { mutableStateOf(AppPrefs.getAllAppsQuickFilter(context)) }

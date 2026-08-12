@@ -229,5 +229,12 @@ internal fun NotificationCategory.reportDisplayName(): String = when (this) {
     NotificationCategory.REMINDER -> "Hatırlatıcılar"
     NotificationCategory.SOCIAL -> "Sosyal"
     NotificationCategory.SYSTEM -> "Sistem"
+    NotificationCategory.MISSED_CALL -> "Cevapsız Aramalar"
+    NotificationCategory.CALENDAR -> "Takvim"
+    NotificationCategory.MARKET -> "Market ve Sipariş"
+    NotificationCategory.FAMILY -> "Aile"
+    NotificationCategory.NEWS -> "Haberler"
+    NotificationCategory.MEDIA -> "Medya"
+    NotificationCategory.UPDATE -> "Güncellemeler"
     NotificationCategory.OTHER -> "Diğer"
 }

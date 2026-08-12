@@ -242,6 +242,13 @@ internal fun NotificationCategory.displayName(): String = when (this) {
     NotificationCategory.REMINDER -> "Hatırlatıcılar"
     NotificationCategory.SOCIAL -> "Sosyal"
     NotificationCategory.SYSTEM -> "Sistem"
+    NotificationCategory.MISSED_CALL -> "Cevapsız Aramalar"
+    NotificationCategory.CALENDAR -> "Takvim"
+    NotificationCategory.MARKET -> "Market ve Sipariş"
+    NotificationCategory.FAMILY -> "Aile"
+    NotificationCategory.NEWS -> "Haberler"
+    NotificationCategory.MEDIA -> "Medya"
+    NotificationCategory.UPDATE -> "Güncellemeler"
     NotificationCategory.OTHER -> "Diğer"
 }
 
@@ -253,5 +260,12 @@ internal fun NotificationCategory.description(): String = when (this) {
     NotificationCategory.REMINDER -> "Toplantı, randevu ve zamanlı hatırlatmalar"
     NotificationCategory.SOCIAL -> "Sosyal ağ etkileşimleri"
     NotificationCategory.SYSTEM -> "Android ve cihaz servisleri"
+    NotificationCategory.MISSED_CALL -> "Kaçırılan aramalar ve geri arama uyarıları"
+    NotificationCategory.CALENDAR -> "Takvim etkinlikleri ve program hatırlatmaları"
+    NotificationCategory.MARKET -> "Market, alışveriş ve sipariş bildirimleri"
+    NotificationCategory.FAMILY -> "Aile ve yakın kişi bildirimleri"
+    NotificationCategory.NEWS -> "Haber ve gündem bildirimleri"
+    NotificationCategory.MEDIA -> "Müzik, video ve medya uygulamaları"
+    NotificationCategory.UPDATE -> "Uygulama, sistem ve servis güncellemeleri"
     NotificationCategory.OTHER -> "Henüz güvenle sınıflandırılamayan bildirimler"
 }

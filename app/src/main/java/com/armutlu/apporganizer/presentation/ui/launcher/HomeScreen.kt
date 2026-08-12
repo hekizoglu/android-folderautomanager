@@ -196,6 +196,10 @@ fun HomeScreen(
     var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var unusedInfoEnabled  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)) }
     var folderPageNotificationsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderPageNotificationsEnabled(context)) }
+    var folderPageStripEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderPageStripEnabled(context)) }
+    var folderSortMode by remember {
+        mutableStateOf(parseAllAppsSortMode(com.armutlu.apporganizer.utils.AppPrefs.getFolderSortMode(context)))
+    }
     var suggestionsIconSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context)) }
     var folderBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderBadgeEnabled(context)) }
     var folderShape        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
@@ -288,6 +292,10 @@ fun HomeScreen(
                     unusedInfoEnabled = com.armutlu.apporganizer.utils.AppPrefs.isUnusedInfoEnabled(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_PAGE_NOTIFICATIONS_ENABLED ->
                     folderPageNotificationsEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderPageNotificationsEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_PAGE_STRIP_ENABLED ->
+                    folderPageStripEnabled = com.armutlu.apporganizer.utils.AppPrefs.isFolderPageStripEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_SORT_MODE ->
+                    folderSortMode = parseAllAppsSortMode(com.armutlu.apporganizer.utils.AppPrefs.getFolderSortMode(context))
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_SUGGESTIONS_ICON_SIZE ->
                     suggestionsIconSizeDp = com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context)
                 com.armutlu.apporganizer.utils.AppPrefs.KEY_FOLDER_BADGE_ENABLED ->
@@ -1087,7 +1095,6 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
             val availableHeightDp = with(density) { constraints.maxHeight.toDp().value.toInt() }
-            val folderPageStripEnabled = remember(context) { AppPrefs.isFolderPageStripEnabled(context) }
             val folderCapacity = remember(availableHeightDp, effectiveFolderSizeDp, screenColumns, folderPageNotificationsEnabled, folderPageStripEnabled) {
                 HomeLayoutMath.folderCapacity(
                     availableHeightDp = availableHeightDp,
@@ -1443,6 +1450,8 @@ fun HomeScreen(
                         folderShape = folderShape,
                         pixelLookEnabled = pixelLookEnabled,
                         folderGlassBorderEnabled = folderGlassBorderEnabled,
+                        folderSortMode = folderSortMode,
+                        pageStripEnabled = folderPageStripEnabled,
                         haptic = haptic,
                         // Döngü P0.3 — FolderScreen overlay entegrasyonu: klasör açılışı viewModel üzerinden yapılır
                         onFolderClick = { folder ->
@@ -1459,6 +1468,9 @@ fun HomeScreen(
                         },
                         onDisableNotifications = {
                             folderPageNotificationsEnabled = false
+                        },
+                        onFolderPageStripEnabledChange = {
+                            folderPageStripEnabled = it
                         },
                         onDragStart = { index ->
                             dragFromIndex = index

@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -98,5 +99,23 @@ class HomeLayoutMathTest {
         val pageFoldersCount = 8
         val emptySlots = pageSize - pageFoldersCount
         assertEquals(0, emptySlots)
+    }
+
+    @Test
+    fun `folder page strip kapaliyken kapasite artar`() {
+        val withStrip = HomeLayoutMath.folderCapacity(
+            availableHeightDp = 600,
+            folderSizeDp = 72,
+            columns = 4,
+            infoPanelVisible = true
+        )
+        val withoutStrip = HomeLayoutMath.folderCapacity(
+            availableHeightDp = 600,
+            folderSizeDp = 72,
+            columns = 4,
+            infoPanelVisible = false
+        )
+
+        assertTrue(withoutStrip > withStrip)
     }
 }
