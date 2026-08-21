@@ -45,6 +45,21 @@ class CategorySuggestionEngineTest {
     }
 
     @Test
+    fun `longest matching keyword wins over earlier map entry`() {
+        val target = app(
+            packageName = "com.unknownvendor.toolbox",
+            appName = "Fitness Shopping",
+        )
+
+        val suggestion = CategorySuggestionEngine.suggestFor(target, listOf(target))
+
+        // `fitness` is listed before `shopping` in the database, but shopping is
+        // the more specific match and must win independently of map order.
+        assertEquals(Category.CAT_SHOPPING, suggestion?.categoryId)
+        assertEquals(CategorySuggestionEngine.SignalType.KEYWORD, suggestion?.signal)
+    }
+
+    @Test
     fun `known vendor prefix with existing classified sibling returns VENDOR suggestion`() {
         // com.huawei.* AppClassifier'daki bilinen uretici onegi - VENDOR sinyali icin
         // tek eslesme yeterlidir (bilinen uretici oldugu icin genis eslesme guvenilirdir).
@@ -60,6 +75,21 @@ class CategorySuggestionEngineTest {
 
         assertEquals(Category.CAT_UTILITIES, suggestion?.categoryId)
         assertEquals(CategorySuggestionEngine.SignalType.VENDOR, suggestion?.signal)
+    }
+
+    @Test
+    fun `vendor suggestion requires package segment boundary`() {
+        val target = app(packageName = "com.huaweifake.zylo", appName = "Zylo")
+        val sibling = app(
+            packageName = "com.huaweifake.blorp",
+            appName = "Blorp",
+            categoryId = Category.CAT_UTILITIES,
+        )
+
+        val suggestion = CategorySuggestionEngine.suggestFor(target, listOf(target, sibling))
+
+        // A lookalike package must not inherit the known Huawei vendor signal.
+        assertNull(suggestion)
     }
 
     @Test

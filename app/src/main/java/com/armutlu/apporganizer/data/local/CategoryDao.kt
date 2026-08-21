@@ -180,9 +180,13 @@ interface CategoryDao {
     @Transaction
     suspend fun deleteCategoryWithFallback(
         categoryId: String,
-        fallbackCategoryId: String = "CAT_OTHER"
+        fallbackCategoryId: String = Category.CAT_OTHER
     ) {
-        // First, move all apps from this category to fallback
+        // The DELETE query protects system categories, but moving first would still
+        // reassign their apps. Guard the whole operation before touching app rows.
+        if (getCategoryById(categoryId)?.isSystemCategory == true) return
+
+        // First, move all apps from source category to fallback
         moveAppsToCategory(categoryId, fallbackCategoryId)
         // Then delete the category (only non-system categories)
         deleteCategoryById(categoryId)

@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
@@ -720,6 +721,7 @@ class LauncherViewModel @Inject constructor(
         try {
             val intent = context.packageManager.getLaunchIntentForPackage(packageName) ?: run {
                 Timber.w("launchApp: getLaunchIntent null for $packageName")
+                _toastMessage.tryEmit(getApplication<Application>().getString(R.string.app_start_failed))
                 return
             }
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -728,8 +730,11 @@ class LauncherViewModel @Inject constructor(
             lastLaunchedTs = ts
             context.startActivity(intent)
             viewModelScope.launch(Dispatchers.IO) {
-                repository.incrementLaunchCount(packageName)
-                repository.updateLastUsedTimestamp(packageName, ts)
+                // Uygulama zaten basariyla baslatildi; DB yazisi ikincil bir kayittir.
+                // Satir henuz senkronize olmamis olabilir (yeni kurulum yarisi) — bu
+                // yuzden hata launcher'i dusurmemeli, yalnizca loglanmalidir.
+                runCatching { repository.recordAppLaunch(packageName, ts) }
+                    .onFailure { Timber.w(it, "recordAppLaunch failed for $packageName") }
             }
             // P0.5: yalnizca yerel "okundu" zaman damgasini guncelle — badge bir sonraki
             // badgeCounts akisinda bu zamana gore sifirlanir. SISTEM BILDIRIMINI ILETMIYORUZ
@@ -756,6 +761,7 @@ class LauncherViewModel @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "launchApp failed: $packageName")
+            _toastMessage.tryEmit(getApplication<Application>().getString(R.string.app_start_failed))
         }
     }
 
@@ -776,7 +782,8 @@ class LauncherViewModel @Inject constructor(
         val ts = lastLaunchedTs
         lastLaunchedPkg = null
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateLastUsedTimestamp(pkg, ts)
+            runCatching { repository.updateLastUsedTimestamp(pkg, ts) }
+                .onFailure { Timber.w(it, "refreshLastLaunched failed for $pkg") }
         }
     }
 

@@ -86,20 +86,26 @@ class NotificationClassifierUseCase @Inject constructor() {
         val hasLowValue = content.containsAny(LOW_VALUE_MATCHERS)
         val hasTimeSensitivity = content.containsAny(TIME_SENSITIVE_MATCHERS)
 
+        // Düşük değerli kategoriler pazarlama diliyle ("Acil! Kritik! Güvenlik fırsatı!")
+        // şişirilebilir; urgency/security bonusları bu kategorilerde uygulanmaz ki
+        // promotion/NEWS içerikleri suppression eşiğinden kaçamasın
+        // (NotificationPriorityPolicyTest ile doğrulanır).
+        val lowValueCategory = category == NotificationCategory.PROMOTION ||
+            category == NotificationCategory.NEWS ||
+            category == NotificationCategory.MEDIA ||
+            category == NotificationCategory.UPDATE
+
         var result = category.defaultImportance
         result += systemPriority.coerceIn(MIN_SYSTEM_PRIORITY, MAX_SYSTEM_PRIORITY) * PRIORITY_STEP
-        if (hasUrgency) result += URGENCY_BONUS
-        if (hasSecurity) result += SECURITY_BONUS
-        if (hasTimeSensitivity) result += TIME_SENSITIVITY_BONUS
+        if (hasUrgency && !lowValueCategory) result += URGENCY_BONUS
+        if (hasSecurity && !lowValueCategory) result += SECURITY_BONUS
+        if (hasTimeSensitivity && !lowValueCategory) result += TIME_SENSITIVITY_BONUS
         if (matchesPackage(packageName, MESSAGING_PACKAGES) && category == NotificationCategory.MESSAGING) {
             result += MESSAGING_PACKAGE_BONUS
         }
         if (hasLowValue) result -= LOW_VALUE_PENALTY
 
-        if (category == NotificationCategory.PROMOTION ||
-            category == NotificationCategory.NEWS ||
-            category == NotificationCategory.MEDIA ||
-            category == NotificationCategory.UPDATE) {
+        if (lowValueCategory) {
             result -= LOW_VALUE_CATEGORY_PENALTY
         }
         if (category == NotificationCategory.PROMOTION) {
@@ -195,6 +201,10 @@ class NotificationClassifierUseCase @Inject constructor() {
         val UPDATE_PACKAGES = PackageRules(
             segments = setOf("updater", "softwareupdate", "systemupdate")
         )
+        // NOT: jenerik "news" segment'i kaldırıldı — "com.example.news" gibi paketlerde
+        // içerik kanıtı olmadan NEWS üretiyordu (NotificationPriorityPolicyTest OTHER bekler).
+        // Bilinen haber uygulamaları segment/prefix olarak korunur; içerik matcher'ları
+        // ("haber", "son dakika", "breaking news"...) zaten NEWS'i yakalar.
         val NEWS_PACKAGES = PackageRules(
             segments = setOf("flipboard", "feedly", "googlequicksearchbox")
         )
@@ -208,6 +218,9 @@ class NotificationClassifierUseCase @Inject constructor() {
         val AUTH_CODE_MATCHERS = matchers("dogrulama kodu", "giris kodu", "guvenlik kodu", "tek kullanimlik kod", "verification code", "login code", "security code", "one time code", "one-time code", "one time password", "one-time password", "otp")
         val MISSED_CALL_MATCHERS = matchers("cevapsiz arama", "cevapsiz cagri", "cevapsiz", "missed call", "missed calls", "arama yapti")
         val FAMILY_MATCHERS = matchers("yeni uygulama yuklendi", "uygulama yukledi", "ekran suresi", "screen time", "child installed", "parental control", "family link", "cocuk", "ebeveyn")
+        // NOT: "yuzde" tek başına MARKET sayılmaz — "yüzde 50 indirim" gibi promosyon
+        // içeriklerini yanlışlıkla MARKET'e çekiyordu (NotificationClassifierUseCaseTest).
+        // Gerçek piyasa bildirimleri "artti/yukseldi/%," gibi diğer matcher'larla yakalanır.
         val MARKET_MATCHERS = matchers("hisse", "hissesi", "hisse senedi", "borsa", "bist", "bist 30", "bist 100", "nasdaq", "s&p 500", "dow jones", "sp 500", "artti", "yukseldi", "dustu", "geriledi", "%,", "stock", "stocks", "shares", "market alert", "price alert", "altin", "dolar", "euro", "exchange rate", "index")
         val FINANCE_MATCHERS = matchers("bakiye", "hesap hareketi", "kartiniz", "harcama", "odeme", "transfer", "havale", "eft", "yatirim", "para cekme", "fatura", "balance", "account activity", "card transaction", "transaction", "payment", "bank transfer", "wire transfer", "withdrawal", "invoice")
         val DELIVERY_MATCHERS = matchers("kargo", "teslimat", "siparisiniz", "siparis", "kurye", "yola cikti", "dagitima cikti", "teslim edildi", "paketiniz", "gonderiniz", "shipped", "shipment", "out for delivery", "delivered", "your order", "order confirmed", "courier", "your package", "tracking number")

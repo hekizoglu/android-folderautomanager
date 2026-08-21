@@ -36,10 +36,13 @@ class PackageChangeReceiver : BroadcastReceiver() {
         // goAsync() ile Android'e "henuz bitmedi" sinyali verilir; coroutine bitince finish() cagrilir
         val pendingResult = goAsync()
         when (intent.action) {
-            Intent.ACTION_PACKAGE_ADDED   -> onPackageAdded(context, packageName, isReplacing, pendingResult)
-            Intent.ACTION_PACKAGE_REMOVED -> onPackageRemoved(context, packageName, pendingResult)
-            Intent.ACTION_PACKAGE_CHANGED -> onPackageChanged(context, packageName, pendingResult)
-            else                          -> pendingResult.finish()
+            Intent.ACTION_PACKAGE_ADDED -> onPackageAdded(context, packageName, isReplacing, pendingResult)
+            // During an app update Android may emit PACKAGE_REMOVED with EXTRA_REPLACING=true
+            // before PACKAGE_ADDED. Do not delete the existing catalog row in that window.
+            Intent.ACTION_PACKAGE_REMOVED -> onPackageRemoved(context, packageName, isReplacing, pendingResult)
+            Intent.ACTION_PACKAGE_CHANGED,
+            Intent.ACTION_PACKAGE_REPLACED -> onPackageChanged(context, packageName, pendingResult)
+            else -> pendingResult.finish()
         }
     }
 
@@ -103,7 +106,19 @@ class PackageChangeReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun onPackageRemoved(context: Context, packageName: String, pendingResult: BroadcastReceiver.PendingResult) {
+    private fun onPackageRemoved(
+        context: Context,
+        packageName: String,
+        isReplacing: Boolean,
+        pendingResult: BroadcastReceiver.PendingResult
+    ) {
+        // An update is represented as a remove/add pair on some Android/OEM versions.
+        // Preserve the row, dock and favorites until the replacement package is added.
+        if (isReplacing) {
+            pendingResult.finish()
+            return
+        }
+
         // Icon cache'ten bu pakete ait tüm boyut varyantlarını hemen temizle — sync, UI thread'i bloklamaz (LruCache).
         com.armutlu.apporganizer.presentation.ui.launcher.iconCacheInternal.snapshot().keys
             .filter { it.startsWith("${packageName}_") }
