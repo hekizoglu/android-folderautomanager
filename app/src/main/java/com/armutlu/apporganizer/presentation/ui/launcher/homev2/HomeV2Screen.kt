@@ -8,9 +8,12 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +21,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,6 +39,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -42,6 +51,7 @@ import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
 import com.armutlu.apporganizer.presentation.ui.launcher.FolderScreen
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeShell
 import com.armutlu.apporganizer.presentation.ui.launcher.LauncherViewModel
+import com.armutlu.apporganizer.presentation.ui.launcher.WidgetPage
 import com.armutlu.apporganizer.utils.AppPrefs
 import timber.log.Timber
 
@@ -49,8 +59,11 @@ import timber.log.Timber
  * Home V2 — yeniden tasarlanmış ana ekran kompozisyon kökü.
  *
  * Sözleşme: bu dosya yalnız wiring yapar. Tüm türetme mantığı [HomeV2Assembler]'da
- * (saf, testli), tüm bölümler kendi küçük composable dosyalarında yaşar.
- * HomeShell jest/IME/z-order altyapısı, AllAppsDrawer ve FolderScreen korunur.
+ * (saf, testli), bölümler kendi küçük composable dosyalarında yaşar. HomeShell
+ * jest/IME/z-order altyapısı, AllAppsDrawer, FolderScreen ve WidgetPage korunur.
+ *
+ * Sayfa düzeni (tek yatay pager, iç içe yatay pager YOK):
+ *   [Widget sayfası (widget varsa)] → [Klasör sayfaları...]
  */
 @Composable
 fun HomeV2Screen(
@@ -74,8 +87,11 @@ fun HomeV2Screen(
     val notificationPermissionMissing by vm.showNotificationBadgePermissionCard.collectAsState()
     val pulseSummary by vm.homePulseSummary.collectAsState()
     val missionSummary by vm.homeMissionSummary.collectAsState()
+    val widgetIds by vm.widgetIds.collectAsState()
 
     val pageSize = remember { AppPrefs.getPageSize(context) }
+    val widgetAreaEnabled = remember { AppPrefs.isWidgetAreaEnabled(context) }
+    val widgetFreeGridEnabled = remember { AppPrefs.isWidgetFreeGridEnabled(context) }
     var dismissedBanners by remember { mutableStateOf(setOf<String>()) }
     val appsByPackage = remember(allApps) { allApps.associateBy { it.packageName } }
 
@@ -97,6 +113,7 @@ fun HomeV2Screen(
         )
     }
 
+    val showWidgetPage = widgetAreaEnabled && widgetIds.isNotEmpty()
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 72.dp.toPx() }
 
@@ -145,7 +162,7 @@ fun HomeV2Screen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) { CircularProgressIndicator() }
-                    state.folders.isEmpty() -> Column(
+                    state.folders.isEmpty() && !showWidgetPage -> Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
@@ -158,18 +175,49 @@ fun HomeV2Screen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    else -> FolderGridV2(
-                        folders = state.folders,
-                        pageSize = state.pageSize,
-                        appsByPackage = appsByPackage,
-                        onOpenFolder = { tile ->
-                            folders.firstOrNull { it.category.categoryId == tile.categoryId }
-                                ?.let(vm::openFolder)
-                        },
-                        onQuickLaunch = { vm.launchApp(context, it) },
-                        onAppClick = { vm.launchApp(context, it) },
-                        modifier = Modifier.weight(1f),
-                    )
+                    else -> BoxWithConstraints(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                        val columns = (maxWidth / 168.dp).toInt().coerceIn(1, 4)
+                        val folderPages = remember(state.folders, state.pageSize, columns) {
+                            folderChunks(state.folders, state.pageSize, columns)
+                        }
+                        val widgetPageCount = if (showWidgetPage) 1 else 0
+                        val pageCount = widgetPageCount + folderPages.size
+                        val pagerState = rememberPagerState(pageCount = { pageCount })
+
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxWidth().weight(1f),
+                            ) { page ->
+                                if (showWidgetPage && page == 0) {
+                                    WidgetPage(
+                                        widgetIds = widgetIds,
+                                        widgetFreeGridEnabled = widgetFreeGridEnabled,
+                                        onRemoveWidget = { vm.removeWidgetId(context, it) },
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                } else {
+                                    val pageIndex = page - widgetPageCount
+                                    folderPages.getOrNull(pageIndex)?.let { tiles ->
+                                        FolderPageV2(
+                                            tiles = tiles,
+                                            appsByPackage = appsByPackage,
+                                            onOpenFolder = { tile ->
+                                                folders.firstOrNull { it.category.categoryId == tile.categoryId }
+                                                    ?.let(vm::openFolder)
+                                            },
+                                            onQuickLaunch = { vm.launchApp(context, it) },
+                                            onAppClick = { vm.launchApp(context, it) },
+                                        )
+                                    }
+                                }
+                            }
+                            if (pageCount > 1) {
+                                PageDotsV2(pageCount = pageCount, currentPage = pagerState.currentPage)
+                                Spacer(Modifier.height(6.dp))
+                            }
+                        }
+                    }
                 }
                 OpenDrawerHint(onClick = vm::openAllApps)
             }
@@ -203,6 +251,29 @@ fun HomeV2Screen(
             }
         },
     )
+}
+
+@Composable
+private fun PageDotsV2(pageCount: Int, currentPage: Int) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(pageCount) { index ->
+            val selected = index == currentPage
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 3.dp)
+                    .size(if (selected) 7.dp else 5.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+                    )
+            )
+        }
+    }
 }
 
 @Composable
@@ -251,7 +322,7 @@ private fun OpenDrawerHint(onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-        color = androidx.compose.ui.graphics.Color.Transparent,
+        color = Color.Transparent,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(

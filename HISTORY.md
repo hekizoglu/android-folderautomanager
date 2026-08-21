@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-21 (Home V2 tur 2: widget sayfası geri taşındı)
+**Yapılanlar:** HomeV2 v1'de kapsam dışı bırakılan widget alanı yeni tasarıma taşındı:
+- Pager mimarisi ekran seviyesine çıkarıldı: TEK yatay pager [Widget sayfası?] → [Klasör sayfaları...] — iç içe yatay pager yok, jest çakışması yok.
+- Mevcut `WidgetPage` composable'ı değişmeden yeniden kullanıldı (`widgetAreaEnabled` + `widgetIds` koşuluyla); widget kaldırma `vm.removeWidgetId` ile korunur.
+- `FolderGridV2` → tek-sayfa `FolderPageV2`'ye dönüştürüldü; saf `folderChunks()` sayfalama matematiği birim testine alındı (FolderChunksTest, 3 test).
+- Sayfa noktaları tüm pager'ı kapsayacak şekilde ekran seviyesine taşındı.
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1424 test, 0 fail, 0 hata** (19 skipped) — 3 yeni FolderChunksTest dahil; derleme BUILD SUCCESSFUL.
+**Sonraki:** Hero Dashboard sayfasının yeni tasarıma taşınması, klasör sürükleme, dock sabit/akıllı slot oranı ayarı.
+
 ## Döngü — 2026-08-21 (Home V2: ana ekran baştan tasarlandı, feature/home-v2)
 **Yapılanlar:** Ana ekran `presentation/ui/launcher/homev2/` paketinde yeniden tasarlandı ve `LauncherNavGraph`'te HOME rotasına bağlandı (eski HomeScreen.kt referans olarak korunur). Tasarım belgesi: `docs/architecture/HOME_V2_TASARIM.md`.
 - Mimari: ekran tek immutable `HomeV2State` render eder; tüm türetme saf `HomeV2Assembler`'da (Android bağımlılığı yok, birim testli). ~30 ayrı collectAsState + ~15 local pref taşıyan 1700 satırlık god-composable yerine ~200 satırlık wiring kökü + 5 küçük bölüm dosyası (ClockHeaderV2, FolderGridV2, FolderTileV2, DockBarV2, PulseStripV2 ClockHeader içinde).
