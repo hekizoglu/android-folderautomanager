@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
@@ -325,7 +326,9 @@ class AppListViewModel @Inject constructor(
                 TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
             } catch (e: Exception) {
                 Timber.e(e, "Error confirming classification for $packageName")
-                _screenState.value = _screenState.value.copy(error = "Sınıflandırma onaylanamadı")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.classification_confirm_failed)
+                )
             }
         }
     }
@@ -341,7 +344,9 @@ class AppListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error confirming pending classifications")
-                _screenState.value = _screenState.value.copy(error = "Sınıflandırmaların tamamı onaylanamadı")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.classification_confirm_all_failed)
+                )
             }
         }
     }
@@ -361,7 +366,9 @@ class AppListViewModel @Inject constructor(
                 TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationSnoozed)
             } catch (e: Exception) {
                 Timber.e(e, "Error skipping classification for $packageName")
-                _screenState.value = _screenState.value.copy(error = "Sınıflandırma ertelenemedi")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.classification_skip_failed)
+                )
             }
         }
     }
@@ -705,7 +712,9 @@ class AppListViewModel @Inject constructor(
                 Timber.d("Deleted app: $packageName")
             } catch (e: Exception) {
                 Timber.e(e, "Error deleting app: $packageName")
-                _screenState.value = _screenState.value.copy(error = "Uygulama silinemedi")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.app_delete_failed)
+                )
             }
         }
     }
@@ -774,7 +783,7 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch {
             if (_llmCategorizing.value) return@launch
             if (apiKey.isBlank()) {
-                _llmProgress.value = "LLM API anahtarı bulunamadı. Ayarlardan API anahtarını ekleyin."
+                _llmProgress.value = getApplication<Application>().getString(R.string.llm_api_key_missing)
                 appendDebugLog("LLM kategorize atlandı: API anahtarı boş.")
                 return@launch
             }
@@ -849,7 +858,9 @@ class AppListViewModel @Inject constructor(
             getApplication<Application>().startActivity(intent)
         } catch (e: Exception) {
             Timber.e(e, "launchIntent failed")
-            _screenState.value = _screenState.value.copy(error = "Ekran açılamadı")
+            _screenState.value = _screenState.value.copy(
+                error = getApplication<Application>().getString(R.string.screen_open_failed)
+            )
         }
     }
 
@@ -862,14 +873,21 @@ class AppListViewModel @Inject constructor(
                     val now = System.currentTimeMillis()
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     ctx.startActivity(intent)
-                    repository.recordAppLaunch(packageName, now)
+                    // Uygulama basariyla baslatildi; DB yazisi ikincil kayittir ve
+                    // basarisiz olursa "acilamadi" hatasi gosterilmemelidir.
+                    runCatching { repository.recordAppLaunch(packageName, now) }
+                        .onFailure { Timber.w(it, "recordAppLaunch failed for $packageName") }
                 } else {
                     Timber.w("No launch intent for $packageName")
-                    _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
+                    _screenState.value = _screenState.value.copy(
+                        error = getApplication<Application>().getString(R.string.app_launch_failed, packageName)
+                    )
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error launching $packageName")
-                _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.app_launch_failed, packageName)
+                )
             }
         }
     }
@@ -952,7 +970,9 @@ class AppListViewModel @Inject constructor(
                     Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
                 }.onFailure {
                     Timber.e(it, "resetAllPrivacyData hatası")
-                    _screenState.value = _screenState.value.copy(error = "Gizlilik verileri tamamen sıfırlanamadı")
+                    _screenState.value = _screenState.value.copy(
+                        error = getApplication<Application>().getString(R.string.privacy_reset_failed)
+                    )
                 }
             }
         }

@@ -1110,4 +1110,14 @@
     <string name="context_menu_remove_from_notifications">Bildirim gelenlerden geçici olarak kaldır</string>
     <string name="context_menu_remove_from_recents">Son kullanılanlardan geçici olarak kaldır</string>
     <string name="context_menu_remove_from_now">Sıradakilerden geçici olarak kaldır</string>
+    <!-- AppList/launcher işlem hata mesajları (arena düzeltmesi: TR/EN lokalizasyon) -->
+    <string name="classification_confirm_failed">Sınıflandırma onaylanamadı</string>
+    <string name="classification_confirm_all_failed">Sınıflandırmaların tamamı onaylanamadı</string>
+    <string name="classification_skip_failed">Sınıflandırma ertelenemedi</string>
+    <string name="app_delete_failed">Uygulama silinemedi</string>
+    <string name="app_start_failed">Uygulama başlatılamadı</string>
+    <string name="app_launch_failed">%1$s açılamadı</string>
+    <string name="screen_open_failed">Ekran açılamadı</string>
+    <string name="privacy_reset_failed">Gizlilik verileri tamamen sıfırlanamadı</string>
+    <string name="llm_api_key_missing">LLM API anahtarı bulunamadı. Ayarlardan API anahtarını ekleyin.</string>
 </resources>

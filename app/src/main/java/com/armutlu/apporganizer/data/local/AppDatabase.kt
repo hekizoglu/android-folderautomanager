@@ -307,7 +307,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_21_22 = object : Migration(21, 22) {
+        internal val MIGRATION_21_22 = object : Migration(21, 22) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Never drop operation history during an app upgrade. Older v21 builds
                 // may have a partial schema, so copy every column that exists into the

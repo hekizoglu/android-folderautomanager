@@ -5,6 +5,7 @@ import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
 import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VERSION
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
