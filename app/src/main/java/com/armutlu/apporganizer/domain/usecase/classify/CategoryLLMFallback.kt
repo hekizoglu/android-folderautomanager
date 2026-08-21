@@ -36,7 +36,9 @@ class CategoryLLMFallback @Inject constructor(
      * Batch sınıflandırma — birden fazla paketi tek API çağrısında sınıflandırır (max 15).
      */
     suspend fun classifyBatch(packageNames: List<String>, apiKey: String): Map<String, String> {
-        val uncached = packageNames.filter { !cache.containsKey(it) }
+        // Only normalized values are valid cache hits. Old/invalid cache values must
+        // be retried instead of silently disappearing from the batch result.
+        val uncached = packageNames.filter { normalizeCategoryId(cache[it]) == null }
         val results = mutableMapOf<String, String>()
 
         // Cache hit'lerini gerçek Room kategori ID'sine normalize et.

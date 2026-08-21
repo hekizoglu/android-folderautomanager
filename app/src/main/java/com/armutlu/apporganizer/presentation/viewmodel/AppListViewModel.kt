@@ -773,6 +773,11 @@ class AppListViewModel @Inject constructor(
     fun categorizeDigerWithLLM(apiKey: String) {
         viewModelScope.launch {
             if (_llmCategorizing.value) return@launch
+            if (apiKey.isBlank()) {
+                _llmProgress.value = "LLM API anahtarı bulunamadı. Ayarlardan API anahtarını ekleyin."
+                appendDebugLog("LLM kategorize atlandı: API anahtarı boş.")
+                return@launch
+            }
             val ctx = getApplication<Application>()
             val mode = com.armutlu.apporganizer.utils.AppPrefs.getClassificationMode(ctx)
             if (mode != com.armutlu.apporganizer.utils.AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK) {
