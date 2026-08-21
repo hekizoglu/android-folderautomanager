@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.armutlu.apporganizer.presentation.ui.launcher.homev2.HomeV2Screen
 
 private const val ROUTE_HOME = "launcher_home"
 private const val ROUTE_HOME_LAYOUT_EDITOR = "home_layout_editor"
@@ -31,7 +32,9 @@ fun LauncherNavGraph(
         popExitTransition = { slideOutVertically(tween(220, easing = FastOutLinearInEasing)) { it } },
     ) {
         composable(ROUTE_HOME) {
-            HomeScreen(
+            // Home V2 — yeniden tasarlanmış ana ekran (bkz. docs/architecture/HOME_V2_TASARIM.md).
+            // Eski HomeScreen.kt referans olarak korunur; geri dönüş gerekirse bu satır değiştirilir.
+            HomeV2Screen(
                 viewModel = viewModel,
                 onLaunchWidgetPicker = onLaunchWidgetPicker,
                 onEditHomeLayout = { navController.navigate(ROUTE_HOME_LAYOUT_EDITOR) },
