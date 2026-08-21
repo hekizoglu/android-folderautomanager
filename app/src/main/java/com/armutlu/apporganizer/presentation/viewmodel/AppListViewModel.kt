@@ -849,6 +849,7 @@ class AppListViewModel @Inject constructor(
             getApplication<Application>().startActivity(intent)
         } catch (e: Exception) {
             Timber.e(e, "launchIntent failed")
+            _screenState.value = _screenState.value.copy(error = "Ekran açılamadı")
         }
     }
 
@@ -868,6 +869,7 @@ class AppListViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error launching $packageName")
+                _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
             }
         }
     }
