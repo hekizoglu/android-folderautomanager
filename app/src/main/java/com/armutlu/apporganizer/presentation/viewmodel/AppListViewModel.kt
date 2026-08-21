@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
@@ -319,19 +320,33 @@ class AppListViewModel @Inject constructor(
 
     fun confirmPendingClassification(packageName: String) {
         viewModelScope.launch {
-            repository.confirmClassification(packageName)
-            repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
-            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+            try {
+                repository.confirmClassification(packageName)
+                repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+                TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+            } catch (e: Exception) {
+                Timber.e(e, "Error confirming classification for $packageName")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.classification_confirm_failed)
+                )
+            }
         }
     }
 
     fun approveAllPendingClassifications() {
         viewModelScope.launch {
-            val pendingList = classificationAttentionApps.value
-            pendingList.forEach { app ->
-                repository.confirmClassification(app.packageName)
-                repository.getAppByPackageName(app.packageName)?.let { searchRepository.indexApp(it) }
-                TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+            try {
+                val pendingList = classificationAttentionApps.value
+                pendingList.forEach { app ->
+                    repository.confirmClassification(app.packageName)
+                    repository.getAppByPackageName(app.packageName)?.let { searchRepository.indexApp(it) }
+                    TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error confirming pending classifications")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.classification_confirm_all_failed)
+                )
             }
         }
     }
@@ -346,8 +361,15 @@ class AppListViewModel @Inject constructor(
 
     fun skipPendingClassification(packageName: String) {
         viewModelScope.launch {
-            repository.skipClassificationReview(packageName, days = 7)
-            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationSnoozed)
+            try {
+                repository.skipClassificationReview(packageName, days = 7)
+                TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationSnoozed)
+            } catch (e: Exception) {
+                Timber.e(e, "Error skipping classification for $packageName")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.classification_skip_failed)
+                )
+            }
         }
     }
 
@@ -689,7 +711,10 @@ class AppListViewModel @Inject constructor(
                 repository.deleteApp(packageName)
                 Timber.d("Deleted app: $packageName")
             } catch (e: Exception) {
-                Timber.e(e, "Error deleting app")
+                Timber.e(e, "Error deleting app: $packageName")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.app_delete_failed)
+                )
             }
         }
     }
@@ -757,6 +782,11 @@ class AppListViewModel @Inject constructor(
     fun categorizeDigerWithLLM(apiKey: String) {
         viewModelScope.launch {
             if (_llmCategorizing.value) return@launch
+            if (apiKey.isBlank()) {
+                _llmProgress.value = getApplication<Application>().getString(R.string.llm_api_key_missing)
+                appendDebugLog("LLM kategorize atlandı: API anahtarı boş.")
+                return@launch
+            }
             val ctx = getApplication<Application>()
             val mode = com.armutlu.apporganizer.utils.AppPrefs.getClassificationMode(ctx)
             if (mode != com.armutlu.apporganizer.utils.AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK) {
@@ -828,6 +858,9 @@ class AppListViewModel @Inject constructor(
             getApplication<Application>().startActivity(intent)
         } catch (e: Exception) {
             Timber.e(e, "launchIntent failed")
+            _screenState.value = _screenState.value.copy(
+                error = getApplication<Application>().getString(R.string.screen_open_failed)
+            )
         }
     }
 
@@ -840,14 +873,21 @@ class AppListViewModel @Inject constructor(
                     val now = System.currentTimeMillis()
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     ctx.startActivity(intent)
-                    repository.incrementLaunchCount(packageName)
-                    repository.updateLastUsedTimestamp(packageName, now)
+                    // Uygulama basariyla baslatildi; DB yazisi ikincil kayittir ve
+                    // basarisiz olursa "acilamadi" hatasi gosterilmemelidir.
+                    runCatching { repository.recordAppLaunch(packageName, now) }
+                        .onFailure { Timber.w(it, "recordAppLaunch failed for $packageName") }
                 } else {
                     Timber.w("No launch intent for $packageName")
-                    _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
+                    _screenState.value = _screenState.value.copy(
+                        error = getApplication<Application>().getString(R.string.app_launch_failed, packageName)
+                    )
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error launching $packageName")
+                _screenState.value = _screenState.value.copy(
+                    error = getApplication<Application>().getString(R.string.app_launch_failed, packageName)
+                )
             }
         }
     }
@@ -863,7 +903,10 @@ class AppListViewModel @Inject constructor(
                 appendDebugLog("Tüm kategoriler sıfırlanıyor...")
                 repository.resetAllCategories()
                 appendDebugLog("Kategoriler sıfırlandı - yeniden sınıflandırılıyor...")
-                val apps = _screenState.value.apps
+                // Reload after reset: the screen snapshot still contains the old
+                // category/lock metadata and could make the classifier reapply stale
+                // user decisions instead of classifying the reset rows.
+                val apps = repository.getAllApps()
                 val mode = com.armutlu.apporganizer.utils.AppPrefs
                     .getClassificationMode(getApplication())
                 apps.forEach { app ->
@@ -925,7 +968,12 @@ class AppListViewModel @Inject constructor(
                     context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                         .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
                     Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
-                }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
+                }.onFailure {
+                    Timber.e(it, "resetAllPrivacyData hatası")
+                    _screenState.value = _screenState.value.copy(
+                        error = getApplication<Application>().getString(R.string.privacy_reset_failed)
+                    )
+                }
             }
         }
     }

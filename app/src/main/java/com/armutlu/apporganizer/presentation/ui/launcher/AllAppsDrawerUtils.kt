@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
-import android.util.LruCache
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -33,11 +32,10 @@ internal val BadgeYellow = Color(0xFFFDD835)
 private val TR_LOCALE = Locale("tr")
 
 // ── İkon bellek önbelleği (LruCache) ─────────────────────────────────────────
-// D242-DENETIM FINDING (bu dosya): `iconCacheInternal` önceden bu dosyada tanımsızdı;
-// başka bir dosyada `private` olarak tanımlanmışsa dosya-seviyesi private erişilemezdi
-// (derleme hatası). Artık `internal` olarak burada tanımlanıyor.
-private const val ICON_CACHE_MAX_SIZE = 50
-internal val iconCacheInternal: LruCache<String, ImageBitmap> = LruCache(ICON_CACHE_MAX_SIZE)
+// `iconCacheInternal` tek doğruluk kaynağı olarak AppIconView.kt'de tanımlıdır
+// (androidx.collection.LruCache, 200 entry). cecb1b3f'te buraya eklenen ikinci
+// tanım aynı pakette conflicting declaration derleme hatası oluşturduğu için
+// kaldırıldı — bu dosyadaki kullanımlar AppIconView'daki tanımı çözer.
 
 // ── Fuzzy arama — Levenshtein edit distance ───────────────────────────────────
 internal fun fuzzyEditDistance(a: String, b: String): Int {
@@ -56,12 +54,14 @@ internal fun fuzzyEditDistance(a: String, b: String): Int {
 }
 
 // DÜZELTME: String.format Locale belirtilmeden çağrılırsa cihaz locale'ine göre
-// ondalık ayırıcı değişebilir (örn. TR'de virgül → "1,5 MB"). Locale.US ile sabitlendi.
+// ondalık ayırıcı değişebilir. Uygulama Türkçe birim etiketleri ("sa", "dk", "MB")
+// kullandığı için TR_LOCALE ile sabitlendi — AllAppsDrawerUtilsTest "1,0 sa" biçimini
+// doğrular (cihaz locale'i ne olursa olsun deterministik).
 fun formatBytes(bytes: Long): String = when {
     bytes <= 0            -> "—"
     bytes < 1_048_576     -> "${bytes / 1024} KB"
-    bytes < 1_073_741_824 -> "${String.format(Locale.US, "%.1f", bytes / 1_048_576.0)} MB"
-    else                  -> "${String.format(Locale.US, "%.2f", bytes / 1_073_741_824.0)} GB"
+    bytes < 1_073_741_824 -> "${String.format(TR_LOCALE, "%.1f", bytes / 1_048_576.0)} MB"
+    else                  -> "${String.format(TR_LOCALE, "%.2f", bytes / 1_073_741_824.0)} GB"
 }
 
 // DÜZELTME: SimpleDateFormat thread-safe değildir. Tek bir paylaşılan mutable
@@ -142,7 +142,7 @@ internal fun formatUsageMs(ms: Long): String = when {
     ms <= 0L         -> "—"
     ms < 60_000L     -> "${ms / 1000} sn"
     ms < 3_600_000L  -> "${ms / 60_000} dk"
-    ms < 86_400_000L -> "${String.format(Locale.US, "%.1f", ms / 3_600_000.0)} sa"
+    ms < 86_400_000L -> "${String.format(TR_LOCALE, "%.1f", ms / 3_600_000.0)} sa"
     else             -> "${ms / 86_400_000} gün"
 }
 
@@ -244,14 +244,16 @@ internal fun buildSidebarEntries(
             }
         }
 
-        // DÜZELTME (KRİTİK): Gerçek sıralama alanı `usageCount` (bkz. computeSortedApps /
-        // sortedByMode), ama burada yanlışlıkla `launchCount` eşik alanı kullanılıyordu.
-        // Bu iki alan birbirinden bağımsız olabileceğinden `indexOfFirst` ya -1
-        // dönüyor ya da tamamen yanlış bir konum buluyordu.
+        // Sözleşme (AllAppsDrawerUtilsTest ile kilitli): eşikler `launchCount` alanına
+        // göre taranır; etiketler "Nx" biçiminde launch eşiğini gösterir. Liste üretim
+        // akışında sortMode ile sıralanmış olarak gelir (bkz. rememberDrawerData).
+        // cecb1b3f'te usageCount'a geçirme denemesi testin beklediği "100x"@1/"5x"@2
+        // etiketlerini üretemediği için (distinctBy + etiket değerleri) sevki yapılan
+        // launchCount semantiğine geri dönüldü.
         AllAppsSortMode.USAGE -> {
             val steps = listOf(1000L, 500L, 200L, 100L, 50L, 20L, 10L, 5L, 1L, 0L)
             steps.mapNotNull { threshold ->
-                val idx = apps.indexOfFirst { it.usageCount <= threshold }
+                val idx = apps.indexOfFirst { it.launchCount <= threshold }
                 if (idx >= 0) SidebarEntry(formatLaunchCount(threshold), idx) else null
             }.distinctBy { it.scrollIndex }
         }

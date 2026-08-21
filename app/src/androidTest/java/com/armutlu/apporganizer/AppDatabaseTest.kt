@@ -82,6 +82,23 @@ class AppDatabaseTest {
     }
 
     @Test
+    fun recordAppLaunch_updatesCountAndTimestampAtomically() = runTest {
+        appDao.insertApp(AppInfo(packageName = "com.launch.app", appName = "Launch App"))
+
+        val updatedRows = appDao.recordAppLaunch("com.launch.app", 1_800_000_000_000L)
+
+        assertEquals(1, updatedRows)
+        val updated = appDao.getAppByPackageName("com.launch.app")
+        assertEquals(1L, updated?.launchCount)
+        assertEquals(1_800_000_000_000L, updated?.lastUsedTimestamp)
+    }
+
+    @Test
+    fun recordAppLaunch_returnsZeroForMissingApp() = runTest {
+        assertEquals(0, appDao.recordAppLaunch("com.missing.app", 1_800_000_000_000L))
+    }
+
+    @Test
     fun deleteApp_removesFromDb() = runTest {
         val app = AppInfo(packageName = "com.test.delete", appName = "Delete Me")
         appDao.insertApp(app)
@@ -153,6 +170,47 @@ class AppDatabaseTest {
     fun categoryExists_returnsTrueAfterInsert() = runTest {
         categoryDao.insertCategory(Category(categoryId = "exists_cat", categoryName = "Exists"))
         assertTrue(categoryDao.categoryExists("exists_cat"))
+    }
+
+    @Test
+    fun deleteCategoryWithFallback_movesCustomAppsToOtherAndDeletesCategory() = runTest {
+        categoryDao.insertCategories(
+            listOf(
+                Category(
+                    categoryId = Category.CAT_OTHER,
+                    categoryName = "Other",
+                    isSystemCategory = true,
+                ),
+                Category(
+                    categoryId = "custom_cat",
+                    categoryName = "Custom",
+                    isSystemCategory = false,
+                ),
+            )
+        )
+        appDao.insertApp(AppInfo(packageName = "com.custom.app", appName = "Custom App", categoryId = "custom_cat"))
+
+        categoryDao.deleteCategoryWithFallback("custom_cat")
+
+        assertNull(categoryDao.getCategoryById("custom_cat"))
+        assertEquals(Category.CAT_OTHER, appDao.getAppByPackageName("com.custom.app")?.categoryId)
+    }
+
+    @Test
+    fun deleteCategoryWithFallback_doesNotMoveAppsFromSystemCategory() = runTest {
+        categoryDao.insertCategory(
+            Category(
+                categoryId = Category.CAT_SOCIAL,
+                categoryName = "Social",
+                isSystemCategory = true,
+            )
+        )
+        appDao.insertApp(AppInfo(packageName = "com.social.app", appName = "Social App", categoryId = Category.CAT_SOCIAL))
+
+        categoryDao.deleteCategoryWithFallback(Category.CAT_SOCIAL)
+
+        assertNotNull(categoryDao.getCategoryById(Category.CAT_SOCIAL))
+        assertEquals(Category.CAT_SOCIAL, appDao.getAppByPackageName("com.social.app")?.categoryId)
     }
 
     @Test

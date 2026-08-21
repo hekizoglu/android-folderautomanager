@@ -81,21 +81,52 @@ object CategorySuggestionEngine {
         val lowerName = app.appName.lowercase(Locale("tr"))
         val lowerPkg = app.packageName.lowercase(Locale.ROOT)
 
-        KeywordDatabase.getKeywordMap().forEach { (categoryId, keywords) ->
-            if (categoryId in NON_SUGGESTABLE_CATEGORIES) return@forEach
-            if (keywords.isEmpty()) return@forEach
-            val nameHit = keywords.any { lowerName.contains(it) }
-            val pkgHit = keywords.any { lowerPkg.contains(it) }
-            if (nameHit || pkgHit) {
-                return Suggestion(
-                    categoryId = categoryId,
-                    signal = SignalType.KEYWORD,
-                    confidence = if (nameHit && pkgHit) KEYWORD_BOTH_CONFIDENCE else KEYWORD_CONFIDENCE,
-                )
+        // Do not return the first map hit: overlapping keywords (for example `fit`
+        // and `fitness`) made the result depend on KeywordDatabase insertion order.
+        // The most specific/longest matching keyword wins; ties use category id so the
+        // result remains deterministic even if the map implementation changes.
+        val bestMatch = KeywordDatabase.getKeywordMap()
+            .asSequence()
+            .filter { (categoryId, keywords) ->
+                categoryId !in NON_SUGGESTABLE_CATEGORIES && keywords.isNotEmpty()
             }
-        }
-        return null
+            .flatMap { (categoryId, keywords) ->
+                keywords.asSequence().mapNotNull { keyword ->
+                    val nameHit = lowerName.contains(keyword)
+                    val packageHit = lowerPkg.contains(keyword)
+                    if (!nameHit && !packageHit) {
+                        null
+                    } else {
+                        KeywordMatch(
+                            categoryId = categoryId,
+                            keywordLength = keyword.length,
+                            bothSources = nameHit && packageHit,
+                        )
+                    }
+                }
+            }
+            .maxWithOrNull(
+                compareBy<KeywordMatch> { it.keywordLength }
+                    .thenBy { it.bothSources }
+                    .thenBy { it.categoryId }
+            ) ?: return null
+
+        return Suggestion(
+            categoryId = bestMatch.categoryId,
+            signal = SignalType.KEYWORD,
+            confidence = if (bestMatch.bothSources) {
+                KEYWORD_BOTH_CONFIDENCE
+            } else {
+                KEYWORD_CONFIDENCE
+            },
+        )
     }
+
+    private data class KeywordMatch(
+        val categoryId: String,
+        val keywordLength: Int,
+        val bothSources: Boolean,
+    )
 
     private fun vendorSuggestion(app: AppInfo, allApps: List<AppInfo>): Suggestion? {
         val vendorPrefix = knownVendorPrefixOf(app.packageName) ?: return null
@@ -149,7 +180,9 @@ object CategorySuggestionEngine {
 
     private fun knownVendorPrefixOf(packageName: String): String? {
         val lowerPkg = packageName.lowercase(Locale.ROOT)
-        return KNOWN_VENDOR_PREFIXES.firstOrNull { lowerPkg.startsWith(it) }
+        return KNOWN_VENDOR_PREFIXES.firstOrNull { prefix ->
+            lowerPkg == prefix || lowerPkg.startsWith("$prefix.")
+        }
     }
 
     private const val KEYWORD_CONFIDENCE = 0.6f

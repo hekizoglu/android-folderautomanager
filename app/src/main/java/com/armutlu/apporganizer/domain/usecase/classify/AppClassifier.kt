@@ -1,4 +1,4 @@
-﻿package com.armutlu.apporganizer.domain.usecase.classify
+package com.armutlu.apporganizer.domain.usecase.classify
 
 import android.content.Context
 import com.armutlu.apporganizer.data.remote.AppDatabaseService
@@ -418,8 +418,12 @@ class AppClassifier @Inject constructor(
     // Üretici paket prefix'i veya uygulama adı → kategori eşleşmesi (exactMap'ten sonra, keyword'den önce)
     // Nokta/tire normalize edilir; büyük/küçük harf toleransı sağlanır.
     private fun classifyByManufacturerPrefix(packageName: String, appName: String = ""): String? {
-        val pkg = packageName.lowercase()
-        val prefixMatch = MANUFACTURER_PREFIX_MAP.entries.firstOrNull { (prefix, _) -> pkg.startsWith(prefix) }?.value
+        val pkg = packageName.lowercase(java.util.Locale.ROOT)
+        // Prefix must be a complete package segment. Without the dot boundary,
+        // `com.googlefake.app` incorrectly matches the `com.google` vendor rule.
+        val prefixMatch = MANUFACTURER_PREFIX_MAP.entries.firstOrNull { (prefix, _) ->
+            pkg == prefix || pkg.startsWith("$prefix.")
+        }?.value
         if (prefixMatch != null) return prefixMatch
         // Uygulama adında üretici adı varsa da eşleştir (Samsung/SAMSUNG/samsung toleranslı)
         val lowerName = appName.lowercase(java.util.Locale("tr"))
@@ -436,13 +440,13 @@ class AppClassifier @Inject constructor(
         exactMatchMap[packageName] == categoryId
 
     private fun hasKeywordMatch(appName: String, categoryId: String) =
-        appName.lowercase().let { lower ->
+        appName.lowercase(java.util.Locale("tr")).let { lower ->
             val compact = lower.compactClassifierText()
             KeywordDatabase.getKeywords(categoryId).any { keywordMatches(it, lower, compact) }
         }
 
     private fun hasPackageKeywordMatch(packageName: String, categoryId: String) =
-        packageName.lowercase().let { lower ->
+        packageName.lowercase(java.util.Locale.ROOT).let { lower ->
             val compact = lower.compactClassifierText()
             KeywordDatabase.getKeywords(categoryId).any { keywordMatches(it, lower, compact) }
         }

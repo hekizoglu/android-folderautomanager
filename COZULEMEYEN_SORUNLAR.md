@@ -11,6 +11,7 @@
 ### [CS-8] İzole ortamda Gradle 8.7 dağıtımı yok
 
 **Tarih:** 2026-07-21
+**Çözüm notu (2026-08-21, arena session):** services.gradle.org ve dl.google.com'a açık başka bir izole Linux ortamında sorun yeniden üretilemedi ve tam yeşil kanıt alındı: Temurin JDK 17 (tarball) + cmdline-tools ile platform-35/build-tools 36.0.0 kurulumu sonrası `./gradlew :app:testDebugUnitTest -PskipGoogleServices=true` (wrapper 8.13) → 1411 test, 0 fail. Engel kod değil, ortamın ağ politikasıdır; kalıcı çözüm ağ izni veya bu kurulum reçetesinin uygulanmasıdır. Not: başlıkta geçen "8.7" güncel değildir, wrapper 8.13 ister.
 **Durum:** Kod/statik kontroller tamam; hedefli unit test ve AndroidTest compile başlamadan ağ engeline takıldı
 **Sahip:** CI/build ortamı yöneticisi
 **Son tarih:** R7 compile kapısı aktive edilirken ISO tarih atanacak; R7.4 öncesi tamamlanmalı
