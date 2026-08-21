@@ -740,8 +740,7 @@ class LauncherViewModel @Inject constructor(
             lastLaunchedTs = ts
             context.startActivity(intent)
             viewModelScope.launch(Dispatchers.IO) {
-                repository.incrementLaunchCount(packageName)
-                repository.updateLastUsedTimestamp(packageName, ts)
+                repository.recordAppLaunch(packageName, ts)
             }
             // P0.5: yalnizca yerel "okundu" zaman damgasini guncelle — badge bir sonraki
             // badgeCounts akisinda bu zamana gore sifirlanir. SISTEM BILDIRIMINI ILETMIYORUZ
@@ -788,7 +787,8 @@ class LauncherViewModel @Inject constructor(
         val ts = lastLaunchedTs
         lastLaunchedPkg = null
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateLastUsedTimestamp(pkg, ts)
+            runCatching { repository.updateLastUsedTimestamp(pkg, ts) }
+                .onFailure { Timber.w(it, "refreshLastLaunched failed for $pkg") }
         }
     }
 
