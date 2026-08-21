@@ -319,19 +319,29 @@ class AppListViewModel @Inject constructor(
 
     fun confirmPendingClassification(packageName: String) {
         viewModelScope.launch {
-            repository.confirmClassification(packageName)
-            repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
-            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+            try {
+                repository.confirmClassification(packageName)
+                repository.getAppByPackageName(packageName)?.let { searchRepository.indexApp(it) }
+                TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+            } catch (e: Exception) {
+                Timber.e(e, "Error confirming classification for $packageName")
+                _screenState.value = _screenState.value.copy(error = "Sınıflandırma onaylanamadı")
+            }
         }
     }
 
     fun approveAllPendingClassifications() {
         viewModelScope.launch {
-            val pendingList = classificationAttentionApps.value
-            pendingList.forEach { app ->
-                repository.confirmClassification(app.packageName)
-                repository.getAppByPackageName(app.packageName)?.let { searchRepository.indexApp(it) }
-                TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+            try {
+                val pendingList = classificationAttentionApps.value
+                pendingList.forEach { app ->
+                    repository.confirmClassification(app.packageName)
+                    repository.getAppByPackageName(app.packageName)?.let { searchRepository.indexApp(it) }
+                    TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationApproved)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error confirming pending classifications")
+                _screenState.value = _screenState.value.copy(error = "Sınıflandırmaların tamamı onaylanamadı")
             }
         }
     }
@@ -346,8 +356,13 @@ class AppListViewModel @Inject constructor(
 
     fun skipPendingClassification(packageName: String) {
         viewModelScope.launch {
-            repository.skipClassificationReview(packageName, days = 7)
-            TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationSnoozed)
+            try {
+                repository.skipClassificationReview(packageName, days = 7)
+                TaskScoreManager.record(getApplication(), TaskScoreManager.EventType.ClassificationSnoozed)
+            } catch (e: Exception) {
+                Timber.e(e, "Error skipping classification for $packageName")
+                _screenState.value = _screenState.value.copy(error = "Sınıflandırma ertelenemedi")
+            }
         }
     }
 
@@ -689,7 +704,8 @@ class AppListViewModel @Inject constructor(
                 repository.deleteApp(packageName)
                 Timber.d("Deleted app: $packageName")
             } catch (e: Exception) {
-                Timber.e(e, "Error deleting app")
+                Timber.e(e, "Error deleting app: $packageName")
+                _screenState.value = _screenState.value.copy(error = "Uygulama silinemedi")
             }
         }
     }
@@ -840,8 +856,7 @@ class AppListViewModel @Inject constructor(
                     val now = System.currentTimeMillis()
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     ctx.startActivity(intent)
-                    repository.incrementLaunchCount(packageName)
-                    repository.updateLastUsedTimestamp(packageName, now)
+                    repository.recordAppLaunch(packageName, now)
                 } else {
                     Timber.w("No launch intent for $packageName")
                     _screenState.value = _screenState.value.copy(error = "$packageName açılamadı")
@@ -863,7 +878,10 @@ class AppListViewModel @Inject constructor(
                 appendDebugLog("Tüm kategoriler sıfırlanıyor...")
                 repository.resetAllCategories()
                 appendDebugLog("Kategoriler sıfırlandı - yeniden sınıflandırılıyor...")
-                val apps = _screenState.value.apps
+                // Reload after reset: the screen snapshot still contains the old
+                // category/lock metadata and could make the classifier reapply stale
+                // user decisions instead of classifying the reset rows.
+                val apps = repository.getAllApps()
                 val mode = com.armutlu.apporganizer.utils.AppPrefs
                     .getClassificationMode(getApplication())
                 apps.forEach { app ->
@@ -925,7 +943,10 @@ class AppListViewModel @Inject constructor(
                     context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                         .edit().remove(com.armutlu.apporganizer.utils.AppPrefs.KEY_FAVORITES_SET).apply()
                     Timber.d("Privacy reset: tüm kullanım verisi temizlendi")
-                }.onFailure { Timber.e(it, "resetAllPrivacyData hatası") }
+                }.onFailure {
+                    Timber.e(it, "resetAllPrivacyData hatası")
+                    _screenState.value = _screenState.value.copy(error = "Gizlilik verileri tamamen sıfırlanamadı")
+                }
             }
         }
     }

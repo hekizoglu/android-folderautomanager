@@ -51,6 +51,7 @@ class AppRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Timber.e(e, "Error ensuring default categories")
+            throw e
         }
     }
 
@@ -75,7 +76,7 @@ class AppRepository @Inject constructor(
     suspend fun deleteCategory(categoryId: String) {
         try {
             // P0.5: @Transaction kullan — kategori sil + apps taşı, birisi başarısızsa hepsi revert
-            categoryDao.deleteCategoryWithFallback(categoryId, "CAT_OTHER")
+            categoryDao.deleteCategoryWithFallback(categoryId, Category.CAT_OTHER)
             Timber.d("Deleted category $categoryId and moved apps to CAT_OTHER")
         } catch (e: Exception) {
             Timber.e(e, "Error deleting category")
@@ -206,7 +207,7 @@ class AppRepository @Inject constructor(
      */
     suspend fun updateAppCategory(packageName: String, categoryId: String) {
         try {
-            appDao.updateAppCategoryWithClassification(
+            val updatedRows = appDao.updateAppCategoryWithClassification(
                 packageName = packageName,
                 categoryId = categoryId,
                 source = ClassificationSource.USER_CORRECTED.name,
@@ -219,6 +220,9 @@ class AppRepository @Inject constructor(
                 reviewedAt = System.currentTimeMillis(),
                 snoozedUntil = 0L,
             )
+            check(updatedRows == 1) {
+                "Category update affected $updatedRows rows for $packageName"
+            }
             Timber.d("Updated category for $packageName to $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating app category")
@@ -228,7 +232,7 @@ class AppRepository @Inject constructor(
 
     suspend fun updateAppCategoryAutomatically(packageName: String, decision: ClassificationDecision) {
         try {
-            appDao.updateAppCategoryWithClassification(
+            val updatedRows = appDao.updateAppCategoryWithClassification(
                 packageName = packageName,
                 categoryId = decision.categoryId,
                 source = decision.source.name,
@@ -241,14 +245,19 @@ class AppRepository @Inject constructor(
                 reviewedAt = 0L,
                 snoozedUntil = 0L,
             )
+            check(updatedRows == 1) {
+                "Automatic category update affected $updatedRows rows for $packageName"
+            }
             Timber.d("Auto-classified $packageName to ${decision.categoryId}")
         } catch (e: Exception) {
             Timber.e(e, "Error auto-classifying app")
+            throw e
         }
     }
 
     suspend fun confirmClassification(packageName: String) {
         try {
+            check(appDao.appExists(packageName)) { "Cannot confirm missing app: $packageName" }
             appDao.confirmClassification(
                 packageName = packageName,
                 version = CLASSIFICATION_ENGINE_VERSION,
@@ -256,21 +265,25 @@ class AppRepository @Inject constructor(
             Timber.d("Confirmed classification for $packageName")
         } catch (e: Exception) {
             Timber.e(e, "Error confirming classification")
+            throw e
         }
     }
 
     suspend fun skipClassificationReview(packageName: String, days: Int = 7) {
         try {
+            check(appDao.appExists(packageName)) { "Cannot skip missing app: $packageName" }
             val snoozedUntil = System.currentTimeMillis() + days.coerceAtLeast(1) * 24L * 60L * 60L * 1000L
             appDao.skipClassificationReview(packageName, snoozedUntil)
             Timber.d("Skipped classification review for $packageName")
         } catch (e: Exception) {
             Timber.e(e, "Error skipping classification review")
+            throw e
         }
     }
 
     suspend fun restoreClassificationFromBackup(app: AppInfo, categoryId: String) {
         try {
+            check(appDao.appExists(app.packageName)) { "Cannot restore missing app: ${app.packageName}" }
             appDao.updateAppCategoryWithClassification(
                 packageName = app.packageName,
                 categoryId = categoryId,
@@ -286,15 +299,21 @@ class AppRepository @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Error restoring classification metadata")
+            throw e
         }
     }
 
+    /**
+     * Updates must fail loudly so callers cannot publish stale search/index state as if
+     * the Room write succeeded. Callers decide whether to retry or show an error.
+     */
     suspend fun updateApp(app: AppInfo) {
         try {
             appDao.updateApp(app)
             Timber.d("Updated app metadata for ${app.packageName}")
         } catch (e: Exception) {
             Timber.e(e, "Error updating app")
+            throw e
         }
     }
 
@@ -305,6 +324,7 @@ class AppRepository @Inject constructor(
             Timber.d("Updated metadata for ${apps.size} apps")
         } catch (e: Exception) {
             Timber.e(e, "Error updating multiple apps")
+            throw e
         }
     }
     
@@ -314,8 +334,9 @@ class AppRepository @Inject constructor(
      * arama indeksi, dismissal/accepted-pattern ve puan yan etkilerini yazmamalı.
      */
     suspend fun updateAppsCategory(packageNames: List<String>, categoryId: String) {
+        require(packageNames.isNotEmpty()) { "packageNames must not be empty" }
         try {
-            appDao.updateAppsCategoryWithClassification(
+            val updatedRows = appDao.updateAppsCategoryWithClassification(
                 packageNames = packageNames,
                 categoryId = categoryId,
                 source = ClassificationSource.USER_CORRECTED.name,
@@ -328,6 +349,10 @@ class AppRepository @Inject constructor(
                 reviewedAt = System.currentTimeMillis(),
                 snoozedUntil = 0L,
             )
+            val expectedRows = packageNames.toSet().size
+            check(updatedRows == expectedRows) {
+                "Bulk category update affected $updatedRows of $expectedRows rows"
+            }
             Timber.d("Updated ${packageNames.size} apps to category $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating multiple apps")
@@ -341,8 +366,9 @@ class AppRepository @Inject constructor(
      * bu davranışı bozmaz, aksine önceden sessizce yutulan hatayı görünür kılar.
      */
     suspend fun updateAppsCategoryAutomatically(packageNames: List<String>, categoryId: String) {
+        require(packageNames.isNotEmpty()) { "packageNames must not be empty" }
         try {
-            appDao.updateAppsCategoryWithClassification(
+            val updatedRows = appDao.updateAppsCategoryWithClassification(
                 packageNames = packageNames,
                 categoryId = categoryId,
                 source = ClassificationSource.FALLBACK_OTHER.name,
@@ -355,6 +381,10 @@ class AppRepository @Inject constructor(
                 reviewedAt = 0L,
                 snoozedUntil = 0L,
             )
+            val expectedRows = packageNames.toSet().size
+            check(updatedRows == expectedRows) {
+                "Automatic bulk category update affected $updatedRows of $expectedRows rows"
+            }
             Timber.d("Auto-updated ${packageNames.size} apps to category $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error auto-updating multiple apps")
@@ -384,6 +414,7 @@ class AppRepository @Inject constructor(
             Timber.d("Deleted app: $packageName")
         } catch (e: Exception) {
             Timber.e(e, "Error deleting app")
+            throw e
         }
     }
     
@@ -396,6 +427,7 @@ class AppRepository @Inject constructor(
             Timber.d("Cleared all apps")
         } catch (e: Exception) {
             Timber.e(e, "Error clearing apps")
+            throw e
         }
     }
     
@@ -533,6 +565,7 @@ class AppRepository @Inject constructor(
             )
         } catch (e: Exception) {
             Timber.e(e, "Error syncing installed apps")
+            throw e
         }
     }
     
@@ -543,23 +576,47 @@ class AppRepository @Inject constructor(
         return appDao.appExists(packageName)
     }
 
+    suspend fun recordAppLaunch(packageName: String, timestamp: Long) {
+        try {
+            val updatedRows = appDao.recordAppLaunch(packageName, timestamp)
+            check(updatedRows == 1) {
+                "Launch record affected $updatedRows rows for $packageName"
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error recording app launch for $packageName")
+            throw e
+        }
+    }
+
     suspend fun incrementLaunchCount(packageName: String) {
-        try { appDao.incrementLaunchCount(packageName) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.incrementLaunchCount(packageName) } catch (e: Exception) {
+            Timber.e(e, "Error incrementing launch count for $packageName")
+            throw e
+        }
     }
 
     suspend fun updateUsageTimeMs(packageName: String, timeMs: Long) {
-        try { appDao.updateUsageTimeMs(packageName, timeMs) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateUsageTimeMs(packageName, timeMs) } catch (e: Exception) {
+            Timber.e(e, "Error updating usage time for $packageName")
+            throw e
+        }
     }
 
     suspend fun updateLaunchCount(packageName: String, count: Long) {
-        try { appDao.updateLaunchCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateLaunchCount(packageName, count) } catch (e: Exception) {
+            Timber.e(e, "Error updating launch count for $packageName")
+            throw e
+        }
     }
 
     fun getAllAppsSortedByUsage(): Flow<List<AppInfo>> =
         appDao.getAllAppsSortedByUsage().distinctUntilChanged().flowOn(Dispatchers.IO)
 
     suspend fun updateAppSize(packageName: String, sizeBytes: Long) {
-        try { appDao.updateAppSize(packageName, sizeBytes) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateAppSize(packageName, sizeBytes) } catch (e: Exception) {
+            Timber.e(e, "Error updating app size for $packageName")
+            throw e
+        }
     }
 
     suspend fun resetAllCategories() {
@@ -568,37 +625,59 @@ class AppRepository @Inject constructor(
             Timber.d("Reset all app categories to uncategorized")
         } catch (e: Exception) {
             Timber.e(e, "Error resetting categories")
+            throw e
         }
     }
 
     suspend fun updateAppHidden(packageName: String, hidden: Boolean) {
-        try { appDao.updateAppHidden(packageName, hidden) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateAppHidden(packageName, hidden) } catch (e: Exception) {
+            Timber.e(e, "Error updating hidden state for $packageName")
+            throw e
+        }
     }
 
     suspend fun updateNotificationCount(packageName: String, count: Int) {
-        try { appDao.updateNotificationCount(packageName, count) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateNotificationCount(packageName, count) } catch (e: Exception) {
+            Timber.e(e, "Error updating notification count for $packageName")
+            throw e
+        }
     }
 
     suspend fun updateNotificationCounts(counts: Map<String, Int>) {
         if (counts.isEmpty()) return
-        try { appDao.updateNotificationCounts(counts) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateNotificationCounts(counts) } catch (e: Exception) {
+            Timber.e(e, "Error updating notification counts")
+            throw e
+        }
     }
 
     suspend fun updateNotificationText(packageName: String, text: String) {
-        try { appDao.updateNotificationText(packageName, text) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateNotificationText(packageName, text) } catch (e: Exception) {
+            Timber.e(e, "Error updating notification text for $packageName")
+            throw e
+        }
     }
 
     suspend fun updateNotificationTexts(texts: Map<String, String>) {
         if (texts.isEmpty()) return
-        try { appDao.updateNotificationTexts(texts) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateNotificationTexts(texts) } catch (e: Exception) {
+            Timber.e(e, "Error updating notification texts")
+            throw e
+        }
     }
 
     suspend fun clearAllNotificationTexts() {
-        try { appDao.clearAllNotificationTexts() } catch (e: Exception) { Timber.e(e) }
+        try { appDao.clearAllNotificationTexts() } catch (e: Exception) {
+            Timber.e(e, "Error clearing notification texts")
+            throw e
+        }
     }
 
     suspend fun clearAllNotificationEvents() {
-        try { notificationEventDao.clearAll() } catch (e: Exception) { Timber.e(e) }
+        try { notificationEventDao.clearAll() } catch (e: Exception) {
+            Timber.e(e, "Error clearing notification events")
+            throw e
+        }
     }
 
     // P0.4: İstatistik sıfırlama sihirbazı — kapsam bazlı toplu sıfırlama
@@ -614,16 +693,25 @@ class AppRepository @Inject constructor(
         appDao.getHiddenApps().distinctUntilChanged().flowOn(Dispatchers.IO)
 
     suspend fun updateLastUsedTimestamp(packageName: String, timestamp: Long) {
-        try { appDao.updateLastUsedTimestamp(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateLastUsedTimestamp(packageName, timestamp) } catch (e: Exception) {
+            Timber.e(e, "Error updating last-used timestamp for $packageName")
+            throw e
+        }
     }
 
     // UsageStats sync için — mevcut değerden büyükse yazar, launchApp'ın anlık değerini ezmez
     suspend fun updateLastUsedTimestampIfNewer(packageName: String, timestamp: Long) {
-        try { appDao.updateLastUsedTimestampIfNewer(packageName, timestamp) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateLastUsedTimestampIfNewer(packageName, timestamp) } catch (e: Exception) {
+            Timber.e(e, "Error updating last-used timestamp for $packageName")
+            throw e
+        }
     }
 
     suspend fun updateCustomNotes(packageName: String, note: String) {
-        try { appDao.updateCustomNotes(packageName, note) } catch (e: Exception) { Timber.e(e) }
+        try { appDao.updateCustomNotes(packageName, note) } catch (e: Exception) {
+            Timber.e(e, "Error updating custom notes for $packageName")
+            throw e
+        }
     }
 
     private fun AppInfo.withClassification(decision: ClassificationDecision): AppInfo {

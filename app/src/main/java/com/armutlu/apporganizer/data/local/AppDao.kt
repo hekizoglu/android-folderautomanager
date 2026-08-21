@@ -73,7 +73,7 @@ interface AppDao {
         reviewedAt: Long,
         snoozedUntil: Long,
         timestamp: Long = System.currentTimeMillis()
-    )
+    ): Int
     
     /**
      * Delete a single app
@@ -276,7 +276,7 @@ interface AppDao {
         reviewedAt: Long,
         snoozedUntil: Long,
         timestamp: Long = System.currentTimeMillis()
-    )
+    ): Int
     
     /**
      * Check if app exists
@@ -309,7 +309,11 @@ interface AppDao {
     """)
     suspend fun resetAllAppCategories()
 
-    // Adet: launcher'dan her başlatmada +1 (kez açıldı)
+    // Adet + son kullanım zamanı: launcher açılışını tek atomik yazmada kaydet.
+    @Query("UPDATE apps SET launchCount = launchCount + 1, lastUsedTimestamp = :timestamp WHERE packageName = :packageName")
+    suspend fun recordAppLaunch(packageName: String, timestamp: Long): Int
+
+    // Geriye dönük kullanım için korunur.
     @Query("UPDATE apps SET launchCount = launchCount + 1 WHERE packageName = :packageName")
     suspend fun incrementLaunchCount(packageName: String)
 
