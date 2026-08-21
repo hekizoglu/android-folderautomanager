@@ -102,6 +102,9 @@ class NotificationClassifierUseCase @Inject constructor() {
             category == NotificationCategory.UPDATE) {
             result -= LOW_VALUE_CATEGORY_PENALTY
         }
+        if (category == NotificationCategory.PROMOTION) {
+            result = result.coerceAtMost(SUPPRESSION_SCORE_LIMIT - 1)
+        }
         if (hasAuthentication || (category == NotificationCategory.FINANCE && hasSecurity)) {
             result = result.coerceAtLeast(CRITICAL_SECURITY_MIN_SCORE)
         }
@@ -190,10 +193,10 @@ class NotificationClassifierUseCase @Inject constructor() {
             segments = setOf("familylink", "family", "parental", "kids", "kidspace")
         )
         val UPDATE_PACKAGES = PackageRules(
-            segments = setOf("updater", "update", "softwareupdate", "systemupdate")
+            segments = setOf("updater", "softwareupdate", "systemupdate")
         )
         val NEWS_PACKAGES = PackageRules(
-            segments = setOf("news", "flipboard", "feedly", "googlequicksearchbox")
+            segments = setOf("flipboard", "feedly", "googlequicksearchbox")
         )
         val MEDIA_PACKAGES = PackageRules(
             segments = setOf("youtube", "music", "spotify", "netflix", "primevideo", "podcast")
@@ -205,7 +208,7 @@ class NotificationClassifierUseCase @Inject constructor() {
         val AUTH_CODE_MATCHERS = matchers("dogrulama kodu", "giris kodu", "guvenlik kodu", "tek kullanimlik kod", "verification code", "login code", "security code", "one time code", "one-time code", "one time password", "one-time password", "otp")
         val MISSED_CALL_MATCHERS = matchers("cevapsiz arama", "cevapsiz cagri", "cevapsiz", "missed call", "missed calls", "arama yapti")
         val FAMILY_MATCHERS = matchers("yeni uygulama yuklendi", "uygulama yukledi", "ekran suresi", "screen time", "child installed", "parental control", "family link", "cocuk", "ebeveyn")
-        val MARKET_MATCHERS = matchers("hisse", "hissesi", "hisse senedi", "borsa", "bist", "bist 30", "bist 100", "nasdaq", "s&p 500", "dow jones", "sp 500", "artti", "yukseldi", "dustu", "geriledi", "yuzde", "%,", "stock", "stocks", "shares", "market alert", "price alert", "altin", "dolar", "euro", "exchange rate", "index")
+        val MARKET_MATCHERS = matchers("hisse", "hissesi", "hisse senedi", "borsa", "bist", "bist 30", "bist 100", "nasdaq", "s&p 500", "dow jones", "sp 500", "artti", "yukseldi", "dustu", "geriledi", "%,", "stock", "stocks", "shares", "market alert", "price alert", "altin", "dolar", "euro", "exchange rate", "index")
         val FINANCE_MATCHERS = matchers("bakiye", "hesap hareketi", "kartiniz", "harcama", "odeme", "transfer", "havale", "eft", "yatirim", "para cekme", "fatura", "balance", "account activity", "card transaction", "transaction", "payment", "bank transfer", "wire transfer", "withdrawal", "invoice")
         val DELIVERY_MATCHERS = matchers("kargo", "teslimat", "siparisiniz", "siparis", "kurye", "yola cikti", "dagitima cikti", "teslim edildi", "paketiniz", "gonderiniz", "shipped", "shipment", "out for delivery", "delivered", "your order", "order confirmed", "courier", "your package", "tracking number")
         val CALENDAR_MATCHERS = matchers("takvim", "calendar event", "etkinlik", "toplanti", "meeting", "randevu", "appointment", "mesai", "vardiya", "etkinlik basliyor", "starts in", "due today")

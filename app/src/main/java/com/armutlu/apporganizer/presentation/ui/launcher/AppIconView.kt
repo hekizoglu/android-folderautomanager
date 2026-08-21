@@ -151,26 +151,22 @@ fun AppIconView(
         if (iconPackPkg.isNotEmpty()) append('_').append(iconPackPkg)
     }
 
-    val icon: ImageBitmap? by key(cacheKey) {
-        produceState<ImageBitmap?>(
-            initialValue = iconCache[cacheKey],
-            key1 = cacheKey,
-        ) {
-            // key(cacheKey) yeni paket için State'i senkron olarak yeniden oluşturur; producer
-            // ayrıca cache miss durumunda doğru paketin bitmap'ini yükler.
-            if (value == null) {
-                val loaded = withContext(Dispatchers.IO) {
-                    runCatching {
-                        val packBitmap = if (iconPackPkg.isNotEmpty())
-                            com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
-                        else null
-                        packBitmap?.asImageBitmap()
-                            ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
-                    }.getOrNull()
-                }
-                if (loaded != null) iconCache.put(cacheKey, loaded)
-                value = loaded
+    val icon: ImageBitmap? by produceState<ImageBitmap?>(
+        initialValue = iconCache[cacheKey],
+        key1 = cacheKey,
+    ) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                        com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
+                    else null
+                    packBitmap?.asImageBitmap()
+                        ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
+                }.getOrNull()
             }
+            if (loaded != null) iconCache.put(cacheKey, loaded)
+            value = loaded
         }
     }
 

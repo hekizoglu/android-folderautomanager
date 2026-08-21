@@ -1423,11 +1423,13 @@ internal fun FullScreenSearchOverlayV2(
         showFilesPermissionHint = showFilesPermissionHint,
     )
 
-    val zeroStateApps = remember(allApps) {
-        val visibleByPkg = allApps.filterNot { it.isHidden }.associateBy { it.packageName }
-        UsageStatsHelper.getCurrentSlotTopApps(context, days = 28)
-            .mapNotNull { visibleByPkg[it] }
-            .take(5)
+    val zeroStateApps by produceState<List<AppInfo>>(initialValue = emptyList(), allApps) {
+        value = withContext(Dispatchers.IO) {
+            val visibleByPkg = allApps.filterNot { it.isHidden }.associateBy { it.packageName }
+            UsageStatsHelper.getCurrentSlotTopApps(context, days = 28)
+                .mapNotNull { visibleByPkg[it] }
+                .take(5)
+        }
     }
     val historyItems = remember(query) {
         if (query.isBlank()) SearchHistoryPrefs.getAll(context) else emptyList()

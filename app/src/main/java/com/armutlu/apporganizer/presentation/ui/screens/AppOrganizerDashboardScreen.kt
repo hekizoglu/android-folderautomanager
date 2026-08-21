@@ -44,6 +44,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,8 +75,14 @@ fun AppOrganizerDashboardScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    val usageTimes = remember(hasUsagePermission, allApps) {
-        if (hasUsagePermission) UsageStatsHelper.getUsageCounts(context, days = 7) else emptyMap()
+    val usageTimes by produceState<Map<String, Long>>(initialValue = emptyMap(), hasUsagePermission, allApps) {
+        value = if (hasUsagePermission) {
+            withContext(Dispatchers.IO) {
+                UsageStatsHelper.getUsageCounts(context, days = 7)
+            }
+        } else {
+            emptyMap()
+        }
     }
 
     val now = System.currentTimeMillis()

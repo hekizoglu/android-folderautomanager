@@ -160,7 +160,6 @@ class SearchRepository(
         return withContext(Dispatchers.IO) {
             val allowedSources = enabledSources()
             runCatching {
-                ensureSourcesIndexedIfNeeded(allowedSources)
                 val pattern = buildLikePattern(trimmed)
                 val docs = searchDao.search(buildLikeQuery(pattern, limit, allowedSources))
                 docs.groupBy { SourceType.fromKey(it.sourceType) }

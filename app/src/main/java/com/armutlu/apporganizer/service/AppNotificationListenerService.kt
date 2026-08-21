@@ -65,9 +65,6 @@ open class AppNotificationListenerService : NotificationListenerService() {
                         }
                     }
                 }
-                // D242c — Bildirim Geçmişi: yalnızca kullanıcı "Bildirim metnini göster" ayarını
-                // açtıysa gerçek başlık/metin kaydedilir (varsayılan kapalı, AppPrefs.kt:200).
-                // Kapalıyken hiçbir içerik notification_history'ye yazılmaz.
                 if (AppPrefs.isNotificationTextEnabled(this)) {
                     val preview = classified.preview
                     val title = preview?.title?.takeIf { it.isNotBlank() }

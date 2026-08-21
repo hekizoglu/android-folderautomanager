@@ -445,11 +445,14 @@ class LauncherViewModel @Inject constructor(
         // sistem bildirimleri silinmemeli), bu yuzden badge'in "okundu" bilgisini ayrica
         // NotificationReadPrefs.lastReadAt (launchApp'ta yazilir) ile hesapliyoruz.
         // Tum bildirimler silindiginde counts bos map gelir — guard olmadan her durumda temizle.
+        @OptIn(FlowPreview::class)
         viewModelScope.launch(Dispatchers.IO) {
             combine(
                 AppNotificationListenerService.badgeCounts,
                 AppNotificationListenerService.lastPostedAt,
             ) { active, posted -> active to posted }
+                .debounce(300L)
+                .distinctUntilChanged()
                 .collectLatest { (active, posted) ->
                     runCatching {
                         val ctx = getApplication<Application>()
@@ -466,21 +469,6 @@ class LauncherViewModel @Inject constructor(
                             repository.updateNotificationCounts(toReset.associate { it.packageName to 0 })
                         }
                     }.onFailure { Timber.e(it, "badgeCounts observer hatası") }
-                }
-        }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            AppNotificationListenerService.latestTexts
-                .collectLatest { texts ->
-                    runCatching {
-                        repository.updateNotificationTexts(texts)
-                        val knownPkgs = texts.keys
-                        val toClean = repository.getAllApps()
-                            .filter { it.notificationText.isNotBlank() && it.packageName !in knownPkgs }
-                        if (toClean.isNotEmpty()) {
-                            repository.updateNotificationTexts(toClean.associate { it.packageName to "" })
-                        }
-                    }.onFailure { Timber.e(it, "latestTexts observer hatası") }
                 }
         }
 
