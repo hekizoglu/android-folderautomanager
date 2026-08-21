@@ -154,9 +154,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_12_13 = object : Migration(12, 13) {
+        internal val MIGRATION_12_13 = object : Migration(12, 13) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("DROP TABLE IF EXISTS search_history")
+                // Search history moved to SearchHistoryPrefs in a later release, but
+                // dropping the old Room table would destroy existing user data. Keep
+                // the legacy table intact; it is no longer queried by the app and can
+                // be removed only through an explicit, separately tested cleanup.
+                Timber.d("Legacy search_history table preserved during migration")
             }
         }
 
@@ -305,7 +309,19 @@ abstract class AppDatabase : RoomDatabase() {
 
         private val MIGRATION_21_22 = object : Migration(21, 22) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("DROP TABLE IF EXISTS `operations`")
+                // Never drop operation history during an app upgrade. Older v21 builds
+                // may have a partial schema, so copy every column that exists into the
+                // canonical v22 table and provide safe defaults for missing columns.
+                val legacyTable = "operations_v21_legacy"
+                val hasOperations = db.query(
+                    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'operations' LIMIT 1"
+                ).use { it.moveToFirst() }
+
+                if (hasOperations) {
+                    db.execSQL("DROP TABLE IF EXISTS `$legacyTable`")
+                    db.execSQL("ALTER TABLE `operations` RENAME TO `$legacyTable`")
+                }
+
                 db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `operations` (
@@ -321,14 +337,38 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                     """
                 )
-                db.addColumnIfNotExists("operations", "type", "TEXT NOT NULL DEFAULT ''")
-                db.addColumnIfNotExists("operations", "timestamp", "INTEGER NOT NULL DEFAULT 0")
-                db.addColumnIfNotExists("operations", "sourceCategoryId", "TEXT NOT NULL DEFAULT ''")
-                db.addColumnIfNotExists("operations", "targetCategoryId", "TEXT")
-                db.addColumnIfNotExists("operations", "movedPackageNames", "TEXT NOT NULL DEFAULT ''")
-                db.addColumnIfNotExists("operations", "oldCategoryMapping", "TEXT NOT NULL DEFAULT ''")
-                db.addColumnIfNotExists("operations", "rolledBack", "INTEGER NOT NULL DEFAULT 0")
-                db.addColumnIfNotExists("operations", "rolledBackAt", "INTEGER")
+
+                if (hasOperations) {
+                    val legacyColumns = db.query("PRAGMA table_info(`$legacyTable`)").use { cursor ->
+                        val nameIndex = cursor.getColumnIndexOrThrow("name")
+                        buildSet {
+                            while (cursor.moveToNext()) add(cursor.getString(nameIndex))
+                        }
+                    }
+                    fun columnOrDefault(column: String, defaultExpression: String): String =
+                        if (column in legacyColumns) "`$column`" else defaultExpression
+
+                    db.execSQL(
+                        """
+                        INSERT INTO `operations`
+                        (`id`, `type`, `timestamp`, `sourceCategoryId`, `targetCategoryId`,
+                         `movedPackageNames`, `oldCategoryMapping`, `rolledBack`, `rolledBackAt`)
+                        SELECT
+                            ${columnOrDefault("id", "'legacy_' || rowid")},
+                            ${columnOrDefault("type", "''")},
+                            ${columnOrDefault("timestamp", "0")},
+                            ${columnOrDefault("sourceCategoryId", "''")},
+                            ${columnOrDefault("targetCategoryId", "NULL")},
+                            ${columnOrDefault("movedPackageNames", "''")},
+                            ${columnOrDefault("oldCategoryMapping", "''")},
+                            ${columnOrDefault("rolledBack", "0")},
+                            ${columnOrDefault("rolledBackAt", "NULL")}
+                        FROM `$legacyTable`
+                        """.trimIndent()
+                    )
+                    db.execSQL("DROP TABLE `$legacyTable`")
+                }
+
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_timestamp` ON `operations`(`timestamp`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_operations_type` ON `operations`(`type`)")
             }
@@ -566,7 +606,9 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_26_27,
                         MIGRATION_27_28,
                     )
-                    .fallbackToDestructiveMigration()
+                    // Never delete the user's catalog when a migration is missing.
+                    // A release must ship an explicit migration; failing closed is safer
+                    // than silently losing apps, categories, history or undo records.
                     .build()
 
                 INSTANCE = instance

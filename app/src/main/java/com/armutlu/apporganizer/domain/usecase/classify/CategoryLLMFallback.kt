@@ -12,6 +12,7 @@ import timber.log.Timber
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,9 +39,11 @@ class CategoryLLMFallback @Inject constructor(
         val uncached = packageNames.filter { !cache.containsKey(it) }
         val results = mutableMapOf<String, String>()
 
-        // Cache hit'leri ekle
+        // Cache hit'lerini gerçek Room kategori ID'sine normalize et.
         packageNames.forEach { pkg ->
-            cache[pkg]?.let { results[pkg] = it }
+            cache[pkg]?.let { rawCategory ->
+                normalizeCategoryId(rawCategory)?.let { results[pkg] = it }
+            }
         }
 
         if (uncached.isEmpty()) return results
@@ -52,7 +55,7 @@ class CategoryLLMFallback @Inject constructor(
                     val batchResult = callDeepSeek(batch, apiKey)
                     val toPersist = mutableMapOf<String, String>()
                     batch.forEach { pkg ->
-                        val category = batchResult[pkg] ?: Category.CAT_OTHER
+                        val category = normalizeCategoryId(batchResult[pkg]) ?: Category.CAT_OTHER
                         cache[pkg] = category
                         results[pkg] = category
                         toPersist[pkg] = category
@@ -122,9 +125,9 @@ class CategoryLLMFallback @Inject constructor(
                 val parts = line.trim().split("=")
                 if (parts.size == 2) {
                     val pkg = parts[0].trim()
-                    val cat = parts[1].trim()
-                    if (pkg in packageNames && cat.startsWith("CAT_")) {
-                        result[pkg] = cat
+                    val category = normalizeCategoryId(parts[1])
+                    if (pkg in packageNames && category != null) {
+                        result[pkg] = category
                     }
                 }
             }
@@ -136,6 +139,45 @@ class CategoryLLMFallback @Inject constructor(
         } catch (e: Exception) {
             Timber.w(e, "Failed to parse DeepSeek response")
             packageNames.associateWith { Category.CAT_OTHER }
+        }
+    }
+
+    internal companion object {
+        /** Converts the LLM's CAT_* wire values to the IDs used by Room and UI. */
+        fun normalizeCategoryId(raw: String?): String? = when (raw?.trim()?.uppercase(Locale.ROOT)) {
+            "CAT_GAMES" -> Category.CAT_GAMES
+            "CAT_SOCIAL" -> Category.CAT_SOCIAL
+            "CAT_COMMUNICATION" -> Category.CAT_COMMUNICATION
+            "CAT_FINANCE" -> Category.CAT_FINANCE
+            "CAT_HEALTH" -> Category.CAT_HEALTH
+            "CAT_SHOPPING" -> Category.CAT_SHOPPING
+            "CAT_TRAVEL" -> Category.CAT_TRAVEL
+            "CAT_MUSIC" -> Category.CAT_MUSIC
+            "CAT_VIDEO" -> Category.CAT_VIDEO
+            "CAT_PHOTO", "CAT_PHOTOGRAPHY" -> Category.CAT_PHOTOGRAPHY
+            "CAT_PRODUCTIVITY" -> Category.CAT_PRODUCTIVITY
+            "CAT_TOOLS", "CAT_UTILITIES" -> Category.CAT_UTILITIES
+            "CAT_EDUCATION" -> Category.CAT_EDUCATION
+            "CAT_NEWS" -> Category.CAT_NEWS
+            "CAT_FOOD" -> Category.CAT_FOOD
+            "CAT_SPORTS" -> Category.CAT_SPORTS
+            "CAT_MAPS" -> Category.CAT_MAPS
+            "CAT_WEATHER" -> Category.CAT_WEATHER
+            "CAT_BOOKS" -> Category.CAT_BOOKS
+            "CAT_DATING" -> Category.CAT_DATING
+            "CAT_BUSINESS" -> Category.CAT_BUSINESS
+            "CAT_AUTO" -> Category.CAT_AUTO
+            "CAT_LIFESTYLE" -> Category.CAT_LIFESTYLE
+            "CAT_ART" -> Category.CAT_ART
+            "CAT_BEAUTY" -> Category.CAT_BEAUTY
+            "CAT_HOUSE" -> Category.CAT_HOUSE
+            "CAT_PARENTING" -> Category.CAT_PARENTING
+            "CAT_EVENTS" -> Category.CAT_EVENTS
+            "CAT_COMICS" -> Category.CAT_COMICS
+            "CAT_PERSONALIZATION" -> Category.CAT_PERSONALIZATION
+            "CAT_ENTERTAINMENT" -> Category.CAT_ENTERTAINMENT
+            "CAT_OTHER" -> Category.CAT_OTHER
+            else -> null
         }
     }
 

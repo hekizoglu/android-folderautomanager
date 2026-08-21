@@ -298,6 +298,24 @@ class AppClassifierTest {
         assertNotEquals(Category.CAT_SAMSUNG, result)
     }
 
+    @Test
+    fun `manufacturer prefix requires package segment boundary`() {
+        val result = classifier.classifyApp(
+            appInfo("com.samsungfake.unknownfeature", "Unknown Feature"),
+            manufacturerClassifyEnabled = true
+        )
+        assertNotEquals(Category.CAT_SAMSUNG, result)
+    }
+
+    @Test
+    fun `manufacturer prefix matches exact package segment`() {
+        val result = classifier.classifyApp(
+            appInfo("com.samsung.unknownfeature", "Unknown Feature"),
+            manufacturerClassifyEnabled = true
+        )
+        assertEquals(Category.CAT_SAMSUNG, result)
+    }
+
     // --- Bolgesel Paketler ---
 
     @Test fun `Nubank CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.nubank.nubank", "Nubank")))

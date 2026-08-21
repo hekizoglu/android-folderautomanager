@@ -114,6 +114,17 @@ class AppRepositoryTest {
         assertTrue(result.isEmpty())
     }
 
+    // ── category deletion ─────────────────────────────────────────────────────
+
+    @Test
+    fun `deleteCategory moves apps to the real other category`() = runTest {
+        repository.deleteCategory("custom")
+
+        coVerify(exactly = 1) {
+            mockCategoryDao.deleteCategoryWithFallback("custom", Category.CAT_OTHER)
+        }
+    }
+
     // ── getAppByPackageName ───────────────────────────────────────────────────
 
     @Test
@@ -180,10 +191,53 @@ class AppRepositoryTest {
         assertTrue("insertApps should rethrow the dao exception", thrown is RuntimeException)
     }
 
+    // ── updateApp/updateApps ──────────────────────────────────────────────────
+
+    @Test
+    fun `updateApp delegates to dao`() = runTest {
+        val updated = app("com.test.app", "Updated App")
+
+        repository.updateApp(updated)
+
+        coVerify(exactly = 1) { mockAppDao.updateApp(updated) }
+    }
+
+    @Test
+    fun `updateApp rethrows dao exception`() = runTest {
+        val failure = RuntimeException("update failed")
+        coEvery { mockAppDao.updateApp(any()) } throws failure
+
+        val thrown = try {
+            repository.updateApp(app("com.test.app", "App"))
+            null
+        } catch (error: Throwable) {
+            error
+        }
+
+        assertEquals(failure, thrown)
+    }
+
+    @Test
+    fun `updateApps rethrows dao exception`() = runTest {
+        val failure = RuntimeException("batch update failed")
+        coEvery { mockAppDao.updateApps(any()) } throws failure
+
+        val thrown = try {
+            repository.updateApps(listOf(app("com.test.app", "App")))
+            null
+        } catch (error: Throwable) {
+            error
+        }
+
+        assertEquals(failure, thrown)
+    }
+
     // ── updateAppCategory ─────────────────────────────────────────────────────
 
     @Test
     fun `updateAppCategory delegates to dao`() = runTest {
+        coEvery { mockAppDao.updateAppCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns 1
+
         repository.updateAppCategory("com.test.app", "productivity")
         advanceUntilIdle()
 
@@ -241,8 +295,22 @@ class AppRepositoryTest {
     // ── updateAppsCategory ────────────────────────────────────────────────────
 
     @Test
+    fun `updateAppsCategory rejects empty package list`() = runTest {
+        val thrown = try {
+            repository.updateAppsCategory(emptyList(), "games")
+            null
+        } catch (error: IllegalArgumentException) {
+            error
+        }
+
+        assertTrue(thrown != null)
+        coVerify(exactly = 0) { mockAppDao.updateAppsCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
     fun `updateAppsCategory delegates to dao with list`() = runTest {
         val packages = listOf("com.a", "com.b", "com.c")
+        coEvery { mockAppDao.updateAppsCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns packages.size
 
         repository.updateAppsCategory(packages, "games")
         advanceUntilIdle()
@@ -448,11 +516,18 @@ class AppRepositoryTest {
     }
 
     @Test
-    fun `syncInstalledApps silently handles exception`() = runTest {
-        coEvery { mockAppDao.getAllApps() } throws RuntimeException("dao error")
+    fun `syncInstalledApps rethrows exception`() = runTest {
+        val failure = RuntimeException("dao error")
+        coEvery { mockAppDao.getAllApps() } throws failure
 
-        repository.syncInstalledApps(listOf(app("com.a", "App A")))
-        advanceUntilIdle()
+        val thrown = try {
+            repository.syncInstalledApps(listOf(app("com.a", "App A")))
+            null
+        } catch (error: Throwable) {
+            error
+        }
+
+        assertEquals(failure, thrown)
     }
 
     // ── getAllAppsFlow ────────────────────────────────────────────────────────
