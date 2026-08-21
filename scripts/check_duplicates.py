@@ -35,6 +35,14 @@ def find_target(arg_path: str | None) -> Path:
         p = Path(arg_path)
         if p.exists():
             return p
+        # CI historically passed `assets/app_categories.json`, while the Android
+        # asset lives under app/src/main/assets. Fall back to the canonical project
+        # candidates instead of failing before the actual duplicate check.
+        for c in DEFAULT_CANDIDATES:
+            fallback = Path(c)
+            if fallback.exists():
+                print(f"UYARI: dosya bulunamadı: {arg_path}; kullanılıyor: {fallback}")
+                return fallback
         sys.exit(f"HATA: dosya bulunamadı: {arg_path}")
     for c in DEFAULT_CANDIDATES:
         p = Path(c)
