@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 19: genel görsel/mantık test paketi + tam uygulama smoke akışı)
+**Yapılanlar:** Kullanıcının "genel test" isteği — canlı cihaz/emülatör bu sandbox'ta mümkün değil (KVM yok, 1.9GB RAM); Robolectric gerçek-render katmanı genişletildi ve cihaz tarafı için smoke akışı eklendi:
+- `HomeV2GeneralVisualTest` (+9 test): uygulama çekmecesi (40 uygulama dar ekran, 320x568 küçük ekran, %150 font ölçeği, arama sonuçları), klasör kartı uç durumları (boş önizleme, 120 bildirim → "9+" rozeti), dar ekranda uzun görev başlıklı saat/nabız şeridi, sayfa-arası sıralama matematiği (global indeks eşleme + moveItem tutarlılığı).
+- Taşma dedektörü olgunlaştırıldı: ilk koşuda 3 drawer testi kırmızıya döndü; kök neden LazyColumn viewport semantiği (kısmi görünen öğeler viewport dışı raporlanır — gerçek taşma değil). Dedektör artık kaydırılabilir kapsayıcı içindeki öğeleri hariç tutuyor; gerçek taşmalara duyarlılık korundu.
+- `.maestro/08_full_app_smoke.yaml`: cihazda tek koşuda uçtan uca sağlık kontrolü (çekmece aç/kapa → yönetim menüsü → sayfa geçişi → dock'tan uygulama başlatma → eve dönüş, 6 kanıt ekran görüntüsü). README tablosuna eklendi.
+**Kanıt:** `testDebugUnitTest` → **1401 test, 0 fail, 0 hata** (19 skipped); BUILD SUCCESSFUL.
+**Sonraki:** cihazda `maestro test .maestro/` koşturulup ekran görüntülerinin incelenmesi (runbook: docs/testing/MAESTRO_DEVICE_RUNBOOK.md).
+
 ## Döngü — 2026-08-22 (Tur 18: Play Store hazırlık — release pipeline kanıtı + veri güvenliği denetimi)
 **Yapılanlar:** Play Store yayın hazırlığının sandbox'ta yapılabilir maddeleri tamamlandı:
 - **R8/release pipeline ilk kez izole ortamda uçtan uca doğrulandı:** `bundleRelease -PskipGoogleServices=true -PallowDebugReleaseSigning=true` → BUILD SUCCESSFUL (20dk19sn), `app-release.aab` 27MB (SHA-256: 4560efe2…, v1.4.57/181). Önceki denemelerde 896MB ve 1536MB heap ile R8 OOM repro edildi; ~2.5GB heap gerekti — CI/release makineleri için not düşüldü. DEBUG imzalı bu AAB Play'e yüklenemez; pipeline kanıtıdır.

@@ -1,0 +1,56 @@
+appId: com.armutlu.apporganizer
+---
+# Tam uygulama smoke akışı (tur 19) — cihazda genel sağlık kontrolü.
+# Amaç: ana ekran dışındaki ana yüzeylerin de açılıp kapandığını ve temel
+# etkileşimlerin çalıştığını tek koşuda doğrulamak. Ekran görüntüleri kanıt üretir.
+
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: smoke_01_home
+
+# Çekmece aç/kapa
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: smoke_02_drawer
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Boş alana uzun bas → yönetim menüsü → Ayarlar'a gir
+- longPressOn:
+    point: "50%,20%"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: smoke_03_longpress_menu
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Sağa kaydır: Hero → Widget/Klasör sayfaları geçişi
+- swipe:
+    direction: LEFT
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 1000
+- takeScreenshot: smoke_04_page_swipe
+- swipe:
+    direction: RIGHT
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# Dock'tan ilk uygulamayı başlat (launcher dışına çıkış kanıtı)
+- tapOn:
+    point: "30%,95%"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: smoke_05_app_launched
+# Ana ekrana dön (launcher HOME)
+- pressKey: Home
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: smoke_06_back_home
