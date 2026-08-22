@@ -123,14 +123,14 @@ private fun InsightChip(
 }
 
 private fun InsightType.iconAndTint(): Pair<ImageVector, Color> = when (this) {
-    InsightType.MORNING_HABIT        -> Icons.Default.Star         to Color(0xFFFFD54F)
+    InsightType.MORNING_HABIT -> Icons.Default.Star to Color(0xFFFFD54F)
     InsightType.UNREAD_NOTIFICATIONS -> Icons.Default.Notifications to Color(0xFF4FC3F7)
-    InsightType.UNUSED_APPS          -> Icons.Default.Warning       to Color(0xFFFFB74D)
-    InsightType.TOP_IN_FOLDER        -> Icons.Default.Info          to Color(0xFF80CBC4)
-    InsightType.NEVER_OPENED         -> Icons.Default.QuestionMark  to Color(0xFFCE93D8)
-    InsightType.NEW_INSTALL          -> Icons.Default.NewReleases   to Color(0xFF80DEEA)
-    InsightType.LARGE_APP            -> Icons.Default.Storage       to Color(0xFFEF9A9A)
-    InsightType.CATEGORY_SUMMARY     -> Icons.Default.AutoAwesome   to Color(0xFFA5D6A7)
-    InsightType.MOTIVATIONAL         -> Icons.Default.Star          to Color(0xFFFFCC02)
-    InsightType.LONG_UNUSED          -> Icons.Default.Delete        to Color(0xFFFF8A65)
+    InsightType.UNUSED_APPS -> Icons.Default.Warning to Color(0xFFFFB74D)
+    InsightType.TOP_IN_FOLDER -> Icons.Default.Info to Color(0xFF80CBC4)
+    InsightType.NEVER_OPENED -> Icons.Default.QuestionMark to Color(0xFFCE93D8)
+    InsightType.NEW_INSTALL -> Icons.Default.NewReleases to Color(0xFF80DEEA)
+    InsightType.LARGE_APP -> Icons.Default.Storage to Color(0xFFEF9A9A)
+    InsightType.CATEGORY_SUMMARY -> Icons.Default.AutoAwesome to Color(0xFFA5D6A7)
+    InsightType.MOTIVATIONAL -> Icons.Default.Star to Color(0xFFFFCC02)
+    InsightType.LONG_UNUSED -> Icons.Default.Delete to Color(0xFFFF8A65)
 }

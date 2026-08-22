@@ -16,11 +16,8 @@ import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.missions.MissionSummaryUseCase
 import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import com.armutlu.apporganizer.utils.TaskScoreManager
-import java.time.Clock
-import java.time.LocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +25,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.Clock
+import java.time.LocalDate
+import javax.inject.Inject
 
 /**
  * Gorevler ekrani durumu (D257) — MissionEngine gorevlerini uretir, ekran acilisinda
@@ -116,8 +116,11 @@ class MissionsViewModel @Inject constructor(
                     .onFailure { e -> Timber.e(e, "Gorev durumu hesaplanamadi") }
                     .getOrNull()
             }
-            if (state != null) _uiState.value = state
-            else _uiState.value = _uiState.value.copy(loading = false)
+            if (state != null) {
+                _uiState.value = state
+            } else {
+                _uiState.value = _uiState.value.copy(loading = false)
+            }
 
             withContext(Dispatchers.IO) {
                 runCatching { computeAdvice() }
@@ -140,7 +143,10 @@ class MissionsViewModel @Inject constructor(
             )
         }
         return computeDigitalAdvice(
-            snapshot, goalsUi, appDao, clock,
+            snapshot,
+            goalsUi,
+            appDao,
+            clock,
             context = context,
             usageStatsSource = usageStatsSource,
             notificationEventDao = notificationEventDao,

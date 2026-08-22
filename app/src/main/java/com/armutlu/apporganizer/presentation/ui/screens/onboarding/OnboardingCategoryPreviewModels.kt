@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.presentation.ui.screens.onboarding
 
 import androidx.compose.runtime.Immutable
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.armutlu.apporganizer.domain.models.Category
 
 /**
  * Onboarding Kategori Önizleme ekranı için kararlı ve test edilebilir UI durum modelleri.
@@ -23,7 +22,7 @@ enum class OnboardingPreviewState {
     LOADING,
     SUCCESS,
     EMPTY,
-    ERROR
+    ERROR,
 }
 
 @Immutable
@@ -33,5 +32,5 @@ data class OnboardingCategoryPreviewUiModel(
     val categorizedAppCount: Int,
     val pendingCount: Int,
     val categories: List<OnboardingCategoryCardUiModel>,
-    val state: OnboardingPreviewState
+    val state: OnboardingPreviewState,
 )

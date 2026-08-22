@@ -1,26 +1,38 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -29,45 +41,33 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import android.provider.Settings
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.HomeLayoutConfig
 import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.domain.models.withSearchZone
-import com.armutlu.apporganizer.utils.HomeLayoutPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Surface
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.platform.LocalConfiguration
+import com.armutlu.apporganizer.utils.HomeLayoutPrefs
 
 internal data class HomeLayoutEditorState(
     val original: HomeLayoutConfig,
@@ -109,9 +109,11 @@ internal fun HomeLayoutConfig.moveSection(sectionId: HomeSectionId, direction: I
         add(targetIndex, removeAt(sourceIndex))
     }
     val newOrders = reordered.mapIndexed { index, item -> item.sectionId to index }.toMap()
-    return copy(items = items.map { item ->
-        newOrders[item.sectionId]?.let { item.copy(order = it) } ?: item
-    })
+    return copy(
+        items = items.map { item ->
+            newOrders[item.sectionId]?.let { item.copy(order = it) } ?: item
+        },
+    )
 }
 
 internal fun HomeLayoutConfig.moveSectionToZoneStart(sectionId: HomeSectionId): HomeLayoutConfig {
@@ -131,7 +133,10 @@ private class ReorderState(
     var dragOffset by mutableStateOf(0f)
         private set
 
-    fun start(id: HomeSectionId) { draggedId = id; dragOffset = 0f }
+    fun start(id: HomeSectionId) {
+        draggedId = id
+        dragOffset = 0f
+    }
     fun drag(id: HomeSectionId, delta: Float, threshold: Float): Boolean {
         if (draggedId != id || threshold <= 0f) return false
         dragOffset += delta
@@ -140,7 +145,10 @@ private class ReorderState(
         if (moved) dragOffset = 0f
         return moved
     }
-    fun stop() { draggedId = null; dragOffset = 0f }
+    fun stop() {
+        draggedId = null
+        dragOffset = 0f
+    }
 }
 
 private val editorStateSaver = listSaver<HomeLayoutEditorState, String>(
@@ -148,9 +156,13 @@ private val editorStateSaver = listSaver<HomeLayoutEditorState, String>(
         listOf(encodeConfig(state.original), encodeConfig(state.draft))
     },
     restore = { saved ->
-        if (saved.size != 2) null else runCatching {
-            HomeLayoutEditorState(decodeConfig(saved[0]), decodeConfig(saved[1]))
-        }.getOrNull()
+        if (saved.size != 2) {
+            null
+        } else {
+            runCatching {
+                HomeLayoutEditorState(decodeConfig(saved[0]), decodeConfig(saved[1]))
+            }.getOrNull()
+        }
     },
 )
 
@@ -205,7 +217,9 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     val reorderState = remember {
         ReorderState { sectionId, direction ->
             val moved = editorState.draft.moveSection(sectionId, direction)
-            if (moved == editorState.draft) false else {
+            if (moved == editorState.draft) {
+                false
+            } else {
                 editorState = editorState.copy(draft = moved)
                 true
             }
@@ -214,7 +228,9 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     val folderReorderState = remember {
         FolderOrderReorderState { folderId, direction ->
             val moved = moveFolder(draftFolderIds, folderId, direction)
-            if (moved == draftFolderIds) false else {
+            if (moved == draftFolderIds) {
+                false
+            } else {
                 draftFolderIds = moved
                 true
             }
@@ -223,7 +239,9 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     val dockReorderState = remember {
         DockOrderReorderState { item, direction ->
             val moved = moveDockItem(draftDockItems, item, direction)
-            if (moved == draftDockItems) false else {
+            if (moved == draftDockItems) {
+                false
+            } else {
                 draftDockItems = moved
                 true
             }
@@ -253,7 +271,11 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
     fun requestClose() {
         if (editorState.hasUnsavedChanges || draftFolderIds != originalFolderIds ||
             draftWidgetIds != originalWidgetIds || draftDockItems != originalDockItems
-        ) showDiscardDialog = true else onClose()
+        ) {
+            showDiscardDialog = true
+        } else {
+            onClose()
+        }
     }
 
     BackHandler { requestClose() }
@@ -384,7 +406,9 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                             } else {
                                 editorState.draft.moveSection(item.sectionId, direction)
                             }
-                            if (moved == editorState.draft) false else {
+                            if (moved == editorState.draft) {
+                                false
+                            } else {
                                 editorState = editorState.copy(draft = moved)
                                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 true
@@ -502,14 +526,20 @@ private class DockOrderReorderState(
 ) {
     var draggedItem by mutableStateOf<String?>(null)
     var dragOffset by mutableStateOf(0f)
-    fun start(item: String) { draggedItem = item; dragOffset = 0f }
+    fun start(item: String) {
+        draggedItem = item
+        dragOffset = 0f
+    }
     fun drag(item: String, delta: Float, threshold: Float): Boolean {
         if (draggedItem != item || threshold <= 0f) return false
         dragOffset += delta
         if (kotlin.math.abs(dragOffset) < threshold) return false
         return onMove(item, if (dragOffset > 0f) 1 else -1).also { if (it) dragOffset = 0f }
     }
-    fun stop() { draggedItem = null; dragOffset = 0f }
+    fun stop() {
+        draggedItem = null
+        dragOffset = 0f
+    }
 }
 
 @Composable
@@ -533,13 +563,21 @@ private fun DockOrderCard(
     Card(
         modifier = modifier.height(72.dp)
             .onSizeChanged { itemWidth = it.width }
-            .graphicsLayer { if (dragging) { translationX = reorderState.dragOffset; alpha = 0.92f } },
+            .graphicsLayer {
+                if (dragging) {
+                    translationX = reorderState.dragOffset
+                    alpha = 0.92f
+                }
+            },
     ) {
         Box(
             Modifier.height(72.dp).padding(horizontal = 16.dp)
                 .pointerInput(item) {
                     detectDragGesturesAfterLongPress(
-                        onDragStart = { reorderState.start(item); onDragStarted() },
+                        onDragStart = {
+                            reorderState.start(item)
+                            onDragStarted()
+                        },
                         onDragEnd = reorderState::stop,
                         onDragCancel = reorderState::stop,
                         onDrag = { change, amount ->
@@ -560,14 +598,20 @@ private class FolderOrderReorderState(
 ) {
     var draggedId by mutableStateOf<String?>(null)
     var dragOffset by mutableStateOf(0f)
-    fun start(id: String) { draggedId = id; dragOffset = 0f }
+    fun start(id: String) {
+        draggedId = id
+        dragOffset = 0f
+    }
     fun drag(id: String, delta: Float, threshold: Float): Boolean {
         if (draggedId != id || threshold <= 0f) return false
         dragOffset += delta
         if (kotlin.math.abs(dragOffset) < threshold) return false
         return onMove(id, if (dragOffset > 0f) 1 else -1).also { if (it) dragOffset = 0f }
     }
-    fun stop() { draggedId = null; dragOffset = 0f }
+    fun stop() {
+        draggedId = null
+        dragOffset = 0f
+    }
 }
 
 @Composable
@@ -584,7 +628,12 @@ private fun FolderOrderCard(
     Card(
         modifier.fillMaxWidth().padding(start = 32.dp, end = 12.dp, top = 2.dp, bottom = 2.dp)
             .onSizeChanged { itemHeight = it.height }
-            .graphicsLayer { if (dragging) { translationY = reorderState.dragOffset; alpha = 0.92f } },
+            .graphicsLayer {
+                if (dragging) {
+                    translationY = reorderState.dragOffset
+                    alpha = 0.92f
+                }
+            },
     ) {
         ListItem(
             leadingContent = {
@@ -593,7 +642,10 @@ private fun FolderOrderCard(
                     contentDescription = stringResource(R.string.home_layout_drag_handle),
                     modifier = Modifier.pointerInput(id) {
                         detectDragGesturesAfterLongPress(
-                            onDragStart = { reorderState.start(id); onDragStarted() },
+                            onDragStart = {
+                                reorderState.start(id)
+                                onDragStarted()
+                            },
                             onDragEnd = reorderState::stop,
                             onDragCancel = reorderState::stop,
                             onDrag = { change, amount ->
@@ -628,33 +680,45 @@ private fun EditableHomeSection(
     val moveTopLabel = stringResource(R.string.home_layout_move_top)
     var itemHeight by remember { mutableStateOf(0) }
     val isDragging = reorderState.draggedId == item.sectionId
-    Card(modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp)
-        .onSizeChanged { itemHeight = it.height }
-        .graphicsLayer { if (isDragging && !reduceMotion) { translationY = reorderState.dragOffset; alpha = 0.92f } }
-        .semantics {
-            contentDescription = description
-            if (item.sectionId.movable && !item.locked) {
-                customActions = listOf(
-                    CustomAccessibilityAction(moveUpLabel) { onAccessibilityMove(-1) },
-                    CustomAccessibilityAction(moveDownLabel) { onAccessibilityMove(1) },
-                    CustomAccessibilityAction(moveTopLabel) { onAccessibilityMove(Int.MIN_VALUE) },
-                )
+    Card(
+        modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp)
+            .onSizeChanged { itemHeight = it.height }
+            .graphicsLayer {
+                if (isDragging && !reduceMotion) {
+                    translationY = reorderState.dragOffset
+                    alpha = 0.92f
+                }
             }
-        }) {
+            .semantics {
+                contentDescription = description
+                if (item.sectionId.movable && !item.locked) {
+                    customActions = listOf(
+                        CustomAccessibilityAction(moveUpLabel) { onAccessibilityMove(-1) },
+                        CustomAccessibilityAction(moveDownLabel) { onAccessibilityMove(1) },
+                        CustomAccessibilityAction(moveTopLabel) { onAccessibilityMove(Int.MIN_VALUE) },
+                    )
+                }
+            },
+    ) {
         ListItem(
             leadingContent = {
                 Icon(
                     if (item.locked || !item.sectionId.movable) Icons.Default.Lock else Icons.Default.DragHandle,
                     modifier = Modifier.pointerInput(item.sectionId, item.sectionId.movable, item.locked) {
-                        if (item.sectionId.movable && !item.locked) detectDragGesturesAfterLongPress(
-                            onDragStart = { reorderState.start(item.sectionId); onDragStarted() },
-                            onDragEnd = reorderState::stop,
-                            onDragCancel = reorderState::stop,
-                            onDrag = { change, amount ->
-                                change.consume()
-                                if (reorderState.drag(item.sectionId, amount.y, itemHeight / 2f)) onItemMoved()
-                            },
-                        )
+                        if (item.sectionId.movable && !item.locked) {
+                            detectDragGesturesAfterLongPress(
+                                onDragStart = {
+                                    reorderState.start(item.sectionId)
+                                    onDragStarted()
+                                },
+                                onDragEnd = reorderState::stop,
+                                onDragCancel = reorderState::stop,
+                                onDrag = { change, amount ->
+                                    change.consume()
+                                    if (reorderState.drag(item.sectionId, amount.y, itemHeight / 2f)) onItemMoved()
+                                },
+                            )
+                        }
                     },
                     contentDescription = stringResource(
                         if (item.locked || !item.sectionId.movable) R.string.home_layout_locked else R.string.home_layout_drag_handle,

@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.Intent
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
+import dagger.hilt.EntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.EntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,7 +41,8 @@ class PackageChangeReceiver : BroadcastReceiver() {
             // before PACKAGE_ADDED. Do not delete the existing catalog row in that window.
             Intent.ACTION_PACKAGE_REMOVED -> onPackageRemoved(context, packageName, isReplacing, pendingResult)
             Intent.ACTION_PACKAGE_CHANGED,
-            Intent.ACTION_PACKAGE_REPLACED -> onPackageChanged(context, packageName, pendingResult)
+            Intent.ACTION_PACKAGE_REPLACED,
+            -> onPackageChanged(context, packageName, pendingResult)
             else -> pendingResult.finish()
         }
     }
@@ -50,7 +51,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
         context: Context,
         packageName: String,
         isReplacing: Boolean,
-        pendingResult: BroadcastReceiver.PendingResult
+        pendingResult: BroadcastReceiver.PendingResult,
     ) {
         // Güncellemede (isReplacing) ikon değişmiş olabilir — cache'i hemen temizle, yeniden çizilsin.
         if (isReplacing) {
@@ -95,7 +96,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
                         packageName = packageName,
                         appName = stored.appName,
                         categoryId = categoryId,
-                        categoryName = categoryName
+                        categoryName = categoryName,
                     )
                 }
             } catch (e: Exception) {
@@ -110,7 +111,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
         context: Context,
         packageName: String,
         isReplacing: Boolean,
-        pendingResult: BroadcastReceiver.PendingResult
+        pendingResult: BroadcastReceiver.PendingResult,
     ) {
         // An update is represented as a remove/add pair on some Android/OEM versions.
         // Preserve the row, dock and favorites until the replacement package is added.
@@ -153,14 +154,14 @@ class PackageChangeReceiver : BroadcastReceiver() {
                 val helper = getPackageManagerHelper(context)
                 val fresh = helper.getAppInfo(packageName) ?: return@launch
                 val merged = fresh.copy(
-                    categoryId   = existing.categoryId,
-                    isHidden     = existing.isHidden,
-                    usageCount   = existing.usageCount,
-                    launchCount  = existing.launchCount,
+                    categoryId = existing.categoryId,
+                    isHidden = existing.isHidden,
+                    usageCount = existing.usageCount,
+                    launchCount = existing.launchCount,
                     lastUsedTimestamp = existing.lastUsedTimestamp,
                     notificationCount = existing.notificationCount,
                     // P0.2: Güncelleme sırasında mevcut metadata'yı koru (IGNORE stratejisinden kaçınmak için updateApp() kullan)
-                    customNotes  = existing.customNotes,
+                    customNotes = existing.customNotes,
                     notificationText = existing.notificationText,
                     appSizeBytes = existing.appSizeBytes,
                     classificationSource = existing.classificationSource,
@@ -172,7 +173,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
                     lastClassifiedAt = existing.lastClassifiedAt,
                     lastReviewedAt = existing.lastReviewedAt,
                     reviewSnoozedUntil = existing.reviewSnoozedUntil,
-                    notificationImportance = existing.notificationImportance
+                    notificationImportance = existing.notificationImportance,
                 )
                 // P0.2: updateApp() kullan, insertApps() IGNORE stratejisi kullanmaz
                 repo.updateApp(merged)
@@ -189,7 +190,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
     private fun getRepository(context: Context): AppRepository {
         val entryPoint = EntryPointAccessors.fromApplication(
             context.applicationContext,
-            ReceiverEntryPoint::class.java
+            ReceiverEntryPoint::class.java,
         )
         return entryPoint.appRepository()
     }
@@ -197,7 +198,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
     private fun getPackageManagerHelper(context: Context): com.armutlu.apporganizer.utils.PackageManagerHelper {
         val entryPoint = EntryPointAccessors.fromApplication(
             context.applicationContext,
-            ReceiverEntryPoint::class.java
+            ReceiverEntryPoint::class.java,
         )
         return entryPoint.packageManagerHelper()
     }
@@ -205,7 +206,7 @@ class PackageChangeReceiver : BroadcastReceiver() {
     private fun getSearchRepository(context: Context): SearchRepository {
         val entryPoint = EntryPointAccessors.fromApplication(
             context.applicationContext,
-            ReceiverEntryPoint::class.java
+            ReceiverEntryPoint::class.java,
         )
         return entryPoint.searchRepository()
     }

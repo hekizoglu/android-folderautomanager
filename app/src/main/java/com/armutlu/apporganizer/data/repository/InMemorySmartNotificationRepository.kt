@@ -4,7 +4,6 @@ import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.SmartNotification
 import com.armutlu.apporganizer.domain.models.SmartNotificationSettings
 import com.armutlu.apporganizer.domain.usecase.notification.UnreadNotificationModel
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import javax.inject.Inject
 
 class InMemorySmartNotificationRepository @Inject constructor(
     private val readStateSource: NotificationReadStateSource,
@@ -91,7 +91,7 @@ class InMemorySmartNotificationRepository @Inject constructor(
     ) {
         val ranked = items.sortedWith(
             compareByDescending<SmartNotification> { it.importanceScore }
-                .thenByDescending { it.timestamp }
+                .thenByDescending { it.timestamp },
         )
         val unread = ranked
             .asSequence()

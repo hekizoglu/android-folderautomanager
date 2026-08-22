@@ -13,7 +13,7 @@ import com.armutlu.apporganizer.utils.AppPrefs
 fun rememberBooleanPreferenceState(
     context: Context,
     key: String,
-    read: () -> Boolean
+    read: () -> Boolean,
 ): MutableState<Boolean> {
     val state = remember(key) { mutableStateOf(read()) }
     DisposableEffect(context, key) {
@@ -32,7 +32,7 @@ fun rememberBooleanPreferenceState(
 fun rememberStringPreferenceState(
     context: Context,
     key: String,
-    read: () -> String
+    read: () -> String,
 ): MutableState<String> {
     val state = remember(key) { mutableStateOf(read()) }
     DisposableEffect(context, key) {
@@ -51,7 +51,7 @@ fun rememberStringPreferenceState(
 fun rememberIntPreferenceState(
     context: Context,
     key: String,
-    read: () -> Int
+    read: () -> Int,
 ): MutableState<Int> {
     val state = remember(key) { mutableStateOf(read()) }
     DisposableEffect(context, key) {

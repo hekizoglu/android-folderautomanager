@@ -15,7 +15,7 @@ object PlayStoreQueueHelper {
     fun nextSelectedIndex(
         packages: List<String>,
         selected: Set<String>,
-        currentIndex: Int
+        currentIndex: Int,
     ): Int? {
         if (packages.isEmpty()) return null
         val startFrom = currentIndex.coerceAtLeast(0)

@@ -11,24 +11,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.SmartDisplay
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,15 +45,15 @@ import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
 import com.armutlu.apporganizer.presentation.ui.theme.ThemePreferences
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
-import java.io.BufferedReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.BufferedReader
 
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit,
-    viewModel: AppListViewModel = hiltViewModel()
+    viewModel: AppListViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     // rememberSaveable — rotation/process death'te onboarding ilerlemesi kaybolmasın (D209 fix).
@@ -131,21 +126,21 @@ fun OnboardingScreen(
                     Toast.makeText(
                         context,
                         context.getString(R.string.onb_restore_success, result.updatedCount),
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_SHORT,
                     ).show()
                     nextStep()
                 } else {
                     Toast.makeText(
                         context,
                         context.getString(R.string.onb_restore_fail, result.error ?: "unknown"),
-                        Toast.LENGTH_LONG
+                        Toast.LENGTH_LONG,
                     ).show()
                 }
             }.onFailure { error ->
                 Toast.makeText(
                     context,
                     context.getString(R.string.onb_restore_read_fail, error.message ?: "unknown"),
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_LONG,
                 ).show()
             }
             restoreLoading = false
@@ -181,7 +176,7 @@ fun OnboardingScreen(
                 .statusBarsPadding().navigationBarsPadding()
                 .padding(horizontal = 28.dp)
                 .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(56.dp))
 
@@ -209,9 +204,14 @@ fun OnboardingScreen(
                     modifier = Modifier.fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFF00897B).copy(0.25f))
-                        .padding(12.dp)
+                        .padding(12.dp),
                 ) {
-                    Text(stringResource(R.string.onb_status_launcher_set), fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Medium)
+                    Text(
+                        stringResource(R.string.onb_status_launcher_set),
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium,
+                    )
                 }
                 Spacer(Modifier.height(12.dp))
             }
@@ -220,8 +220,10 @@ fun OnboardingScreen(
             if (currentStep == OnboardingStep.THEME_SELECT) {
                 Spacer(Modifier.height(8.dp))
                 OnboardingThemeSelector(
-                    selectedTheme = selectedTheme, selectedFont = selectedFont,
-                    onThemeChange = { selectedTheme = it }, onFontChange = { selectedFont = it }
+                    selectedTheme = selectedTheme,
+                    selectedFont = selectedFont,
+                    onThemeChange = { selectedTheme = it },
+                    onFontChange = { selectedFont = it },
                 )
             }
 
@@ -229,12 +231,18 @@ fun OnboardingScreen(
             if (currentStep == OnboardingStep.QUICK_SETTINGS) {
                 Spacer(Modifier.height(8.dp))
                 val quickItems = listOf(
-                    Triple(R.string.onb_quick_widget_title, R.string.onb_quick_widget_desc,
-                        AppPrefs.isWidgetAreaEnabled(context)) to { v: Boolean -> AppPrefs.setWidgetAreaEnabled(context, v) },
-                    Triple(R.string.onb_quick_suggestions_title, R.string.onb_quick_suggestions_desc,
-                        AppPrefs.isSuggestionsEnabled(context)) to { v: Boolean -> AppPrefs.setSuggestionsEnabled(context, v) },
-                    Triple(R.string.onb_quick_home_search_title, R.string.onb_quick_home_search_desc,
-                        AppPrefs.isHomeSearchEnabled(context)) to { v: Boolean -> AppPrefs.setHomeSearchEnabled(context, v) },
+                    Triple(
+                        R.string.onb_quick_widget_title, R.string.onb_quick_widget_desc,
+                        AppPrefs.isWidgetAreaEnabled(context),
+                    ) to { v: Boolean -> AppPrefs.setWidgetAreaEnabled(context, v) },
+                    Triple(
+                        R.string.onb_quick_suggestions_title, R.string.onb_quick_suggestions_desc,
+                        AppPrefs.isSuggestionsEnabled(context),
+                    ) to { v: Boolean -> AppPrefs.setSuggestionsEnabled(context, v) },
+                    Triple(
+                        R.string.onb_quick_home_search_title, R.string.onb_quick_home_search_desc,
+                        AppPrefs.isHomeSearchEnabled(context),
+                    ) to { v: Boolean -> AppPrefs.setHomeSearchEnabled(context, v) },
                 )
                 var quickStates by remember {
                     mutableStateOf(quickItems.map { (triple, _) -> triple.third })
@@ -247,25 +255,33 @@ fun OnboardingScreen(
                             modifier = Modifier.fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(if (enabled) Color(0xFF00897B).copy(0.25f) else Color.White.copy(0.07f))
-                                .border(1.dp,
+                                .border(
+                                    1.dp,
                                     if (enabled) Color(0xFF00897B).copy(0.6f) else Color.White.copy(0.12f),
-                                    RoundedCornerShape(14.dp))
+                                    RoundedCornerShape(14.dp),
+                                )
                                 .clickable {
                                     val next = !enabled
                                     setter(next)
                                     quickStates = quickStates.toMutableList().also { it[idx] = next }
                                 }
-                                .padding(14.dp)
+                                .padding(14.dp),
                         ) {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
                                 Column(Modifier.weight(1f)) {
                                     Text(stringResource(titleRes), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                                     Text(stringResource(subtitleRes), color = Color.White.copy(0.55f), fontSize = 12.sp)
                                 }
-                                Text(if (enabled) stringResource(R.string.onb_on) else stringResource(R.string.onb_off),
+                                Text(
+                                    if (enabled) stringResource(R.string.onb_on) else stringResource(R.string.onb_off),
                                     color = if (enabled) Color(0xFF26C6DA) else Color.White.copy(0.35f),
-                                    fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                )
                             }
                         }
                     }
@@ -283,7 +299,7 @@ fun OnboardingScreen(
                     onReviewPending = {
                         // Güvenli sınıflandırma onay alanına yönlendirme
                         nextStep()
-                    }
+                    },
                 )
             }
             if (currentStep == OnboardingStep.RESTORE_BACKUP) {
@@ -295,8 +311,11 @@ fun OnboardingScreen(
 
             if (currentStep != OnboardingStep.ORGANIZATION_PREVIEW) {
                 // ── Ana buton ────────────────────────────────────────────────
-                val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet)
-                    OnboardingTealGradient else OnboardingButtonGradient
+                val buttonGradient = if (currentStep == OnboardingStep.SET_LAUNCHER && !launcherSet) {
+                    OnboardingTealGradient
+                } else {
+                    OnboardingButtonGradient
+                }
 
                 Box(
                     modifier = Modifier.fillMaxWidth().height(56.dp)
@@ -310,18 +329,25 @@ fun OnboardingScreen(
                                         nextStep()
                                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                         val rm = context.getSystemService(RoleManager::class.java)
-                                        if (rm?.isRoleAvailable(RoleManager.ROLE_HOME) == true)
+                                        if (rm?.isRoleAvailable(RoleManager.ROLE_HOME) == true) {
                                             roleRequestLauncher.launch(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
-                                        else nextStep()
+                                        } else {
+                                            nextStep()
+                                        }
                                     } else {
-                                        context.startActivity(Intent(Intent.ACTION_MAIN)
-                                            .addCategory(Intent.CATEGORY_HOME)
-                                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                        context.startActivity(
+                                            Intent(Intent.ACTION_MAIN)
+                                                .addCategory(Intent.CATEGORY_HOME)
+                                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                                        )
                                     }
                                 }
 
                                 OnboardingStep.THEME_SELECT -> {
-                                    scope.launch { themePrefs.setTheme(selectedTheme); themePrefs.setFont(selectedFont) }
+                                    scope.launch {
+                                        themePrefs.setTheme(selectedTheme)
+                                        themePrefs.setFont(selectedFont)
+                                    }
                                     nextStep()
                                 }
 
@@ -340,7 +366,7 @@ fun OnboardingScreen(
                                 }
                             }
                         },
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = when {
@@ -348,7 +374,9 @@ fun OnboardingScreen(
                             currentStep == OnboardingStep.RESTORE_BACKUP && restoreLoading -> stringResource(R.string.onb_restore_loading)
                             else -> stringResource(currentStep.buttonLabelRes)
                         },
-                        fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
                     )
                 }
 
@@ -357,7 +385,7 @@ fun OnboardingScreen(
                     Spacer(Modifier.height(12.dp))
                     Box(
                         modifier = Modifier.clickable { nextStep() }.padding(vertical = 12.dp, horizontal = 24.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) { Text(stringResource(R.string.onb_skip_now), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
                 }
 
@@ -366,7 +394,7 @@ fun OnboardingScreen(
                     Spacer(Modifier.height(4.dp))
                     Box(
                         modifier = Modifier.clickable { nextStep() }.padding(vertical = 12.dp, horizontal = 24.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) { Text(stringResource(R.string.onb_skip), fontSize = 14.sp, color = Color.White.copy(0.50f)) }
                 } else {
                     Spacer(Modifier.height(40.dp))
@@ -435,12 +463,12 @@ private fun OnboardingOrganizationPreview(viewModel: AppListViewModel) {
                 .clip(RoundedCornerShape(16.dp))
                 .background(Color.White.copy(0.08f))
                 .border(1.dp, Color.White.copy(0.12f), RoundedCornerShape(16.dp))
-                .padding(14.dp)
+                .padding(14.dp),
         ) {
             Text(
                 "Daha sonra Ayarlar > Uygulamalar > Kontrol Bekleyenler ekranindan dusuk guvenli kararları onaylayabilirsin.",
                 color = Color.White.copy(0.72f),
-                fontSize = 13.sp
+                fontSize = 13.sp,
             )
         }
     }
@@ -453,27 +481,27 @@ private fun OnboardingRestoreBackupCard(restoreLoading: Boolean) {
             .clip(RoundedCornerShape(18.dp))
             .background(Color.White.copy(0.08f))
             .border(1.dp, Color.White.copy(0.14f), RoundedCornerShape(18.dp))
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = stringResource(R.string.onb_restore_card_title),
                 color = Color.White,
                 fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = stringResource(R.string.onb_restore_card_desc),
                 color = Color.White.copy(0.72f),
                 fontSize = 13.sp,
-                lineHeight = 18.sp
+                lineHeight = 18.sp,
             )
             if (restoreLoading) {
                 Text(
                     text = stringResource(R.string.onb_restore_loading),
                     color = Color(0xFF26C6DA),
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
             }
         }
@@ -488,7 +516,7 @@ private fun OnboardingPreviewMetric(label: String, value: String, modifier: Modi
             .background(Color.White.copy(0.10f))
             .border(1.dp, Color.White.copy(0.16f), RoundedCornerShape(16.dp))
             .padding(14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(value, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
         Text(label, color = Color.White.copy(0.62f), fontSize = 12.sp)

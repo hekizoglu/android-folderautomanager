@@ -61,7 +61,7 @@ class ClassificationAttentionPolicyTest {
         )
         assertEquals(
             AttentionReason.OTHER_WITHOUT_CONFIDENCE,
-            ClassificationAttentionPolicy.evaluate(app, now)
+            ClassificationAttentionPolicy.evaluate(app, now),
         )
     }
 

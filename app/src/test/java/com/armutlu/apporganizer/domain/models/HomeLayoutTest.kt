@@ -19,10 +19,15 @@ class HomeLayoutTest {
                 .sortedBy { it.order }.map { it.sectionId },
         )
         assertEquals(
-            listOf(HomeSectionId.CLOCK, HomeSectionId.DAILY_CONTROL_CENTER,
-                HomeSectionId.FAVORITES, HomeSectionId.SUGGESTIONS,
-                HomeSectionId.RECENT_NOTIFICATIONS, HomeSectionId.RECENT_APPS,
-                HomeSectionId.FOLDER_GRID),
+            listOf(
+                HomeSectionId.CLOCK,
+                HomeSectionId.DAILY_CONTROL_CENTER,
+                HomeSectionId.FAVORITES,
+                HomeSectionId.SUGGESTIONS,
+                HomeSectionId.RECENT_NOTIFICATIONS,
+                HomeSectionId.RECENT_APPS,
+                HomeSectionId.FOLDER_GRID,
+            ),
             config.items.filter { it.zone == HomeLayoutZone.CONTENT && it.visible }
                 .sortedBy { it.order }.map { it.sectionId },
         )
@@ -42,16 +47,20 @@ class HomeLayoutTest {
     fun `duplicate section id is rejected`() {
         val dock = HomeLayoutConfig.DEFAULT.items.first { it.sectionId == HomeSectionId.DOCK }
         assertThrows(IllegalArgumentException::class.java) {
-            HomeLayoutConfig(HomeLayoutConfig.CURRENT_VERSION,
-                HomeLayoutConfig.DEFAULT.items + dock.copy(order = 1))
+            HomeLayoutConfig(
+                HomeLayoutConfig.CURRENT_VERSION,
+                HomeLayoutConfig.DEFAULT.items + dock.copy(order = 1),
+            )
         }
     }
 
     @Test
     fun `missing required section is rejected`() {
         assertThrows(IllegalArgumentException::class.java) {
-            HomeLayoutConfig(HomeLayoutConfig.CURRENT_VERSION,
-                HomeLayoutConfig.DEFAULT.items.filterNot { it.sectionId == HomeSectionId.FOLDER_GRID })
+            HomeLayoutConfig(
+                HomeLayoutConfig.CURRENT_VERSION,
+                HomeLayoutConfig.DEFAULT.items.filterNot { it.sectionId == HomeSectionId.FOLDER_GRID },
+            )
         }
     }
 }

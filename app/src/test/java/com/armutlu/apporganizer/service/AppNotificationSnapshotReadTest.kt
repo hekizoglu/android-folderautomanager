@@ -53,9 +53,11 @@ class AppNotificationSnapshotReadTest {
         service.onNotificationPosted(posted)
 
         coVerify(timeout = 2_000) {
-            repository.replaceActive(match { items ->
-                items.size == 1 && items.single().packageName == "com.test.app"
-            })
+            repository.replaceActive(
+                match { items ->
+                    items.size == 1 && items.single().packageName == "com.test.app"
+                },
+            )
         }
     }
 
@@ -75,7 +77,7 @@ class AppNotificationSnapshotReadTest {
             listOf(
                 sbn(packageName = "com.test.one", key = "one"),
                 sbn(packageName = "com.test.two", key = "two"),
-            )
+            ),
         )
 
         service.onListenerConnected()

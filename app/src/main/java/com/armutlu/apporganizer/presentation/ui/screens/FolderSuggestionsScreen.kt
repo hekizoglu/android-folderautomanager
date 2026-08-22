@@ -52,7 +52,7 @@ fun FolderSuggestionsScreen(
                 SettingsInfoRow(
                     icon = Icons.Default.Lightbulb,
                     title = "${suggestions.size} uygulanabilir oneri",
-                    subtitle = "Oneriler yalnizca sen Kabul Et dediginde kategori tasir; silme veya gizleme yapmaz."
+                    subtitle = "Oneriler yalnizca sen Kabul Et dediginde kategori tasir; silme veya gizleme yapmaz.",
                 )
             }
         }
@@ -61,7 +61,7 @@ fun FolderSuggestionsScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text("Bu ozellik ne yapiyor?", fontWeight = FontWeight.SemiBold)
@@ -69,7 +69,7 @@ fun FolderSuggestionsScreen(
                         Text(
                             "Buyuk, cok kucuk veya uzun suredir atil kalan klasorleri bulur. Dusuk guvenli siniflandirmalar otomatik uygulanmaz; Kontrol Bekleyenler akisina gider.",
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            fontSize = 13.sp
+                            fontSize = 13.sp,
                         )
                         Spacer(Modifier.height(8.dp))
                         TextButton(onClick = viewModel::dismissFolderSuggestionsInfo) {
@@ -84,11 +84,14 @@ fun FolderSuggestionsScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(Modifier.padding(18.dp)) {
                         Text("Yeni oneri yok", fontWeight = FontWeight.SemiBold)
-                        Text("Klasorler dengelendiginde ya da oneriler ertelendiginde bu ekran bos kalir.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Klasorler dengelendiginde ya da oneriler ertelendiginde bu ekran bos kalir.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -96,21 +99,23 @@ fun FolderSuggestionsScreen(
             item {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth().height(560.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(suggestions, key = { it.id }) { suggestion ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         ) {
                             Column(Modifier.padding(16.dp)) {
                                 Text(suggestion.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                 Text(suggestion.description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(6.dp))
                                 Text(
-                                    "${typeLabel(suggestion.type)} | Hedef: ${categoryNames[suggestion.targetCategoryId] ?: suggestion.targetCategoryId} | Guven: ${suggestion.confidence}%",
+                                    "${typeLabel(
+                                        suggestion.type,
+                                    )} | Hedef: ${categoryNames[suggestion.targetCategoryId] ?: suggestion.targetCategoryId} | Guven: ${suggestion.confidence}%",
                                     fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                                 Spacer(Modifier.height(12.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -150,7 +155,7 @@ fun FolderSuggestionsScreen(
                 SettingsInfoRow(
                     icon = Icons.Default.AutoFixHigh,
                     title = "Geri al",
-                    subtitle = "Kabul edilen oneriler kullanici duzeltmesi olarak kaydedilir; ayni paketleri Uygulamalar ekranindan tekrar tasiyabilirsin."
+                    subtitle = "Kabul edilen oneriler kullanici duzeltmesi olarak kaydedilir; ayni paketleri Uygulamalar ekranindan tekrar tasiyabilirsin.",
                 )
             }
         }

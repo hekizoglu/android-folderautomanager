@@ -30,6 +30,7 @@ object MissionActionRouter {
      */
     sealed interface RouteTarget {
         data class Screen(val route: String) : RouteTarget
+
         /**
          * [dataPackage] doluysa UI katmani Intent'e `Uri.fromParts("package", dataPackage, null)`
          * data URI'si ekler (Dongu G3b — App Info ekrani icin zorunlu; digerlerinde null/data'siz).
@@ -44,10 +45,10 @@ object MissionActionRouter {
         is MissionAction.OpenNotificationReport -> RouteTarget.Screen(ROUTE_NOTIFICATION_REPORT)
         is MissionAction.OpenUsageReport -> RouteTarget.Screen(ROUTE_USAGE_REPORT)
         is MissionAction.OpenSettingsUsageAccess -> RouteTarget.SystemIntent(
-            Settings.ACTION_USAGE_ACCESS_SETTINGS
+            Settings.ACTION_USAGE_ACCESS_SETTINGS,
         )
         is MissionAction.OpenDoNotDisturbSettings -> RouteTarget.SystemIntent(
-            Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS
+            Settings.ACTION_ZEN_MODE_PRIORITY_SETTINGS,
         )
         is MissionAction.OpenAppInfo -> RouteTarget.SystemIntent(
             Settings.ACTION_APPLICATION_DETAILS_SETTINGS,

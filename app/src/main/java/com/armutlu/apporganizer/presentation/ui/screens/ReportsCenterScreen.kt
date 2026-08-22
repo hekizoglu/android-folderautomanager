@@ -151,7 +151,7 @@ internal fun buildReportsCenterEntries(
             } else {
                 "Bos durum: haftalik rapor ayarlardan kapali"
             },
-            unavailableReason = if (wrappedEnabled) null else "Haftalik rapor ayarlardan acilmadan gosterilemez."
+            unavailableReason = if (wrappedEnabled) null else "Haftalik rapor ayarlardan acilmadan gosterilemez.",
         ),
         ReportsCenterEntry(
             route = REPORT_ROUTE_PRIVACY,
@@ -163,7 +163,7 @@ internal fun buildReportsCenterEntries(
             } else {
                 "Bos durum: gizlilik analizi ayarlardan kapali"
             },
-            unavailableReason = if (privacyReportEnabled) null else "Gizlilik analizi ayarlardan etkinlestirilmeden acilmaz."
+            unavailableReason = if (privacyReportEnabled) null else "Gizlilik analizi ayarlardan etkinlestirilmeden acilmaz.",
         ),
     )
 }

@@ -33,7 +33,6 @@ fun SettingsNotificationsScreen(
     val context = LocalContext.current
 
     SettingsSubScreenScaffold(title = "Bildirimler", onNavigateBack = onNavigateBack) {
-
         // ── Bildirim İzni ─────────────────────────────────────────────────
         item { SettingsSectionTitle("Bildirim Erişimi") }
         item {
@@ -53,12 +52,13 @@ fun SettingsNotificationsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        Icons.Default.Notifications, null,
+                        Icons.Default.Notifications,
+                        null,
                         tint = if (notifListenerOk) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(22.dp),
                     )
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
@@ -66,7 +66,7 @@ fun SettingsNotificationsScreen(
                         Text(
                             if (notifListenerOk) "Açık — rozet sayıları güncel" else "Kapalı — rozet sayıları görünmez",
                             fontSize = 12.sp,
-                            color = if (notifListenerOk) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (notifListenerOk) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     if (!notifListenerOk) {
@@ -78,7 +78,7 @@ fun SettingsNotificationsScreen(
                                 runCatching { context.startActivity(i) }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         ) { Text("Bildirim Erişimini Aç", fontSize = 13.sp) }
                     }
                 }
@@ -92,13 +92,13 @@ fun SettingsNotificationsScreen(
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
                             .padding(horizontal = 10.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(Icons.Default.Lock, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
                         Text(
                             "Tüm bildirim verileri yalnızca cihazınızda kalır — hiçbir veri dışarı çıkmaz.",
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
                         )
                     }
                 }
@@ -121,20 +121,24 @@ fun SettingsNotificationsScreen(
             SettingsCard {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.Palette, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Akıllı Badge Rengi", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                        Text("Bildirim türüne göre rozet rengini ayarlar", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Bildirim türüne göre rozet rengini ayarlar",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     Switch(
                         checked = badgeIntelligence,
                         onCheckedChange = {
                             badgeIntelligence = it
                             AppPrefs.setBadgeIntelligenceEnabled(context, it)
-                        }
+                        },
                     )
                 }
             }
@@ -159,25 +163,42 @@ fun SettingsNotificationsScreen(
             SettingsCard {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        Icons.Default.History, null,
-                        tint = if (notifTextEnabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
+                        Icons.Default.History,
+                        null,
+                        tint = if (notifTextEnabled) {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f,
+                            )
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                        modifier = Modifier.size(22.dp),
                     )
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text(
                             "Kullanım Bilgisi",
-                            fontWeight = FontWeight.Medium, fontSize = 15.sp,
-                            color = if (notifTextEnabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp,
+                            color = if (notifTextEnabled) {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                    alpha = 0.6f,
+                                )
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
                         )
                         Text(
-                            if (notifTextEnabled) "Bildirim Metni açık olduğu için bu satır pasif"
-                            else "Klasör altında \"X gündür açılmadı\" göster",
+                            if (notifTextEnabled) {
+                                "Bildirim Metni açık olduğu için bu satır pasif"
+                            } else {
+                                "Klasör altında \"X gündür açılmadı\" göster"
+                            },
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Switch(
@@ -186,7 +207,7 @@ fun SettingsNotificationsScreen(
                         onCheckedChange = {
                             unusedInfoEnabled = it
                             AppPrefs.setUnusedInfoEnabled(context, it)
-                        }
+                        },
                     )
                 }
             }
@@ -227,7 +248,7 @@ fun SettingsNotificationsScreen(
                         .fillMaxWidth()
                         .clickable { expanded = !expanded }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.NotificationsActive, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(14.dp))
@@ -236,14 +257,14 @@ fun SettingsNotificationsScreen(
                         Text(
                             if (masterEnabled) "Günlük kullanım ve düzen özetleri açık" else "Kapalı",
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Icon(
                         if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp).padding(end = 4.dp)
+                        modifier = Modifier.size(20.dp).padding(end = 4.dp),
                     )
                     Switch(
                         checked = masterEnabled,
@@ -252,7 +273,7 @@ fun SettingsNotificationsScreen(
                             AppPrefs.setSmartNotifEnabled(workerCtx, v)
                             com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
                             if (v) expanded = true
-                        }
+                        },
                     )
                 }
                 if (expanded && masterEnabled) {
@@ -266,7 +287,7 @@ fun SettingsNotificationsScreen(
                             dailyUsage = it
                             AppPrefs.setSmartNotifDailyUsage(workerCtx, it)
                             com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
-                        }
+                        },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     SettingsSwitchRow(
@@ -278,7 +299,7 @@ fun SettingsNotificationsScreen(
                             unusedApps = it
                             AppPrefs.setSmartNotifUnusedApps(workerCtx, it)
                             com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
-                        }
+                        },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     SettingsSwitchRow(
@@ -290,7 +311,7 @@ fun SettingsNotificationsScreen(
                             catStats = it
                             AppPrefs.setSmartNotifCatStats(workerCtx, it)
                             com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
-                        }
+                        },
                     )
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                     Box(Modifier.fillMaxWidth()) {
@@ -299,7 +320,7 @@ fun SettingsNotificationsScreen(
                                 .fillMaxWidth()
                                 .clickable { hourMenuExpanded = true }
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(Icons.Default.Schedule, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                             Spacer(Modifier.width(14.dp))
@@ -308,10 +329,15 @@ fun SettingsNotificationsScreen(
                                 Text(
                                     "Saat %02d:00".format(notifHour),
                                     fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            Icon(Icons.Default.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Default.ExpandMore,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp),
+                            )
                         }
                         DropdownMenu(expanded = hourMenuExpanded, onDismissRequest = { hourMenuExpanded = false }) {
                             listOf(8, 12, 18, 20, 22).forEach { hour ->
@@ -322,7 +348,7 @@ fun SettingsNotificationsScreen(
                                         AppPrefs.setSmartNotifHour(workerCtx, hour)
                                         com.armutlu.apporganizer.workers.SmartInsightWorker.schedule(workerCtx)
                                         hourMenuExpanded = false
-                                    }
+                                    },
                                 )
                             }
                         }
@@ -356,7 +382,7 @@ fun SettingsNotificationsScreen(
                         suggestionNotifEnabled = v
                         AppPrefs.setSuggestionNotificationsEnabled(suggestionWorkerCtx, v)
                         com.armutlu.apporganizer.workers.SuggestionNotificationWorker.schedule(suggestionWorkerCtx)
-                    }
+                    },
                 )
             }
         }

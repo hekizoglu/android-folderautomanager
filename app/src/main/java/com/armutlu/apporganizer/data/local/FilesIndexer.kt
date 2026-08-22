@@ -13,13 +13,13 @@ import com.armutlu.apporganizer.domain.models.computeFileIndexState
 import com.armutlu.apporganizer.utils.AppPrefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlin.OptIn
-import kotlin.ExperimentalStdlibApi
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Singleton
+import kotlin.ExperimentalStdlibApi
+import kotlin.OptIn
 
 /**
  * C2: Dosya arama indeksleyici (MediaStore tabanlı).
@@ -37,7 +37,7 @@ import javax.inject.Singleton
 @Singleton
 class FilesIndexer(
     private val context: Context,
-    private val searchDao: SearchDao
+    private val searchDao: SearchDao,
 ) {
 
     companion object {
@@ -49,7 +49,7 @@ class FilesIndexer(
         private const val QUOTA_VIDEOS = 1000
         private const val QUOTA_AUDIO = 1000
         private const val QUOTA_DOWNLOADS = 1000
-        private const val PAGINATION_LIMIT = 500  // Cursor sayfası boyutu
+        private const val PAGINATION_LIMIT = 500 // Cursor sayfası boyutu
 
         fun hasMediaStoreReadAccess(context: Context): Boolean {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
@@ -145,7 +145,7 @@ class FilesIndexer(
                     runCatching {
                         resolver.releasePersistableUriPermission(
                             perm.uri,
-                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
                         )
                     }
                     Timber.d("FilesIndexer: gecersiz persisted URI izni temizlendi: ${perm.uri}")
@@ -163,7 +163,7 @@ class FilesIndexer(
             Triple(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*", QUOTA_IMAGES),
             Triple(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, "video/*", QUOTA_VIDEOS),
             Triple(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, "audio/*", QUOTA_AUDIO),
-            Triple(getDownloadsUri(), "application/*", QUOTA_DOWNLOADS)
+            Triple(getDownloadsUri(), "application/*", QUOTA_DOWNLOADS),
         )
 
         val projection = arrayOf(
@@ -171,7 +171,7 @@ class FilesIndexer(
             MediaStore.MediaColumns.DISPLAY_NAME,
             MediaStore.MediaColumns.RELATIVE_PATH,
             MediaStore.MediaColumns.DATE_MODIFIED,
-            MediaStore.MediaColumns.MIME_TYPE
+            MediaStore.MediaColumns.MIME_TYPE,
         )
 
         for ((uri, mimeHint, quota) in collections) {
@@ -187,7 +187,7 @@ class FilesIndexer(
                         projection,
                         null,
                         null,
-                        sortOrder
+                        sortOrder,
                     )
                 } catch (e: Exception) {
                     Timber.w(e, "FilesIndexer: MediaStore query skipped for $uri at offset $offset")
@@ -195,7 +195,7 @@ class FilesIndexer(
                 } ?: break
 
                 cursor.use { c ->
-                    if (c.count == 0) return@use  // Sayfada veri yok - son sayfa
+                    if (c.count == 0) return@use // Sayfada veri yok - son sayfa
 
                     val idIdx = c.getColumnIndex(MediaStore.MediaColumns._ID)
                     val nameIdx = c.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
@@ -221,8 +221,8 @@ class FilesIndexer(
                                 subtitle = path,
                                 iconKey = "mime:$mime",
                                 sourceGroup = GROUP_FILE,
-                                lastModified = dateModified
-                            )
+                                lastModified = dateModified,
+                            ),
                         )
                         typeCount++
 
@@ -245,5 +245,4 @@ class FilesIndexer(
         } else {
             MediaStore.Files.getContentUri("external")
         }
-
 }

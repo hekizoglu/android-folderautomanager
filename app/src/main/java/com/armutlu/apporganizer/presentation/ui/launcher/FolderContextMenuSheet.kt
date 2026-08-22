@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,8 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
 
-import androidx.compose.material.icons.filled.Delete
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderContextMenuSheet(
@@ -41,9 +40,9 @@ fun FolderContextMenuSheet(
     val catColor = runCatching {
         Color(android.graphics.Color.parseColor(folder.category.colorHex))
     }.getOrDefault(MaterialTheme.colorScheme.primary)
-    val primary   = MaterialTheme.colorScheme.primary
+    val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
-    val surface   = MaterialTheme.colorScheme.surface
+    val surface = MaterialTheme.colorScheme.surface
 
     var showMoveDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -58,31 +57,35 @@ fun FolderContextMenuSheet(
             Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
                 Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(onSurface.copy(0.2f)))
             }
-        }
+        },
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Box(
                     modifier = Modifier.size(44.dp).clip(CircleShape)
                         .background(catColor.copy(alpha = 0.25f)),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) { Text(folder.category.iconEmoji, fontSize = 22.sp) }
                 Column {
                     Text(folder.category.categoryName, color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                    Text("${folder.apps.size} uygulama${if (currentIndex >= 0) " · ${currentIndex + 1}. sıra" else ""}", color = onSurface.copy(0.55f), fontSize = 12.sp)
+                    Text(
+                        "${folder.apps.size} uygulama${if (currentIndex >= 0) " · ${currentIndex + 1}. sıra" else ""}",
+                        color = onSurface.copy(0.55f),
+                        fontSize = 12.sp,
+                    )
                 }
             }
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(onSurface.copy(0.08f)))
             Row(
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenFolder)
                     .padding(horizontal = 20.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Default.FolderOpen, null, tint = primary, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(16.dp))
@@ -93,7 +96,7 @@ fun FolderContextMenuSheet(
                 Row(
                     modifier = Modifier.fillMaxWidth().clickable { showMoveDialog = true }
                         .padding(horizontal = 20.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.Edit, null, tint = onSurface.copy(0.7f), modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(16.dp))
@@ -104,7 +107,7 @@ fun FolderContextMenuSheet(
             Row(
                 modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenAllApps)
                     .padding(horizontal = 20.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Default.Apps, null, tint = onSurface.copy(0.7f), modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(16.dp))
@@ -115,7 +118,7 @@ fun FolderContextMenuSheet(
                 Row(
                     modifier = Modifier.fillMaxWidth().clickable { showDeleteConfirm = true }
                         .padding(horizontal = 20.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(16.dp))
@@ -136,7 +139,7 @@ fun FolderContextMenuSheet(
                         showDeleteConfirm = false
                         onDeleteFolder?.invoke(folder.category.categoryId)
                         onDismiss()
-                    }
+                    },
                 ) {
                     Text("Sil", color = MaterialTheme.colorScheme.error)
                 }
@@ -145,7 +148,7 @@ fun FolderContextMenuSheet(
                 androidx.compose.material3.TextButton(onClick = { showDeleteConfirm = false }) {
                     Text("İptal")
                 }
-            }
+            },
         )
     }
 
@@ -163,7 +166,10 @@ fun FolderContextMenuSheet(
                     onDismiss()
                 }
             },
-            onDismiss = { showMoveDialog = false; selectedMoveIndex = -1 }
+            onDismiss = {
+                showMoveDialog = false
+                selectedMoveIndex = -1
+            },
         )
     }
 }

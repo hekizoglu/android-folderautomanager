@@ -8,8 +8,8 @@ package com.armutlu.apporganizer.domain.models
  */
 data class SearchScore(
     val type: ScoreType,
-    val score: Int,      // 0-100, yüksek = daha iyi match
-    val detail: String   // Kullanıcı açıklaması: "Tam isim eşleşmesi", vb.
+    val score: Int, // 0-100, yüksek = daha iyi match
+    val detail: String, // Kullanıcı açıklaması: "Tam isim eşleşmesi", vb.
 )
 
 /**
@@ -23,10 +23,10 @@ data class SearchScore(
  * - NONE:     eşleşme yok (normalde sonuç listesine girmez)
  */
 enum class ScoreType {
-    EXACT,      // 100
-    PREFIX,     // 90-99
-    CONTAINS,   // 75-89
-    FUZZY,      // 50-74
-    PHONETIC,   // 40-49 (ileride Levenshtein fine-tuning)
-    NONE        // 0
+    EXACT, // 100
+    PREFIX, // 90-99
+    CONTAINS, // 75-89
+    FUZZY, // 50-74
+    PHONETIC, // 40-49 (ileride Levenshtein fine-tuning)
+    NONE, // 0
 }

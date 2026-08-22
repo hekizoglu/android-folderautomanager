@@ -48,12 +48,19 @@ internal fun interface DailyNonFatalLimiter {
 /** Single, fail-closed entry point for all remote telemetry. */
 object TelemetryManager {
     private const val DAILY_EVENT_LIMIT = 500
+
     @Volatile private var collectionEnabled = false
+
     @Volatile private var analytics: AnalyticsGateway = NoOpAnalyticsGateway
+
     @Volatile private var crash: CrashGateway = NoOpCrashGateway
+
     @Volatile private var performance: PerformanceGateway = NoOpPerformanceGateway
+
     @Volatile private var limiter: DailyEventLimiter = InMemoryDailyEventLimiter(DAILY_EVENT_LIMIT)
+
     @Volatile private var nonFatalLimiter: DailyNonFatalLimiter = InMemoryDailyNonFatalLimiter()
+
     @Volatile private var testDeviceTag: TestDeviceTag = TestDeviceTag.NONE
     private val activeTraces = mutableSetOf<PerformanceTraceName>()
 
@@ -178,13 +185,16 @@ internal object NoOpCrashGateway : CrashGateway {
     override fun recordNonFatal(code: HealthIssueCode, context: CrashContext, throwable: Throwable?) = Unit
 }
 
-
 private class InMemoryDailyNonFatalLimiter : DailyNonFatalLimiter {
     private var day = currentDay()
     private val sentCodes = mutableSetOf<HealthIssueCode>()
+
     @Synchronized override fun tryAcquire(code: HealthIssueCode): Boolean {
         val today = currentDay()
-        if (today != day) { day = today; sentCodes.clear() }
+        if (today != day) {
+            day = today
+            sentCodes.clear()
+        }
         return sentCodes.add(code)
     }
     private fun currentDay(): Long = System.currentTimeMillis() / 86_400_000L
@@ -192,6 +202,7 @@ private class InMemoryDailyNonFatalLimiter : DailyNonFatalLimiter {
 
 private class SharedPreferencesDailyNonFatalLimiter(context: Context) : DailyNonFatalLimiter {
     private val preferences = context.getSharedPreferences("crashlytics_non_fatal_rate_limit", Context.MODE_PRIVATE)
+
     @Synchronized override fun tryAcquire(code: HealthIssueCode): Boolean {
         val today = System.currentTimeMillis() / 86_400_000L
         val key = code.name.lowercase()
@@ -210,9 +221,13 @@ internal object NoOpPerformanceGateway : PerformanceGateway {
 private class InMemoryDailyEventLimiter(private val limit: Int) : DailyEventLimiter {
     private var day = currentDay()
     private var count = 0
+
     @Synchronized override fun tryAcquire(): Boolean {
         val today = currentDay()
-        if (today != day) { day = today; count = 0 }
+        if (today != day) {
+            day = today
+            count = 0
+        }
         if (count >= limit) return false
         count++
         return true
@@ -222,6 +237,7 @@ private class InMemoryDailyEventLimiter(private val limit: Int) : DailyEventLimi
 
 private class SharedPreferencesDailyEventLimiter(context: Context, private val limit: Int) : DailyEventLimiter {
     private val preferences = context.getSharedPreferences("telemetry_rate_limit", Context.MODE_PRIVATE)
+
     @Synchronized override fun tryAcquire(): Boolean {
         val today = System.currentTimeMillis() / 86_400_000L
         val storedDay = preferences.getLong("day", -1L)

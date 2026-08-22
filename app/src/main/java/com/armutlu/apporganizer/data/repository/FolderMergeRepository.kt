@@ -42,7 +42,9 @@ class FolderMergeRepository(
             val allApps = appDao.getAllApps()
             val consistencyCheck = validator.validateMergeConsistency(packageNames, targetCategoryId, allApps)
             if (!consistencyCheck.isSuccess()) {
-                throw IllegalStateException("Merge consistency check failed: ${(consistencyCheck as? FolderConsistencyValidator.ConsistencyResult.Failed)?.issues}")
+                throw IllegalStateException(
+                    "Merge consistency check failed: ${(consistencyCheck as? FolderConsistencyValidator.ConsistencyResult.Failed)?.issues}",
+                )
             }
 
             // Log — geri almak için operation kaydedilir
@@ -98,10 +100,12 @@ class FolderMergeRepository(
             val consistencyCheck = validator.validateUndoConsistency(
                 oldCategoryMapping = categoryMap,
                 currentApps = allApps,
-                emptyFolderCategoryIds = setOf(operation.sourceCategoryId)
+                emptyFolderCategoryIds = setOf(operation.sourceCategoryId),
             )
             if (!consistencyCheck.isSuccess()) {
-                throw IllegalStateException("Undo consistency check failed: ${(consistencyCheck as? FolderConsistencyValidator.ConsistencyResult.Failed)?.issues}")
+                throw IllegalStateException(
+                    "Undo consistency check failed: ${(consistencyCheck as? FolderConsistencyValidator.ConsistencyResult.Failed)?.issues}",
+                )
             }
 
             // Mark — operation'ı rolled back işaretle

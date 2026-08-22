@@ -1,11 +1,11 @@
 package com.armutlu.apporganizer.domain.usecase.missions
 
 import com.armutlu.apporganizer.utils.TaskScoreManager
-import java.time.LocalTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalTime
 
 /**
  * MissionEngine — deterministik uretim + checkProgress/evaluate senaryolari (D257, M00).
@@ -30,7 +30,7 @@ class MissionEngineTest {
                 screenTimeMinutesToday = 120L,
                 usedAfter23Today = false,
                 unlockCountToday = 10,
-            )
+            ),
         )
         val first = MissionEngine.generateDaily(day, selection)
         val second = MissionEngine.generateDaily(day, selection)
@@ -51,8 +51,8 @@ class MissionEngineTest {
                 checkInput = MissionEngine.MissionCheckInput(
                     weeklyScreenTimeMinutes = 500L,
                     previousWeeklyScreenTimeMinutes = 700L,
-                )
-            )
+                ),
+            ),
         )
 
         // Dongu G3a: WEEKLY_POOL 2 -> 3 elemana cikti (DISCOVER_WEEKLY eklendi).
@@ -70,8 +70,8 @@ class MissionEngineTest {
                     screenTimeMinutesToday = null,
                     usedAfter23Today = null,
                     unlockCountToday = null,
-                )
-            )
+                ),
+            ),
         )
 
         assertFalse(missions.any { it.id == MissionEngine.DAILY_SCREEN_UNDER_3H })
@@ -102,8 +102,8 @@ class MissionEngineTest {
                     usedAfter23Today = false,
                     unlockCountToday = 8,
                 ),
-                recentlyCompletedMissionIds = setOf(MissionEngine.DAILY_SCREEN_UNDER_3H)
-            )
+                recentlyCompletedMissionIds = setOf(MissionEngine.DAILY_SCREEN_UNDER_3H),
+            ),
         )
 
         assertEquals(MissionEngine.DAILY_MISSION_COUNT, missions.size)
@@ -116,25 +116,27 @@ class MissionEngineTest {
         // gun bittiyse (dayEnded=true) ve hedefin altindaysa COMPLETED. Hedef asilirsa
         // (>=180) donem bitmesini beklemeden FAILED.
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_SCREEN_UNDER_3H,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         assertEquals(
             MissionStatus.IN_PROGRESS,
-            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 120L), dayEnded = false).status
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 120L), dayEnded = false).status,
         )
         assertEquals(
             MissionStatus.COMPLETED,
-            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 120L), dayEnded = true).status
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 120L), dayEnded = true).status,
         )
         assertEquals(
             MissionStatus.FAILED,
-            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 200L), dayEnded = false).status
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = 200L), dayEnded = false).status,
         )
         // Veri yoksa (izin verilmemis) uydurma basari yok
         assertEquals(
             MissionStatus.DATA_UNAVAILABLE,
-            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = null), dayEnded = false).status
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(screenTimeMinutesToday = null), dayEnded = false).status,
         )
     }
 
@@ -142,8 +144,10 @@ class MissionEngineTest {
     fun `weekly screen less requires valid previous baseline and week end for completion`() {
         // M00: haftalik karsilastirma hafta bitmeden COMPLETED olamaz -> IN_PROGRESS.
         val mission = MissionEngine.Mission(
-            MissionEngine.WEEKLY_SCREEN_LESS, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.WEEKLY_SCREEN_LESS,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         val improvingInput = MissionEngine.MissionCheckInput(weeklyScreenTimeMinutes = 500L, previousWeeklyScreenTimeMinutes = 700L)
         assertEquals(MissionStatus.IN_PROGRESS, MissionEngine.evaluate(mission, improvingInput, weekEnded = false).status)
@@ -161,17 +165,19 @@ class MissionEngineTest {
     @Suppress("DEPRECATION")
     fun `classification cleanup mission needs a real classification action`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_CLASSIFICATION_CLEANUP, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         assertFalse(MissionEngine.checkProgress(mission, MissionEngine.MissionCheckInput()))
         assertTrue(
             MissionEngine.checkProgress(
                 mission,
                 MissionEngine.MissionCheckInput(
-                    taskEvents = MissionEngine.TaskEventInput(classificationActionsToday = 1)
+                    taskEvents = MissionEngine.TaskEventInput(classificationActionsToday = 1),
                 ),
-            )
+            ),
         )
     }
 
@@ -179,21 +185,23 @@ class MissionEngineTest {
     fun `no late night mission resolves only after 23h00 with hourly data confirming no usage`() {
         // M00: gece gorevi zaman farkindalidir - 23:00 sonrasi degerlendirilebilir.
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_NO_LATE_NIGHT,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val afterNight = LocalTime.of(23, 30)
         assertEquals(
             MissionStatus.SAFE,
-            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = false), now = afterNight).status
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = false), now = afterNight).status,
         )
         assertEquals(
             MissionStatus.FAILED,
-            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = true), now = afterNight).status
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = true), now = afterNight).status,
         )
         assertEquals(
             MissionStatus.DATA_UNAVAILABLE,
-            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = null), now = afterNight).status
+            MissionEngine.evaluate(mission, MissionEngine.MissionCheckInput(usedAfter23Today = null), now = afterNight).status,
         )
     }
 
@@ -215,8 +223,10 @@ class MissionEngineTest {
     @Test
     fun `time window mission not started before window begins`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val result = MissionEngine.evaluate(
             mission,
@@ -234,8 +244,10 @@ class MissionEngineTest {
     @Test
     fun `time window mission safe then completed with no usage in custom window`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val input = MissionEngine.MissionCheckInput(
             usedDuringTimeWindowToday = false,
@@ -253,8 +265,10 @@ class MissionEngineTest {
     @Test
     fun `time window mission fails when usage detected inside custom window`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val result = MissionEngine.evaluate(
             mission,
@@ -274,8 +288,10 @@ class MissionEngineTest {
     @Test
     fun `time window mission data unavailable when usage signal missing after window start`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val result = MissionEngine.evaluate(
             mission,
@@ -294,8 +310,10 @@ class MissionEngineTest {
     fun `time window mission handles non-midnight-crossing window`() {
         // Ornek: 1-5 araligi (gece yarisini gecmez). 3'te (pencere icinde) kontrol.
         val mission = MissionEngine.Mission(
-            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.TYPE_NO_USAGE_IN_TIME_WINDOW,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val beforeWindow = MissionEngine.evaluate(
             mission,
@@ -326,20 +344,22 @@ class MissionEngineTest {
     @Suppress("DEPRECATION")
     fun `weekly positive actions needs three real positive events`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.WEEKLY_POSITIVE_ACTIONS, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.WEEKLY_POSITIVE_ACTIONS,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         assertFalse(
             MissionEngine.checkProgress(
                 mission,
                 MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(positiveEventsThisWeek = 2)),
-            )
+            ),
         )
         assertTrue(
             MissionEngine.checkProgress(
                 mission,
                 MissionEngine.MissionCheckInput(taskEvents = MissionEngine.TaskEventInput(positiveEventsThisWeek = 3)),
-            )
+            ),
         )
     }
 
@@ -355,8 +375,10 @@ class MissionEngineTest {
         // Sabah ekran suresi 90 dakika, gunluk hedef "3 saatin (180dk) altinda kal".
         // Gun henuz bitmedi (dayEnded=false) - dogru davranis IN_PROGRESS, COMPLETED DEGIL.
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_SCREEN_UNDER_3H,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val morningInput = MissionEngine.MissionCheckInput(screenTimeMinutesToday = 90L)
 
@@ -372,8 +394,10 @@ class MissionEngineTest {
         // 180/180 dakika -> ust sinire ULASILDI (asildi degil ama esit) - FAILED, donem
         // bitmesini beklemeye gerek yok cunku kural zaten bozuldu.
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_SCREEN_UNDER_3H,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val input = MissionEngine.MissionCheckInput(screenTimeMinutesToday = 180L)
 
@@ -387,8 +411,10 @@ class MissionEngineTest {
     fun `night mission at 20h00 is not started yet`() {
         // Saat 20:00'de gece gorevi henuz baslamamis olmali (23:00 esigi gecilmedi).
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_NO_LATE_NIGHT,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val result = MissionEngine.evaluate(
             mission,
@@ -404,8 +430,10 @@ class MissionEngineTest {
         // Saat 23:30, 23:00'ten sonra kullanim yok -> SAFE (gun sonuna kadar odul yok,
         // COMPLETED sadece dayEnded=true oldugunda gelir).
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_NO_LATE_NIGHT,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val result = MissionEngine.evaluate(
             mission,
@@ -428,8 +456,10 @@ class MissionEngineTest {
     @Test
     fun `night mission with late usage fails regardless of day end`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_NO_LATE_NIGHT, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_NO_LATE_NIGHT,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val result = MissionEngine.evaluate(
             mission,
@@ -447,8 +477,10 @@ class MissionEngineTest {
         // Bu haftanin ekran suresi simdiye kadar 60dk, gecen hafta TOPLAM 1000dk idi.
         // Hafta henuz bitmedi (weekEnded=false) -> dogru davranis IN_PROGRESS.
         val mission = MissionEngine.Mission(
-            MissionEngine.WEEKLY_SCREEN_LESS, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.WEEKLY_SCREEN_LESS,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         val midWeekInput = MissionEngine.MissionCheckInput(
             weeklyScreenTimeMinutes = 60L,
@@ -468,8 +500,10 @@ class MissionEngineTest {
     @Test
     fun `category balance is not eligible without any active auto goal`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.WEEKLY_CATEGORY_BALANCE,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         val noGoalsInput = MissionEngine.MissionCheckInput(categoryGoalsBalance = null)
         val weekly = MissionEngine.generateWeekly(
@@ -488,8 +522,10 @@ class MissionEngineTest {
     @Test
     fun `category balance mid week stays in progress even if a category is exceeded`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.WEEKLY_CATEGORY_BALANCE,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         val input = MissionEngine.MissionCheckInput(
             categoryGoalsBalance = MissionEngine.CategoryGoalsBalanceInput(
@@ -506,8 +542,10 @@ class MissionEngineTest {
     @Test
     fun `category balance completes at week end when none exceeded`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.WEEKLY_CATEGORY_BALANCE,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         val input = MissionEngine.MissionCheckInput(
             categoryGoalsBalance = MissionEngine.CategoryGoalsBalanceInput(
@@ -524,8 +562,10 @@ class MissionEngineTest {
     @Test
     fun `category balance fails at week end when at least one category exceeded`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.WEEKLY_CATEGORY_BALANCE, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.WEEKLY_CATEGORY_BALANCE,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         val input = MissionEngine.MissionCheckInput(
             categoryGoalsBalance = MissionEngine.CategoryGoalsBalanceInput(
@@ -578,8 +618,10 @@ class MissionEngineTest {
     fun `checkProgress bridge only returns true when evaluate resolves to COMPLETED`() {
         // Kopru sozlesmesi: donemsel gorev donem surerken artik true DONMEMELI (P0 2.4 fix).
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_SCREEN_UNDER_3H,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val morningInput = MissionEngine.MissionCheckInput(screenTimeMinutesToday = 90L)
 
@@ -588,7 +630,7 @@ class MissionEngineTest {
 
         assertFalse(
             "M00 fix: checkProgress kopru fonksiyonu artik donem bitmeden true DONMEMELI",
-            result
+            result,
         )
     }
 
@@ -613,7 +655,8 @@ class MissionEngineTest {
         assertEquals(
             "epochDay/7 bloklama Persembe baslangicli, Pazartesi degil - " +
                 "bu yuzden 1970-01-01 (Per) ve 1970-01-07 (Car) ayni epochWeek'e dusuyor",
-            thursdayWeek, nextWednesdayWeek
+            thursdayWeek,
+            nextWednesdayWeek,
         )
 
         // Ayrica dogrulama: Pazartesi (epochDay=4, 1970-01-05) farkli bir epochWeek blogunda
@@ -630,14 +673,14 @@ class MissionEngineTest {
         // turetilen epochWeek ile ayni "blok" icindeki bir sonraki Carsamba gununden turetilen
         // epochWeek'in AYNI gorev setini urettigini (cunku ikisi de epochWeek=0) gosterir -
         // kullanicinin bekledigi Pazartesi-Pazar takvim haftasindan FARKLI bir sinirlama.
-        val thursdayEpochWeek = 0L / 7   // 1970-01-01 Persembe
-        val wednesdayEpochWeek = 6L / 7  // 1970-01-07 Carsamba (ayni epochDay/7 blogu)
+        val thursdayEpochWeek = 0L / 7 // 1970-01-01 Persembe
+        val wednesdayEpochWeek = 6L / 7 // 1970-01-07 Carsamba (ayni epochDay/7 blogu)
 
         val selection = MissionEngine.MissionSelectionInput(
             checkInput = MissionEngine.MissionCheckInput(
                 weeklyScreenTimeMinutes = 300L,
                 previousWeeklyScreenTimeMinutes = 400L,
-            )
+            ),
         )
         val thursdayMissions = MissionEngine.generateWeekly(thursdayEpochWeek, selection)
         val wednesdayMissions = MissionEngine.generateWeekly(wednesdayEpochWeek, selection)
@@ -650,8 +693,10 @@ class MissionEngineTest {
     @Test
     fun `personal screen target overrides default 180 minute limit`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_SCREEN_UNDER_3H,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         // Kisisel hedef 160dk: 150dk kullanim hedefin altinda ama >=%80 -> AT_RISK (M00 kurali)
         val underPersonal = MissionEngine.evaluate(
@@ -676,8 +721,10 @@ class MissionEngineTest {
     @Test
     fun `null personal target falls back to fixed default`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_SCREEN_UNDER_3H, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_SCREEN_UNDER_3H,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val evaluation = MissionEngine.evaluate(
             mission,
@@ -692,8 +739,10 @@ class MissionEngineTest {
     @Test
     fun `personal unlock target overrides default 30 count limit`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_UNLOCK_UNDER_30, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_UNLOCK_UNDER_30,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val evaluation = MissionEngine.evaluate(
             mission,
@@ -709,8 +758,10 @@ class MissionEngineTest {
     @Test
     fun `organize uncategorized needs 2 classification actions today`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_ORGANIZE_UNCATEGORIZED,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val zero = MissionEngine.evaluate(
             mission,
@@ -736,8 +787,10 @@ class MissionEngineTest {
     @Test
     fun `customize folder mission completes only when today's flag is true`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_CUSTOMIZE_FOLDER, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_CUSTOMIZE_FOLDER,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         assertEquals(
             MissionStatus.IN_PROGRESS,
@@ -758,8 +811,10 @@ class MissionEngineTest {
     @Test
     fun `morning calm mission fails when social app opened in first 30 min, completes otherwise`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_MORNING_CALM, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_MORNING_CALM,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         assertEquals(
             MissionStatus.DATA_UNAVAILABLE,
@@ -787,8 +842,10 @@ class MissionEngineTest {
     @Test
     fun `focus session mission completes at 30 minutes threshold`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_FOCUS_SESSION, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_FOCUS_SESSION,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         assertEquals(
             MissionStatus.IN_PROGRESS,
@@ -807,8 +864,10 @@ class MissionEngineTest {
     @Test
     fun `discover weekly mission completes only when wrapped report viewed this week`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DISCOVER_WEEKLY, MissionEngine.MissionType.WEEKLY,
-            MissionEngine.WEEKLY_STAR, autoCheckable = true,
+            MissionEngine.DISCOVER_WEEKLY,
+            MissionEngine.MissionType.WEEKLY,
+            MissionEngine.WEEKLY_STAR,
+            autoCheckable = true,
         )
         assertEquals(
             MissionStatus.IN_PROGRESS,
@@ -942,8 +1001,8 @@ class MissionEngineTest {
                 checkInput = MissionEngine.MissionCheckInput(
                     appLimitTargetMinutes = null,
                     appLimitUsageMinutesToday = null,
-                )
-            )
+                ),
+            ),
         )
         assertFalse(missions.any { it.id == MissionEngine.DAILY_APP_LIMIT })
     }
@@ -960,8 +1019,8 @@ class MissionEngineTest {
                     checkInput = MissionEngine.MissionCheckInput(
                         appLimitTargetMinutes = 45L,
                         appLimitUsageMinutesToday = 10L,
-                    )
-                )
+                    ),
+                ),
             )
             if (missions.any { it.id == MissionEngine.DAILY_APP_LIMIT }) sawAppLimit = true
         }
@@ -971,8 +1030,10 @@ class MissionEngineTest {
     @Test
     fun `daily app limit evaluate is DATA_UNAVAILABLE when target is missing`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_APP_LIMIT, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_APP_LIMIT,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val evaluation = MissionEngine.evaluate(
             mission,
@@ -984,8 +1045,10 @@ class MissionEngineTest {
     @Test
     fun `daily app limit evaluate follows upper limit semantics like screen time`() {
         val mission = MissionEngine.Mission(
-            MissionEngine.DAILY_APP_LIMIT, MissionEngine.MissionType.DAILY,
-            MissionEngine.DAILY_STAR, autoCheckable = true,
+            MissionEngine.DAILY_APP_LIMIT,
+            MissionEngine.MissionType.DAILY,
+            MissionEngine.DAILY_STAR,
+            autoCheckable = true,
         )
         val underInput = MissionEngine.MissionCheckInput(appLimitTargetMinutes = 45L, appLimitUsageMinutesToday = 20L)
         assertEquals(MissionStatus.IN_PROGRESS, MissionEngine.evaluate(mission, underInput, dayEnded = false).status)
@@ -1023,11 +1086,11 @@ class MissionEngineTest {
                 selection = MissionEngine.MissionSelectionInput(
                     checkInput = checkInput,
                     weakArea = MissionEngine.WeakAreaCategory.BALANCE,
-                )
+                ),
             )
             val unweighted = MissionEngine.generateDaily(
                 epochDay = day,
-                selection = MissionEngine.MissionSelectionInput(checkInput = checkInput)
+                selection = MissionEngine.MissionSelectionInput(checkInput = checkInput),
             )
             if (weighted.any { it.id == MissionEngine.DAILY_APP_LIMIT }) withWeakArea++
             if (unweighted.any { it.id == MissionEngine.DAILY_APP_LIMIT }) withoutWeakArea++

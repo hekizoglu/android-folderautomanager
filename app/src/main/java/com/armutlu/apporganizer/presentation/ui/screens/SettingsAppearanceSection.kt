@@ -23,10 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import com.armutlu.apporganizer.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.components.ColorPickerDialog
 import com.armutlu.apporganizer.presentation.ui.theme.AppFont
 import com.armutlu.apporganizer.presentation.ui.theme.AppTheme
@@ -64,7 +64,7 @@ fun SettingsAppearanceSection(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .clickable { scope.launch { themePrefs.setTheme(theme) } }
-                            .padding(4.dp)
+                            .padding(4.dp),
                     ) {
                         Box(
                             modifier = Modifier
@@ -74,15 +74,18 @@ fun SettingsAppearanceSection(
                                 .border(
                                     width = if (isSelected) 3.dp else 1.dp,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                    shape = CircleShape
-                                )
+                                    shape = CircleShape,
+                                ),
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             stringResource(theme.labelRes),
                             fontSize = 11.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                         )
                     }
                 }
@@ -95,7 +98,7 @@ fun SettingsAppearanceSection(
                     FilterChip(
                         selected = isSelected,
                         onClick = { scope.launch { themePrefs.setFont(font) } },
-                        label = { Text(stringResource(font.labelRes), fontSize = 12.sp) }
+                        label = { Text(stringResource(font.labelRes), fontSize = 12.sp) },
                     )
                 }
             }
@@ -115,7 +118,7 @@ fun SettingsAppearanceSection(
                             bgType = type
                             com.armutlu.apporganizer.utils.AppPrefs.setBgType(context, type)
                         },
-                        label = { Text(label, fontSize = 12.sp) }
+                        label = { Text(label, fontSize = 12.sp) },
                     )
                 }
             }
@@ -126,15 +129,21 @@ fun SettingsAppearanceSection(
                     mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getHomeBackgroundStyle(context))
                 }
                 val gradientStyles = listOf(
-                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_TURKUAZ to ("Turkuaz" to Brush.verticalGradient(
-                        listOf(Color(0xFF00897B), Color(0xFF26C6DA))
-                    )),
-                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_GECE_MAVISI to ("Gece Mavisi" to Brush.verticalGradient(
-                        listOf(Color(0xFF0A1128), Color(0xFF1B2A4A))
-                    )),
-                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_MINIMAL_GRI to ("Minimal Koyu Gri" to Brush.verticalGradient(
-                        listOf(Color(0xFF1C1C1C), Color(0xFF2E2E2E))
-                    )),
+                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_TURKUAZ to (
+                        "Turkuaz" to Brush.verticalGradient(
+                            listOf(Color(0xFF00897B), Color(0xFF26C6DA)),
+                        )
+                        ),
+                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_GECE_MAVISI to (
+                        "Gece Mavisi" to Brush.verticalGradient(
+                            listOf(Color(0xFF0A1128), Color(0xFF1B2A4A)),
+                        )
+                        ),
+                    com.armutlu.apporganizer.utils.AppPrefs.HOME_BG_MINIMAL_GRI to (
+                        "Minimal Koyu Gri" to Brush.verticalGradient(
+                            listOf(Color(0xFF1C1C1C), Color(0xFF2E2E2E)),
+                        )
+                        ),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     gradientStyles.forEach { (key, pair) ->
@@ -147,7 +156,7 @@ fun SettingsAppearanceSection(
                                     selectedStyle = key
                                     com.armutlu.apporganizer.utils.AppPrefs.setHomeBackgroundStyle(context, key)
                                 }
-                                .padding(4.dp)
+                                .padding(4.dp),
                         ) {
                             Box(
                                 modifier = Modifier
@@ -157,17 +166,20 @@ fun SettingsAppearanceSection(
                                     .border(
                                         width = if (isSelected) 3.dp else 1.dp,
                                         color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                        shape = CircleShape
-                                    )
+                                        shape = CircleShape,
+                                    ),
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 label,
                                 fontSize = 9.sp,
                                 textAlign = TextAlign.Center,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.width(56.dp)
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                                modifier = Modifier.width(56.dp),
                             )
                         }
                     }
@@ -182,7 +194,7 @@ fun SettingsAppearanceSection(
                     0xFF0A1628.toInt() to "Gece Mavisi",
                     0xFF1C1008.toInt() to "Koyu Kahve",
                     0xFF0F2027.toInt() to "Derin Okyanus",
-                    0xFF1A1025.toInt() to "Derin Mor"
+                    0xFF1A1025.toInt() to "Derin Mor",
                 )
                 var selectedBgColor by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getBgColor(context)) }
                 var showBgColorPicker by remember { mutableStateOf(false) }
@@ -196,7 +208,7 @@ fun SettingsAppearanceSection(
                                     selectedBgColor = colorInt
                                     com.armutlu.apporganizer.utils.AppPrefs.setBgColor(context, colorInt)
                                 }
-                                .padding(4.dp)
+                                .padding(4.dp),
                         ) {
                             Box(
                                 modifier = Modifier
@@ -205,9 +217,15 @@ fun SettingsAppearanceSection(
                                     .background(Color(colorInt))
                                     .border(
                                         width = if (isSelected) 3.dp else 1.dp,
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                        shape = CircleShape
-                                    )
+                                        color = if (isSelected) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                alpha = 0.4f,
+                                            )
+                                        },
+                                        shape = CircleShape,
+                                    ),
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
@@ -215,7 +233,7 @@ fun SettingsAppearanceSection(
                                 fontSize = 9.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.width(52.dp)
+                                modifier = Modifier.width(52.dp),
                             )
                         }
                     }
@@ -223,7 +241,7 @@ fun SettingsAppearanceSection(
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = { showBgColorPicker = true },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(R.string.appearance_custom_color), fontSize = 13.sp) }
                 if (showBgColorPicker) {
                     ColorPickerDialog(
@@ -233,7 +251,7 @@ fun SettingsAppearanceSection(
                                 (color.alpha * 255).toInt(),
                                 (color.red * 255).toInt(),
                                 (color.green * 255).toInt(),
-                                (color.blue * 255).toInt()
+                                (color.blue * 255).toInt(),
                             )
                             selectedBgColor = colorInt
                             com.armutlu.apporganizer.utils.AppPrefs.setBgColor(context, colorInt)
@@ -245,14 +263,19 @@ fun SettingsAppearanceSection(
                                 }
                             }
                         },
-                        onDismiss = { showBgColorPicker = false }
+                        onDismiss = { showBgColorPicker = false },
                     )
                 }
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             var textAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getTextAlpha(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.appearance_text_opacity), fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.appearance_text_opacity),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f),
+                )
                 Text("${(textAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
@@ -262,12 +285,17 @@ fun SettingsAppearanceSection(
                     com.armutlu.apporganizer.utils.AppPrefs.setTextAlpha(context, it)
                 },
                 valueRange = 0.4f..1.0f,
-                steps = 11
+                steps = 11,
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             var folderSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderSizeDp(context)) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.appearance_folder_size), fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.appearance_folder_size),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f),
+                )
                 Text("${folderSizeDp}dp", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
@@ -277,7 +305,7 @@ fun SettingsAppearanceSection(
                     com.armutlu.apporganizer.utils.AppPrefs.setFolderSizeDp(context, it.toInt())
                 },
                 valueRange = 56f..96f,
-                steps = 7
+                steps = 7,
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             var iconScale by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconScale(context)) }
@@ -292,14 +320,25 @@ fun SettingsAppearanceSection(
                     com.armutlu.apporganizer.utils.AppPrefs.setIconScale(context, it)
                 },
                 valueRange = 0.7f..1.3f,
-                steps = 5
+                steps = 5,
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             var pageFolderCount by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getPageSize(context)) }
             val pageSizeOptions = listOf(0, 4, 6, 8, 12)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.appearance_folders_per_page), fontWeight = FontWeight.Medium, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                val displayText = if (pageFolderCount == 0) "Otomatik" else "$pageFolderCount ${stringResource(R.string.appearance_folder_unit)}"
+                Text(
+                    stringResource(R.string.appearance_folders_per_page),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f),
+                )
+                val displayText = if (pageFolderCount == 0) {
+                    "Otomatik"
+                } else {
+                    "$pageFolderCount ${stringResource(
+                        R.string.appearance_folder_unit,
+                    )}"
+                }
                 Text(displayText, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
             }
             Slider(
@@ -310,7 +349,7 @@ fun SettingsAppearanceSection(
                     com.armutlu.apporganizer.utils.AppPrefs.setPageSize(context, selected)
                 },
                 valueRange = 0f..4f,
-                steps = 3
+                steps = 3,
             )
         }
     }
@@ -324,7 +363,7 @@ fun SettingsAppearanceSection(
                 "#FFD700" to "Altın",
                 "#80DEEA" to "Turkuaz",
                 "#FFAB40" to "Turuncu",
-                "#EF9A9A" to "Pembe"
+                "#EF9A9A" to "Pembe",
             )
             var selectedLabel by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getLabelColor(context)) }
             var showLabelColorPicker by remember { mutableStateOf(false) }
@@ -341,21 +380,23 @@ fun SettingsAppearanceSection(
                             .clip(CircleShape)
                             .background(color)
                             .then(
-                                if (selectedLabel == hex)
+                                if (selectedLabel == hex) {
                                     Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                                else Modifier
+                                } else {
+                                    Modifier
+                                },
                             )
                             .clickable {
                                 selectedLabel = hex
                                 com.armutlu.apporganizer.utils.AppPrefs.setLabelColor(context, hex)
-                            }
+                            },
                     )
                 }
             }
             Spacer(Modifier.height(8.dp))
             OutlinedButton(
                 onClick = { showLabelColorPicker = true },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(R.string.appearance_custom_color), fontSize = 13.sp) }
             if (showLabelColorPicker) {
                 val initialColor = runCatching {
@@ -368,12 +409,12 @@ fun SettingsAppearanceSection(
                             (color.alpha * 255).toInt(),
                             (color.red * 255).toInt(),
                             (color.green * 255).toInt(),
-                            (color.blue * 255).toInt()
+                            (color.blue * 255).toInt(),
                         ).let { "#%06X".format(android.graphics.Color.parseColor(it) and 0xFFFFFF) }
                         selectedLabel = hex
                         com.armutlu.apporganizer.utils.AppPrefs.setLabelColor(context, hex)
                     },
-                    onDismiss = { showLabelColorPicker = false }
+                    onDismiss = { showLabelColorPicker = false },
                 )
             }
         }
@@ -391,7 +432,7 @@ fun SettingsAppearanceSection(
                 Text(
                     "Hiç açılmamış uygulamalar soluk gösterilir",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(Modifier.height(10.dp))
@@ -402,21 +443,27 @@ fun SettingsAppearanceSection(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceVariant
+                                if (selected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                },
                             )
                             .clickable {
                                 unusedGreyDays = days
                                 com.armutlu.apporganizer.utils.AppPrefs.setUnusedGreyDays(context, days)
                             }
-                            .padding(horizontal = 12.dp, vertical = 7.dp)
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
                     ) {
                         Text(
                             label,
                             fontSize = 12.sp,
-                            color = if (selected) MaterialTheme.colorScheme.onPrimary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                            color = if (selected) {
+                                MaterialTheme.colorScheme.onPrimary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                         )
                     }
                 }
@@ -427,64 +474,70 @@ fun SettingsAppearanceSection(
     // ── Klasör Şekli ──────────────────────────────────────────────────────
     var folderShape by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getFolderShape(context)) }
     SettingsCard {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(stringResource(R.string.appearance_folder_shape), fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                val shapeOptions = listOf(
-                    "circle"   to "Daire",
-                    "rounded"  to "Yumuşak",
-                    "square"   to "Kare",
-                    "triangle" to "Üçgen"
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    shapeOptions.forEach { (key, label) ->
-                        val selected = folderShape == key
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(stringResource(R.string.appearance_folder_shape), fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            val shapeOptions = listOf(
+                "circle" to "Daire",
+                "rounded" to "Yumuşak",
+                "square" to "Kare",
+                "triangle" to "Üçgen",
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                shapeOptions.forEach { (key, label) ->
+                    val selected = folderShape == key
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clickable {
+                                folderShape = key
+                                com.armutlu.apporganizer.utils.AppPrefs.setFolderShape(context, key)
+                            }
+                            .padding(4.dp),
+                    ) {
+                        Box(
                             modifier = Modifier
-                                .clickable {
-                                    folderShape = key
-                                    com.armutlu.apporganizer.utils.AppPrefs.setFolderShape(context, key)
-                                }
-                                .padding(4.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(
-                                        when (key) {
-                                            "square"   -> RoundedCornerShape(0.dp)
-                                            "rounded"  -> RoundedCornerShape(12.dp)
-                                            "triangle" -> RoundedCornerShape(4.dp)
-                                            else       -> CircleShape
-                                        }
-                                    )
-                                    .background(
-                                        if (selected) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.surfaceVariant
-                                    )
-                                    .border(
-                                        width = if (selected) 2.dp else 1.dp,
-                                        color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                        shape = when (key) {
-                                            "square"   -> RoundedCornerShape(0.dp)
-                                            "rounded"  -> RoundedCornerShape(12.dp)
-                                            else       -> CircleShape
-                                        }
-                                    )
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                label,
-                                fontSize = 10.sp,
-                                textAlign = TextAlign.Center,
-                                color = if (selected) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                                .size(44.dp)
+                                .clip(
+                                    when (key) {
+                                        "square" -> RoundedCornerShape(0.dp)
+                                        "rounded" -> RoundedCornerShape(12.dp)
+                                        "triangle" -> RoundedCornerShape(4.dp)
+                                        else -> CircleShape
+                                    },
+                                )
+                                .background(
+                                    if (selected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    },
+                                )
+                                .border(
+                                    width = if (selected) 2.dp else 1.dp,
+                                    color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    shape = when (key) {
+                                        "square" -> RoundedCornerShape(0.dp)
+                                        "rounded" -> RoundedCornerShape(12.dp)
+                                        else -> CircleShape
+                                    },
+                                ),
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            label,
+                            fontSize = 10.sp,
+                            textAlign = TextAlign.Center,
+                            color = if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
                     }
                 }
             }
         }
+    }
 
     // ── Klasör Rengi Otomatik ─────────────────────────────────────────────
     var autoFolderColor by remember { mutableStateOf(AppPrefs.isAutoFolderColorEnabled(context)) }
@@ -497,7 +550,7 @@ fun SettingsAppearanceSection(
             onCheckedChange = {
                 autoFolderColor = it
                 AppPrefs.setAutoFolderColorEnabled(context, it)
-            }
+            },
         )
     }
 
@@ -512,17 +565,20 @@ fun SettingsAppearanceSection(
                     .fillMaxWidth()
                     .clickable { showPackMenu = true }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Default.Extension, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text("İkon Pack", fontWeight = FontWeight.Medium, fontSize = 15.sp)
                     Text(
-                        if (selectedPack.isEmpty()) "Varsayılan (sistem ikonları)"
-                        else iconPacks.firstOrNull { it.packageName == selectedPack }?.label ?: selectedPack,
+                        if (selectedPack.isEmpty()) {
+                            "Varsayılan (sistem ikonları)"
+                        } else {
+                            iconPacks.firstOrNull { it.packageName == selectedPack }?.label ?: selectedPack
+                        },
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Icon(Icons.Default.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -534,7 +590,7 @@ fun SettingsAppearanceSection(
                             AppPrefs.setIconPack(context, "")
                             IconPackManager.clearCache()
                             showPackMenu = false
-                        }
+                        },
                     )
                     iconPacks.forEach { pack ->
                         DropdownMenuItem(
@@ -544,7 +600,7 @@ fun SettingsAppearanceSection(
                                 AppPrefs.setIconPack(context, pack.packageName)
                                 IconPackManager.clearCache()
                                 showPackMenu = false
-                            }
+                            },
                         )
                     }
                 }
@@ -566,7 +622,7 @@ fun SettingsAppearanceSection(
             onCheckedChange = {
                 folderGlassBorderEnabled = it
                 AppPrefs.setFolderGlassBorderEnabled(context, it)
-            }
+            },
         )
     }
 
@@ -583,7 +639,7 @@ fun SettingsAppearanceSection(
             onCheckedChange = {
                 pixelLookEnabled = it
                 AppPrefs.setPixelLookEnabled(context, it)
-            }
+            },
         )
     }
 
@@ -600,7 +656,7 @@ fun SettingsAppearanceSection(
             onCheckedChange = {
                 widgetFreeGridEnabled = it
                 AppPrefs.setWidgetFreeGridEnabled(context, it)
-            }
+            },
         )
     }
 }

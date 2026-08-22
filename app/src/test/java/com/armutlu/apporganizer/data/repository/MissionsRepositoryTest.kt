@@ -98,7 +98,12 @@ class MissionsRepositoryTest {
         missionInstanceDao = dao,
     )
 
-    private fun mission(id: String) = MissionEngine.Mission(id, MissionEngine.MissionType.DAILY, MissionEngine.DAILY_STAR, autoCheckable = true)
+    private fun mission(id: String) = MissionEngine.Mission(
+        id,
+        MissionEngine.MissionType.DAILY,
+        MissionEngine.DAILY_STAR,
+        autoCheckable = true,
+    )
 
     private val boundary = PeriodBoundary(startInclusive = 0L, endExclusive = 86_400_000L, epochDay = 20_650L, weekStartEpochDay = null)
 

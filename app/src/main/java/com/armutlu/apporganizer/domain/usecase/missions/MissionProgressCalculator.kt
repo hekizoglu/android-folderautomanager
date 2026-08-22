@@ -60,8 +60,11 @@ object MissionProgressCalculator {
         val fraction = fractionOf(current, target)
 
         val progressText = if (exceeded != null && exceeded > 0L) {
-            if (countBased) MissionValueFormatter.exceededCountSpec(exceeded)
-            else MissionValueFormatter.exceededDurationSpec(exceeded)
+            if (countBased) {
+                MissionValueFormatter.exceededCountSpec(exceeded)
+            } else {
+                MissionValueFormatter.exceededDurationSpec(exceeded)
+            }
         } else {
             MissionValueFormatter.percentUsedSpec(fraction)
         }
@@ -72,8 +75,11 @@ object MissionProgressCalculator {
             remainingValue = if (reachedOrExceeded) null else remaining,
             progressFraction = fraction,
             exceededValue = exceeded,
-            currentTextRes = if (countBased) MissionValueFormatter.currentCountSpec(current, target)
-            else MissionValueFormatter.currentDurationSpec(current),
+            currentTextRes = if (countBased) {
+                MissionValueFormatter.currentCountSpec(current, target)
+            } else {
+                MissionValueFormatter.currentDurationSpec(current)
+            },
             remainingTextRes = when {
                 reachedOrExceeded -> null
                 countBased -> MissionValueFormatter.remainingCountSpec(remaining)

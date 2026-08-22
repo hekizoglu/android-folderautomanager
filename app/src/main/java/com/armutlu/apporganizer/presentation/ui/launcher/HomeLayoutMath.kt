@@ -13,10 +13,13 @@ object HomeLayoutMath {
     const val MIN_VISIBLE_FOLDERS = 4
     const val ROW_SPACING_DP = 16
     const val GRID_VERTICAL_PADDING_DP = 8
+
     /** Klasör etiketi + sayı satırı yaklaşık yüksekliği (FolderTile içi metinler). */
     const val LABEL_HEIGHT_DP = 36
+
     /** HomePageIndicator + SwipeHint için ayrılan pay. */
     const val INDICATOR_RESERVE_DP = 36
+
     /** Klasör sayfasının altındaki iki/üç satırlı bilgi paneli için ayrılan pay. */
     const val INFO_PANEL_RESERVE_DP = 112
 
@@ -29,7 +32,7 @@ object HomeLayoutMath {
         availableHeightDp: Int,
         folderSizeDp: Int,
         columns: Int,
-        infoPanelVisible: Boolean = true
+        infoPanelVisible: Boolean = true,
     ): Int {
         val rowHeight = folderSizeDp + LABEL_HEIGHT_DP
         val infoReserve = if (infoPanelVisible) INFO_PANEL_RESERVE_DP else 0

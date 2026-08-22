@@ -21,7 +21,7 @@ enum class AppTheme(
     val primary: Color,
     val secondary: Color,
     val background: Color,
-    val surface: Color
+    val surface: Color,
 ) {
     /** Material You — duvar kağıdından türetilen dinamik renkler (Android 12+). Renkler fallback (API <31 = TEAL görünümü). */
     DYNAMIC(
@@ -30,7 +30,7 @@ enum class AppTheme(
         primary = Color(0xFF00897B),
         secondary = Color(0xFF26C6DA),
         background = Color(0xFF1A1A2E),
-        surface = Color(0xFF16213E)
+        surface = Color(0xFF16213E),
     ),
     TEAL(
         label = "Turkuaz",
@@ -38,7 +38,7 @@ enum class AppTheme(
         primary = Color(0xFF00897B),
         secondary = Color(0xFF26C6DA),
         background = Color(0xFF1A1A2E),
-        surface = Color(0xFF16213E)
+        surface = Color(0xFF16213E),
     ),
     PURPLE(
         label = "Mor",
@@ -46,7 +46,7 @@ enum class AppTheme(
         primary = Color(0xFF7B1FA2),
         secondary = Color(0xFFCE93D8),
         background = Color(0xFF1A1025),
-        surface = Color(0xFF231535)
+        surface = Color(0xFF231535),
     ),
     OCEAN(
         label = "Okyanus",
@@ -54,7 +54,7 @@ enum class AppTheme(
         primary = Color(0xFF1565C0),
         secondary = Color(0xFF42A5F5),
         background = Color(0xFF0A1628),
-        surface = Color(0xFF0D2137)
+        surface = Color(0xFF0D2137),
     ),
     SUNSET(
         label = "Gün Batımı",
@@ -62,7 +62,7 @@ enum class AppTheme(
         primary = Color(0xFFE64A19),
         secondary = Color(0xFFFFB74D),
         background = Color(0xFF1C1008),
-        surface = Color(0xFF2A1800)
+        surface = Color(0xFF2A1800),
     ),
     MONO(
         label = "Mono",
@@ -70,7 +70,7 @@ enum class AppTheme(
         primary = Color(0xFF607D8B),
         secondary = Color(0xFF90A4AE),
         background = Color(0xFF121212),
-        surface = Color(0xFF1E1E1E)
+        surface = Color(0xFF1E1E1E),
     ),
     IOS(
         label = "iOS",
@@ -78,7 +78,7 @@ enum class AppTheme(
         primary = Color(0xFF007AFF),
         secondary = Color(0xFF5AC8FA),
         background = Color(0xFF1C1C1E),
-        surface = Color(0xFF2C2C2E)
+        surface = Color(0xFF2C2C2E),
     ),
     AMOLED(
         label = "AMOLED",
@@ -86,8 +86,9 @@ enum class AppTheme(
         primary = Color(0xFF00E5FF),
         secondary = Color(0xFF69FF47),
         background = Color(0xFF000000),
-        surface = Color(0xFF0A0A0A)
-    );
+        surface = Color(0xFF0A0A0A),
+    ),
+    ;
 
     val previewBrush: Brush get() = Brush.linearGradient(listOf(primary, secondary))
 
@@ -105,7 +106,8 @@ enum class AppFont(val label: String, val labelRes: Int) {
     DEFAULT("Sistem", R.string.font_default),
     ROUNDED("Yuvarlatılmış", R.string.font_rounded),
     MONO("Mono", R.string.font_mono),
-    SERIF("Serif", R.string.font_serif);
+    SERIF("Serif", R.string.font_serif),
+    ;
 
     companion object {
         fun fromName(name: String): AppFont =
@@ -115,10 +117,10 @@ enum class AppFont(val label: String, val labelRes: Int) {
 
 @Singleton
 class ThemePreferences @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) {
     private val THEME_KEY = stringPreferencesKey("app_theme")
-    private val FONT_KEY  = stringPreferencesKey("app_font")
+    private val FONT_KEY = stringPreferencesKey("app_font")
 
     val themeFlow: Flow<AppTheme> = context.themeDataStore.data
         .map { prefs -> AppTheme.fromName(prefs[THEME_KEY] ?: AppTheme.default().name) }

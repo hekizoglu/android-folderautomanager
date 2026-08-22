@@ -85,7 +85,7 @@ object SearchHistoryPrefs {
                     put("sourceType", item.sourceType)
                     put("sourceId", item.sourceId)
                     put("atMillis", item.atMillis)
-                }
+                },
             )
         }
         return arr.toString()
@@ -109,7 +109,7 @@ object SearchHistoryPrefs {
                             sourceType = sourceType,
                             sourceId = sourceId,
                             atMillis = obj.optLong("atMillis", 0L),
-                        )
+                        ),
                     )
                 }
             }

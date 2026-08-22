@@ -2,26 +2,26 @@ package com.armutlu.apporganizer.presentation.ui.launcher.hero
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.longClick
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
-import com.armutlu.apporganizer.domain.home.smartaccess.NotificationAccessItem
-import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
 import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.home.HomeMissionSummary
 import com.armutlu.apporganizer.domain.home.HomePulseSummary
 import com.armutlu.apporganizer.domain.home.PulseStatusBand
+import com.armutlu.apporganizer.domain.home.smartaccess.NotificationAccessItem
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessTab
+import com.armutlu.apporganizer.domain.home.smartaccess.SmartAccessUiState
+import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.usecase.missions.MissionStatus
 import com.armutlu.apporganizer.domain.usecase.pulse.DataConfidence
-import com.armutlu.apporganizer.domain.models.AppInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -63,8 +63,14 @@ class HeroDashboardInteractionTest {
         var notificationClicks = 0
         compose.setContent {
             HeroDailyControlCenterCard(
-                pulse = HomePulseSummary(78, PulseStatusBand.GOOD, 2, null, confidence = DataConfidence.HIGH,
-                    freshness = DataFreshness.LIVE),
+                pulse = HomePulseSummary(
+                    78,
+                    PulseStatusBand.GOOD,
+                    2,
+                    null,
+                    confidence = DataConfidence.HIGH,
+                    freshness = DataFreshness.LIVE,
+                ),
                 missionSummary = HomeMissionSummary(1, 3, null, null, "Keep going", null, MissionStatus.IN_PROGRESS, false),
                 notificationCount24h = 5,
                 notificationAccessGranted = true,

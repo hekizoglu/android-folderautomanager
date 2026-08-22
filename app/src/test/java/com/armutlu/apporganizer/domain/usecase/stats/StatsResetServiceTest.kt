@@ -43,14 +43,16 @@ class StatsResetServiceTest {
         mockRepository = mockk(relaxed = true)
         coEvery { mockRepository.getAllApps() } returns listOf(
             AppInfo(packageName = "com.example.a", appName = "A"),
-            AppInfo(packageName = "com.example.b", appName = "B")
+            AppInfo(packageName = "com.example.b", appName = "B"),
         )
     }
 
     @Test
     fun `sadece USAGE_COUNTERS secilirse sadece resetAllUsageCounters cagrilir`() = runTest {
         val results = StatsResetService.reset(
-            mockContext, mockRepository, setOf(StatsResetService.Scope.USAGE_COUNTERS)
+            mockContext,
+            mockRepository,
+            setOf(StatsResetService.Scope.USAGE_COUNTERS),
         )
 
         coVerify(exactly = 1) { mockRepository.resetAllUsageCounters() }
@@ -64,7 +66,9 @@ class StatsResetServiceTest {
     @Test
     fun `sadece LAST_USED_TIMESTAMPS secilirse sadece resetAllLastUsedTimestamps cagrilir`() = runTest {
         StatsResetService.reset(
-            mockContext, mockRepository, setOf(StatsResetService.Scope.LAST_USED_TIMESTAMPS)
+            mockContext,
+            mockRepository,
+            setOf(StatsResetService.Scope.LAST_USED_TIMESTAMPS),
         )
 
         coVerify(exactly = 1) { mockRepository.resetAllLastUsedTimestamps() }
@@ -74,14 +78,16 @@ class StatsResetServiceTest {
     @Test
     fun `NOTIFICATION_HISTORY secilirse events, texts ve counts sifirlanir`() = runTest {
         StatsResetService.reset(
-            mockContext, mockRepository, setOf(StatsResetService.Scope.NOTIFICATION_HISTORY)
+            mockContext,
+            mockRepository,
+            setOf(StatsResetService.Scope.NOTIFICATION_HISTORY),
         )
 
         coVerify(exactly = 1) { mockRepository.clearAllNotificationEvents() }
         coVerify(exactly = 1) { mockRepository.clearAllNotificationTexts() }
         coVerify(exactly = 1) {
             mockRepository.updateNotificationCounts(
-                mapOf("com.example.a" to 0, "com.example.b" to 0)
+                mapOf("com.example.a" to 0, "com.example.b" to 0),
             )
         }
     }
@@ -89,7 +95,9 @@ class StatsResetServiceTest {
     @Test
     fun `WRAPPED_SNAPSHOTS secilirse wrapped_prefs temizlenir`() = runTest {
         StatsResetService.reset(
-            mockContext, mockRepository, setOf(StatsResetService.Scope.WRAPPED_SNAPSHOTS)
+            mockContext,
+            mockRepository,
+            setOf(StatsResetService.Scope.WRAPPED_SNAPSHOTS),
         )
 
         coVerify(exactly = 0) { mockRepository.resetAllUsageCounters() }
@@ -100,7 +108,9 @@ class StatsResetServiceTest {
     @Test
     fun `MISSION_PROGRESS secilirse mission_prefs temizlenir`() = runTest {
         StatsResetService.reset(
-            mockContext, mockRepository, setOf(StatsResetService.Scope.MISSION_PROGRESS)
+            mockContext,
+            mockRepository,
+            setOf(StatsResetService.Scope.MISSION_PROGRESS),
         )
 
         io.mockk.verify { mockContext.getSharedPreferences("mission_prefs", Context.MODE_PRIVATE) }
@@ -112,7 +122,7 @@ class StatsResetServiceTest {
         val scopes = setOf(
             StatsResetService.Scope.USAGE_COUNTERS,
             StatsResetService.Scope.LAST_USED_TIMESTAMPS,
-            StatsResetService.Scope.MISSION_PROGRESS
+            StatsResetService.Scope.MISSION_PROGRESS,
         )
 
         val results = StatsResetService.reset(mockContext, mockRepository, scopes)
@@ -140,7 +150,7 @@ class StatsResetServiceTest {
         val results = StatsResetService.reset(
             mockContext,
             mockRepository,
-            setOf(StatsResetService.Scope.USAGE_COUNTERS, StatsResetService.Scope.LAST_USED_TIMESTAMPS)
+            setOf(StatsResetService.Scope.USAGE_COUNTERS, StatsResetService.Scope.LAST_USED_TIMESTAMPS),
         )
 
         coVerify(exactly = 1) { mockRepository.resetAllLastUsedTimestamps() }

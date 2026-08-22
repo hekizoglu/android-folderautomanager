@@ -66,7 +66,7 @@ class MissionWorkScheduler @Inject constructor(
             .setConstraints(
                 androidx.work.Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
-                    .build()
+                    .build(),
             )
             .build()
 

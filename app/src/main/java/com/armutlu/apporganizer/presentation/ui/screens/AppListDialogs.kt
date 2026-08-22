@@ -21,7 +21,7 @@ import com.armutlu.apporganizer.domain.models.Category
 internal fun BulkCategoryPicker(
     categories: List<Category>,
     onCategorySelected: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -33,9 +33,13 @@ internal fun BulkCategoryPicker(
                         shape = RoundedCornerShape(8.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.fillMaxWidth()
-                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId) })
+                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId) }),
                     ) {
-                        Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Text(cat.iconEmoji, fontSize = 20.sp)
                             Text(cat.categoryName, fontSize = 14.sp)
                         }
@@ -44,10 +48,9 @@ internal fun BulkCategoryPicker(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("İptal") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text("İptal") } },
     )
 }
-
 
 sealed class OrganizeState {
     object Idle : OrganizeState()

@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.utils
 
 import android.content.Context
 import android.database.ContentObserver
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
@@ -36,14 +35,17 @@ object SearchCache {
         val photoUri: String?,
         // precomputed
         val normalized: String = asciiFold(displayName.lowercase()),
-        val trigrams: Set<String> = trigramSet(asciiFold(displayName.lowercase()))
+        val trigrams: Set<String> = trigramSet(asciiFold(displayName.lowercase())),
     )
 
     // ── App cache ─────────────────────────────────────────────────────────────
 
     @Volatile private var appList: List<AppInfo> = emptyList()
-    @Volatile private var appNormMap: Map<String, AppInfo> = emptyMap()        // normalized name → app
+
+    @Volatile private var appNormMap: Map<String, AppInfo> = emptyMap() // normalized name → app
+
     @Volatile private var appPrefixIndex: Map<String, List<AppInfo>> = emptyMap()
+
     @Volatile private var appTrigramIndex: Map<String, List<AppInfo>> = emptyMap()
 
     fun warmApps(apps: List<AppInfo>) {
@@ -75,7 +77,9 @@ object SearchCache {
     // ── Contact cache ─────────────────────────────────────────────────────────
 
     @Volatile private var contactList: List<ContactEntry> = emptyList()
+
     @Volatile private var contactPrefixIndex: Map<String, List<ContactEntry>> = emptyMap()
+
     @Volatile private var contactTrigramIndex: Map<String, List<ContactEntry>> = emptyMap()
 
     private var contactObserver: ContentObserver? = null
@@ -97,7 +101,9 @@ object SearchCache {
             }
         }
         context.contentResolver.registerContentObserver(
-            ContactsContract.Contacts.CONTENT_URI, true, obs
+            ContactsContract.Contacts.CONTENT_URI,
+            true,
+            obs,
         )
         contactObserver = obs
     }
@@ -114,12 +120,14 @@ object SearchCache {
                 ContactsContract.Contacts._ID,
                 ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
                 ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
-                ContactsContract.Contacts.HAS_PHONE_NUMBER
+                ContactsContract.Contacts.HAS_PHONE_NUMBER,
             )
             context.contentResolver.query(
                 ContactsContract.Contacts.CONTENT_URI,
-                projection, null, null,
-                "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} ASC"
+                projection,
+                null,
+                null,
+                "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} ASC",
             )?.use { cur ->
                 while (cur.moveToNext()) {
                     val id = cur.getLong(cur.getColumnIndexOrThrow(ContactsContract.Contacts._ID))
@@ -132,9 +140,11 @@ object SearchCache {
                             ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                             arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
                             "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?",
-                            arrayOf(id.toString()), null
+                            arrayOf(id.toString()), null,
                         )?.use { p -> if (p.moveToFirst()) p.getString(0) else "" } ?: ""
-                    } else ""
+                    } else {
+                        ""
+                    }
 
                     result += ContactEntry(id = id, displayName = name, phone = phone, photoUri = photoUri)
                 }
@@ -170,7 +180,7 @@ object SearchCache {
         maxResults: Int = 10000,
         phonetic: Boolean = true,
         fuzzy: Boolean = true,
-        sortByUsage: Boolean = true
+        sortByUsage: Boolean = true,
     ): List<AppInfo> {
         if (appList.isEmpty()) return emptyList()
         val q = if (phonetic) asciiFold(query.trim().lowercase()) else query.trim().lowercase()
@@ -220,10 +230,11 @@ object SearchCache {
 
         return results.values
             .sortedWith(
-                if (sortByUsage)
+                if (sortByUsage) {
                     compareByDescending<Scored> { it.score }.thenByDescending { it.app.usageCount }
-                else
+                } else {
                     compareByDescending { it.score }
+                },
             )
             .take(maxResults)
             .map { it.app }
@@ -236,7 +247,7 @@ object SearchCache {
         query: String,
         maxResults: Int = 10000,
         phonetic: Boolean = true,
-        fuzzy: Boolean = true
+        fuzzy: Boolean = true,
     ): List<ContactEntry> {
         if (contactList.isEmpty()) return emptyList()
         val q = if (phonetic) asciiFold(query.trim().lowercase()) else query.trim().lowercase()
@@ -284,16 +295,18 @@ object SearchCache {
     // ── Yardımcı fonksiyonlar ─────────────────────────────────────────────────
 
     fun asciiFold(s: String): String = buildString(s.length) {
-        for (ch in s) append(when (ch) {
-            'ş', 'Ş' -> 's'
-            'ü', 'Ü' -> 'u'
-            'ö', 'Ö' -> 'o'
-            'ç', 'Ç' -> 'c'
-            'ğ', 'Ğ' -> 'g'
-            'ı'      -> 'i'
-            'İ'      -> 'i'
-            else      -> ch.lowercaseChar()
-        })
+        for (ch in s) append(
+            when (ch) {
+                'ş', 'Ş' -> 's'
+                'ü', 'Ü' -> 'u'
+                'ö', 'Ö' -> 'o'
+                'ç', 'Ç' -> 'c'
+                'ğ', 'Ğ' -> 'g'
+                'ı' -> 'i'
+                'İ' -> 'i'
+                else -> ch.lowercaseChar()
+            },
+        )
     }
 
     private fun trigramSet(s: String): Set<String> {

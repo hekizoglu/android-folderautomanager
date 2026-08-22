@@ -29,7 +29,7 @@ class ReportsCenterScreenLogicTest {
                 "wrapped_report",
                 "privacy_report",
             ),
-            entries.map { it.route }
+            entries.map { it.route },
         )
     }
 

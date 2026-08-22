@@ -112,7 +112,9 @@ object DigitalPulseEngine {
         }
         val nightRatio = if (notif.totalNotifications > 0) {
             notif.nightCount.toFloat() / notif.totalNotifications
-        } else 0f
+        } else {
+            0f
+        }
         if (nightRatio > 0.3f) {
             score -= 10
             reasons += PulseScoreReason(

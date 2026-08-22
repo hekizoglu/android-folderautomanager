@@ -70,7 +70,7 @@ fun ClassificationReviewScreen(
                             onClick = { viewModel.approveAllPendingClassifications() },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
                         ) {
                             Text(
                                 text = stringResource(R.string.classification_review_approve_all),
@@ -160,7 +160,7 @@ fun ClassificationReviewScreen(
                                                 R.string.classification_suggestion_signal_keyword
                                             CategorySuggestionEngine.SignalType.SIMILAR_PACKAGE ->
                                                 R.string.classification_suggestion_signal_similar_package
-                                        }
+                                        },
                                     )
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),

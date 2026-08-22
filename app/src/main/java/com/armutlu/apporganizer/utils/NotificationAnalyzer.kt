@@ -144,7 +144,7 @@ object NotificationAnalyzer {
             .filter { it.promotionCount > 0 }
             .sortedWith(
                 compareByDescending<AppNotifStats> { it.promotionCount }
-                    .thenByDescending { it.total }
+                    .thenByDescending { it.total },
             )
             .take(10)
 

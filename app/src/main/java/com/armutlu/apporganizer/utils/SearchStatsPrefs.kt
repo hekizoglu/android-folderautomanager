@@ -35,7 +35,7 @@ object SearchStatsPrefs {
         val clickCountsByType: Map<String, Int>,
         val totalClicks: Int,
         val firstResultClicks: Int,
-        val actionCounts: Map<String, Int>
+        val actionCounts: Map<String, Int>,
     )
 
     private fun prefs(context: Context) =
@@ -70,7 +70,7 @@ object SearchStatsPrefs {
             clickCountsByType = clickCountsByType,
             totalClicks = p.getInt(KEY_TOTAL_CLICKS, 0),
             firstResultClicks = p.getInt(KEY_FIRST_RESULT_CLICKS, 0),
-            actionCounts = actionCounts
+            actionCounts = actionCounts,
         )
     }
 
@@ -144,10 +144,16 @@ object SearchStatsPrefs {
 internal object SearchDiagnosticsFormatter {
 
     fun counterLine(summary: SearchStatsPrefs.Summary): String =
-        "total=${summary.totalSearches}, zero=${summary.zeroResultCount}, zeroRate=${percent(summary.zeroResultCount, summary.totalSearches)}, avgLatencyMs=${summary.avgLatencyMs}"
+        "total=${summary.totalSearches}, zero=${summary.zeroResultCount}, zeroRate=${percent(
+            summary.zeroResultCount,
+            summary.totalSearches,
+        )}, avgLatencyMs=${summary.avgLatencyMs}"
 
     fun interactionLine(summary: SearchStatsPrefs.Summary): String =
-        "totalClicks=${summary.totalClicks}, clickThroughRate=${percent(summary.totalClicks, summary.totalSearches)}, firstResultClicks=${summary.firstResultClicks}, firstResultRate=${percent(summary.firstResultClicks, summary.totalClicks)}"
+        "totalClicks=${summary.totalClicks}, clickThroughRate=${percent(
+            summary.totalClicks,
+            summary.totalSearches,
+        )}, firstResultClicks=${summary.firstResultClicks}, firstResultRate=${percent(summary.firstResultClicks, summary.totalClicks)}"
 
     fun sourceLine(summary: SearchStatsPrefs.Summary): String =
         sortedCounts(summary.clickCountsByType)

@@ -38,14 +38,14 @@ object NewAppNotifier {
         packageName: String,
         appName: String,
         categoryId: String,
-        categoryName: String
+        categoryName: String,
     ) {
         // Android 13+ (TIRAMISU) POST_NOTIFICATIONS runtime izni yoksa sessizce çık —
         // izinsiz notify() çağrısı sistemce yok sayılır, log kirliliği yaratmayalım.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted = ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.POST_NOTIFICATIONS
+                Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
             if (!granted) {
                 Timber.d("NewAppNotifier: POST_NOTIFICATIONS izni yok, bildirim atlandı ($packageName)")
@@ -60,14 +60,14 @@ object NewAppNotifier {
         val contentPending = openCategoryPendingIntent(
             context = context,
             categoryId = categoryId,
-            requestCode = ("open_" + packageName).hashCode()
+            requestCode = ("open_" + packageName).hashCode(),
         )
 
         // "Kategoriyi Değiştir" aksiyonu → aynı kategoriye götür; kullanıcı oradan düzeltir
         val changePending = openCategoryPendingIntent(
             context = context,
             categoryId = categoryId,
-            requestCode = ("change_" + packageName).hashCode()
+            requestCode = ("change_" + packageName).hashCode(),
         )
 
         val text = "$appName → $categoryName kategorisine eklendi"
@@ -91,7 +91,7 @@ object NewAppNotifier {
     private fun openCategoryPendingIntent(
         context: Context,
         categoryId: String,
-        requestCode: Int
+        requestCode: Int,
     ): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -102,7 +102,7 @@ object NewAppNotifier {
             context,
             requestCode,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
 
@@ -111,7 +111,7 @@ object NewAppNotifier {
         val channel = NotificationChannel(
             CHANNEL_ID,
             CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_DEFAULT,
         ).apply {
             description = CHANNEL_DESC
         }

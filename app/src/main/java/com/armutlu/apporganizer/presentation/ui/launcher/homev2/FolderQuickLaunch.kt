@@ -17,6 +17,6 @@ object FolderQuickLaunchResolver {
             .maxWithOrNull(
                 compareBy<AppInfo> { it.launchCount }
                     .thenBy { it.lastUsedTimestamp }
-                    .thenBy { it.appName }
+                    .thenBy { it.appName },
             )
 }

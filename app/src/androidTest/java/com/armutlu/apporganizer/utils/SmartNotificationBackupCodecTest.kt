@@ -76,8 +76,8 @@ class SmartNotificationBackupCodecTest {
                         NotificationCategory.PROMOTION.name,
                         NotificationCategory.FINANCE.name,
                         NotificationCategory.PROMOTION.name,
-                    )
-                )
+                    ),
+                ),
             )
             put("badgeMode", "UNKNOWN_MODE")
         }

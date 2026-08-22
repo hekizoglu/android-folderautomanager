@@ -50,25 +50,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.home.safeRecentNotificationTotal
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunchContract
 import com.armutlu.apporganizer.presentation.navigation.Routes
+import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.presentation.ui.launcher.AllAppsDrawer
 import com.armutlu.apporganizer.presentation.ui.launcher.AppContextMenu
 import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
 import com.armutlu.apporganizer.presentation.ui.launcher.CategoryPickerSheet
-import com.armutlu.apporganizer.presentation.ui.launcher.DockEditSheet
-import com.armutlu.apporganizer.presentation.ui.launcher.EditingCenterCard
-import com.armutlu.apporganizer.presentation.ui.launcher.HomeLongPressSheet
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardActions
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardUiState
+import com.armutlu.apporganizer.presentation.ui.launcher.DockEditSheet
+import com.armutlu.apporganizer.presentation.ui.launcher.EditingCenterCard
 import com.armutlu.apporganizer.presentation.ui.launcher.FolderScreen
+import com.armutlu.apporganizer.presentation.ui.launcher.HomeLongPressSheet
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeShell
-import com.armutlu.apporganizer.presentation.ui.launcher.homeRootBackground
 import com.armutlu.apporganizer.presentation.ui.launcher.LauncherViewModel
 import com.armutlu.apporganizer.presentation.ui.launcher.SmartDashboardPage
 import com.armutlu.apporganizer.presentation.ui.launcher.WidgetPage
 import com.armutlu.apporganizer.presentation.ui.launcher.dashboardContentOrder
+import com.armutlu.apporganizer.presentation.ui.launcher.homeRootBackground
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.HomeLayoutPrefs
 import timber.log.Timber
@@ -143,7 +143,10 @@ fun HomeV2Screen(
     val contextualDockEnabled = remember { AppPrefs.isContextualDockEnabled(context) }
     val dockSmartSlots = remember { AppPrefs.getDockSmartSlots(context) }
     val finalDockPackages = remember(
-        dockPackages, suggestedApps, contextualDockEnabled, dockSmartSlots,
+        dockPackages,
+        suggestedApps,
+        contextualDockEnabled,
+        dockSmartSlots,
     ) {
         com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPackages(
             fixed = dockPackages,
@@ -163,7 +166,8 @@ fun HomeV2Screen(
     }
     DisposableEffect(context) {
         val layoutPrefs = context.getSharedPreferences(
-            HomeLayoutPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+            HomeLayoutPrefs.PREFS_NAME,
+            android.content.Context.MODE_PRIVATE,
         )
         val layoutListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key in setOf(
@@ -189,7 +193,8 @@ fun HomeV2Screen(
     var textAlpha by remember { mutableStateOf(AppPrefs.getTextAlpha(context)) }
     DisposableEffect(context) {
         val appearancePrefs = context.getSharedPreferences(
-            AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+            AppPrefs.PREFS_NAME,
+            android.content.Context.MODE_PRIVATE,
         )
         val appearanceListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             when (key) {
@@ -299,7 +304,7 @@ fun HomeV2Screen(
                                     context.startActivity(
                                         Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                                             putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                                        }
+                                        },
                                     )
                                 }.onFailure { Timber.w(it, "Notification settings açılamadı") }
                             }
@@ -500,7 +505,7 @@ fun HomeV2Screen(
                             context.startActivity(
                                 Intent.createChooser(wallpaperIntent, "Duvar Kagidi Sec").apply {
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
+                                },
                             )
                         }
                     },
@@ -541,9 +546,12 @@ private fun PageDotsV2(pageCount: Int, currentPage: Int) {
                     .size(if (selected) 7.dp else 5.dp)
                     .clip(CircleShape)
                     .background(
-                        if (selected) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
-                    )
+                        if (selected) {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+                        },
+                    ),
             )
         }
     }

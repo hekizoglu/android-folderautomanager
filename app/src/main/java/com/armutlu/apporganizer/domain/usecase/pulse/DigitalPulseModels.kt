@@ -75,13 +75,13 @@ data class PulseInput(
 
 /** İçgörü türleri — UI her tür için string resource eşler. */
 enum class PulseInsightType {
-    NOTIF_ISSUE,      // rahatsız eden bildirim sorunu (en yüksek öncelik)
-    NOTIF_CALM,       // belirgin olumlu gelişme
-    UNUSED_APPS,      // kullanılmayan uygulama önerisi
-    CATEGORY_SHIFT,   // haftalık kategori değişimi
-    UNLOCK_TREND,     // kilit açma trendi
-    ORGANIZED_WELL,   // düzen başarısı
-    GENERAL,          // genel bilgi (rapor hazır)
+    NOTIF_ISSUE, // rahatsız eden bildirim sorunu (en yüksek öncelik)
+    NOTIF_CALM, // belirgin olumlu gelişme
+    UNUSED_APPS, // kullanılmayan uygulama önerisi
+    CATEGORY_SHIFT, // haftalık kategori değişimi
+    UNLOCK_TREND, // kilit açma trendi
+    ORGANIZED_WELL, // düzen başarısı
+    GENERAL, // genel bilgi (rapor hazır)
 }
 
 /**

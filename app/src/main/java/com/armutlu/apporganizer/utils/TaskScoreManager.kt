@@ -1,9 +1,9 @@
 package com.armutlu.apporganizer.utils
 
 import android.content.Context
-import kotlin.math.roundToInt
 import java.time.Instant
 import java.time.ZoneId
+import kotlin.math.roundToInt
 
 /**
  * Durum bazli gorev puani (ROADMAP #15).
@@ -38,6 +38,7 @@ object TaskScoreManager {
             eventKey = "classification_snoozed",
             defaultLabel = "Siniflandirma ertelendi",
         ),
+
         // Tekil kabul - toplu kabul icin recordBulk() + bulkReward() kullanilir.
         FolderSuggestionAccepted(
             delta = 3,
@@ -54,6 +55,7 @@ object TaskScoreManager {
             eventKey = "folder_suggestion_dismissed",
             defaultLabel = "Klasor onerisi gizlendi",
         ),
+
         // Tekil kabul - toplu kabul icin recordBulk() + bulkReward() kullanilir.
         SimilarAppsAccepted(
             delta = 3,
@@ -65,6 +67,7 @@ object TaskScoreManager {
             eventKey = "notification_report_viewed",
             defaultLabel = "Bildirim raporu acildi",
         ),
+
         // Dongu G3a — DAILY_CUSTOMIZE_FOLDER gorevi icin sinyal. Gunde bir kez sayilmasi
         // (insertOnceBetween ile) gorev tarafinda degil, TaskScoreManager.record cagrisinda
         // NotificationReportViewed ile ayni "gunde bir" desenini izler.
@@ -73,6 +76,7 @@ object TaskScoreManager {
             eventKey = "folder_customized",
             defaultLabel = "Klasor ozellestirildi (emoji/renk)",
         ),
+
         // Dongu G3a — DISCOVER_WEEKLY gorevi icin sinyal (haftalik rapor acildi).
         WrappedReportViewed(
             delta = 1,
@@ -140,10 +144,10 @@ object TaskScoreManager {
         val delta = eventType.delta * weight
         val dao = com.armutlu.apporganizer.data.local.AppDatabase.getInstance(context).taskScoreEventDao()
         val entry = com.armutlu.apporganizer.domain.models.TaskScoreEventEntry(
-                eventKey = eventType.eventKey,
-                label = eventType.defaultLabel,
-                delta = delta,
-            )
+            eventKey = eventType.eventKey,
+            label = eventType.defaultLabel,
+            delta = delta,
+        )
         if (eventType == EventType.NotificationReportViewed ||
             eventType == EventType.FolderCustomized ||
             eventType == EventType.WrappedReportViewed

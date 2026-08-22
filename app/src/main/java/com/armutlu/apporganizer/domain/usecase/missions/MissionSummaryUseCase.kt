@@ -10,13 +10,13 @@ import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.utils.MissionStreakPrefs
 import com.armutlu.apporganizer.utils.WeekUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
+import timber.log.Timber
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
-import timber.log.Timber
 
 /**
  * Dongu M07 — [MissionsViewModel.computeAndAward]'daki gorev uretim/degerlendirme mantiginin
@@ -240,7 +240,7 @@ class MissionSummaryUseCase @Inject constructor(
             selection = MissionEngine.MissionSelectionInput(
                 checkInput = input,
                 recentlyCompletedMissionIds = dailyCooldownIds,
-            )
+            ),
         )
         if (awardStars) {
             missionsRepository.pinInstances(
@@ -267,7 +267,13 @@ class MissionSummaryUseCase @Inject constructor(
                 runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
                     .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
             }
-            mission.toOutcome(status, evaluation, dayBoundary, justCompleted = justCompleted, appLimitTargetPackageName = appLimitTargetPackageName)
+            mission.toOutcome(
+                status,
+                evaluation,
+                dayBoundary,
+                justCompleted = justCompleted,
+                appLimitTargetPackageName = appLimitTargetPackageName,
+            )
         }
 
         val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
@@ -276,7 +282,7 @@ class MissionSummaryUseCase @Inject constructor(
             selection = MissionEngine.MissionSelectionInput(
                 checkInput = input,
                 recentlyCompletedMissionIds = weeklyCooldownIds,
-            )
+            ),
         )
         if (awardStars) {
             missionsRepository.pinInstances(
@@ -382,7 +388,8 @@ class MissionSummaryUseCase @Inject constructor(
         MissionEngine.DAILY_VIEW_NOTIF_REPORT -> MissionAction.OpenNotificationReport
         MissionEngine.DAILY_SCREEN_UNDER_3H,
         MissionEngine.DAILY_UNLOCK_UNDER_30,
-        MissionEngine.WEEKLY_SCREEN_LESS -> MissionAction.OpenUsageReport
+        MissionEngine.WEEKLY_SCREEN_LESS,
+        -> MissionAction.OpenUsageReport
         MissionEngine.DAILY_NO_LATE_NIGHT -> MissionAction.OpenDoNotDisturbSettings
         MissionEngine.WEEKLY_POSITIVE_ACTIONS -> MissionAction.None
         // Dongu G3a — DAILY_ORGANIZE_UNCATEGORIZED ayni sinyali (siniflandirma aksiyonu)

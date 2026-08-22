@@ -61,12 +61,12 @@ class AppListViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
 
-        mockApplication  = mockk(relaxed = true)
-        mockRepository   = mockk(relaxed = true)
+        mockApplication = mockk(relaxed = true)
+        mockRepository = mockk(relaxed = true)
         mockSearchRepository = mockk(relaxed = true)
-        mockClassifier   = mockk(relaxed = true)
-        mockLlmFallback  = mockk(relaxed = true)
-        mockDbService    = mockk(relaxed = true)
+        mockClassifier = mockk(relaxed = true)
+        mockLlmFallback = mockk(relaxed = true)
+        mockDbService = mockk(relaxed = true)
 
         // Repository returns our controllable flow
         every { mockRepository.getAllAppsFlow() } returns appsFlow
@@ -77,12 +77,12 @@ class AppListViewModelTest {
         coEvery { mockDbService.fetchAndCache() } returns FetchResult.FromCache(0, 1)
 
         viewModel = AppListViewModel(
-            application        = mockApplication,
-            repository         = mockRepository,
-            searchRepository   = mockSearchRepository,
-            classifier         = mockClassifier,
-            llmFallback        = mockLlmFallback,
-            appDatabaseService = mockDbService
+            application = mockApplication,
+            repository = mockRepository,
+            searchRepository = mockSearchRepository,
+            classifier = mockClassifier,
+            llmFallback = mockLlmFallback,
+            appDatabaseService = mockDbService,
         )
     }
 
@@ -95,8 +95,8 @@ class AppListViewModelTest {
 
     private fun appInfo(pkg: String, name: String, system: Boolean = false) = AppInfo(
         packageName = pkg,
-        appName     = name,
-        isSystemApp = system
+        appName = name,
+        isSystemApp = system,
     )
 
     // ── 1. setSearchQuery ─────────────────────────────────────────────────────

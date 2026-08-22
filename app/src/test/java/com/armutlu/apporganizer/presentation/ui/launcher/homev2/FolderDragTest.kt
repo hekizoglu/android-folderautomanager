@@ -86,7 +86,7 @@ class FolderDragTest {
                 cellWidthPx = 100f,
                 cellHeightPx = 100f,
                 spacingPx = 10f,
-            )
+            ),
         )
     }
 }

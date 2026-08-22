@@ -87,7 +87,7 @@ internal fun FolderTileV2(
                             shape = RoundedCornerShape(24.dp),
                         )
                         else -> Modifier
-                    }
+                    },
                 )
                 .padding(12.dp),
         ) {
@@ -123,8 +123,11 @@ internal fun FolderTileV2(
                                 .size(20.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (tile.hasUrgentNotification) MaterialTheme.colorScheme.error
-                                    else MaterialTheme.colorScheme.primary
+                                    if (tile.hasUrgentNotification) {
+                                        MaterialTheme.colorScheme.error
+                                    } else {
+                                        MaterialTheme.colorScheme.primary
+                                    },
                                 ),
                             contentAlignment = Alignment.Center,
                         ) {
@@ -147,7 +150,17 @@ internal fun FolderTileV2(
                         AppIconView(
                             app = app,
                             onClick = { if (interactionsEnabled) onAppClick(app.packageName) },
-                            onLongClick = if (interactionsEnabled) onAppLongClick?.let { callback -> { callback(app.packageName) } } else null,
+                            onLongClick = if (interactionsEnabled) {
+                                onAppLongClick?.let { callback ->
+                                    {
+                                        callback(
+                                            app.packageName,
+                                        )
+                                    }
+                                }
+                            } else {
+                                null
+                            },
                             modifier = Modifier.size(38.dp),
                             showLabel = false,
                             iconSize = 38.dp,

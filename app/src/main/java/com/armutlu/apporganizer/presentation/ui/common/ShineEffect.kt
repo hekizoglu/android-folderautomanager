@@ -2,9 +2,9 @@ package com.armutlu.apporganizer.presentation.ui.common
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
@@ -51,11 +51,11 @@ fun Modifier.diamondShine(enabled: Boolean, shape: Shape, trigger: Any = Unit): 
                             Color.Transparent,
                             Color.White.copy(alpha = 0.32f),
                             Color.White.copy(alpha = 0.10f),
-                            Color.Transparent
+                            Color.Transparent,
                         ),
                         start = Offset(x, 0f),
-                        end = Offset(x + band, h)
-                    )
+                        end = Offset(x + band, h),
+                    ),
                 )
             }
         }

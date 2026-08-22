@@ -5,7 +5,7 @@ import android.content.Context
 object InsightPrefs {
     private const val PREFS = "insight_prefs"
     private const val KEY_HISTORY = "insight_history"
-    private const val HISTORY_SIZE = 6  // son 6 kart tekrar etmesin
+    private const val HISTORY_SIZE = 6 // son 6 kart tekrar etmesin
 
     fun getHistory(context: Context): Set<String> {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

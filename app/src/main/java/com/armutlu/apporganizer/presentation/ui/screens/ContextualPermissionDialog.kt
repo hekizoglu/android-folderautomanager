@@ -17,9 +17,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,7 +28,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.armutlu.apporganizer.utils.AppPrefs
 
 // İzin türü tanımı
@@ -38,35 +37,35 @@ enum class ContextualPermission(
     val title: String,
     val reason: String,
     val privacyNote: String,
-    val actionLabel: String = "İzin Ver"
+    val actionLabel: String = "İzin Ver",
 ) {
     USAGE_ACCESS(
         permission = null,
         icon = Icons.Default.Info,
         title = "Kullanım İstatistikleri",
         reason = "Son kullanılan uygulamaları göstermek ve 'Önerilen' listesini kişiselleştirmek için bu izne ihtiyaç var.",
-        privacyNote = "Veriler sadece cihazınızda işlenir, hiçbir yere gönderilmez."
+        privacyNote = "Veriler sadece cihazınızda işlenir, hiçbir yere gönderilmez.",
     ),
     NOTIFICATIONS(
         permission = android.Manifest.permission.POST_NOTIFICATIONS,
         icon = Icons.Default.Info,
         title = "Bildirimler",
         reason = "Uygulama güncellemeleri ve yedekleme hatırlatıcıları için bildirim göndermek istiyoruz.",
-        privacyNote = "Yalnızca önemli sistem bildirimleri gönderilir."
+        privacyNote = "Yalnızca önemli sistem bildirimleri gönderilir.",
     ),
     NOTIFICATION_LISTENER(
         permission = null,
         icon = Icons.Default.Info,
         title = "Bildirim Erişimi",
         reason = "Uygulama simgelerinde bildirim sayısını göstermek için bu izne ihtiyaç var.",
-        privacyNote = "Bildirim içerikleri okunmaz, sadece sayılar takip edilir."
+        privacyNote = "Bildirim içerikleri okunmaz, sadece sayılar takip edilir.",
     ),
     CONTACTS(
         permission = android.Manifest.permission.READ_CONTACTS,
         icon = Icons.Default.Info,
         title = "Kişi Erişimi",
         reason = "Aramada kişi kartlarını gösterebilmemiz için rehberinizi okumamız gerekiyor.",
-        privacyNote = "Kişi verileri sadece cihaz içinde indekslenir, sunucuya gönderilmez."
+        privacyNote = "Kişi verileri sadece cihaz içinde indekslenir, sunucuya gönderilmez.",
     ),
     FILES(
         permission = null,
@@ -74,15 +73,15 @@ enum class ContextualPermission(
         title = "Dosya Adları",
         reason = "Dosya aramasını açınca cihazınızdaki medya ve indirme adlarını yerel arama indeksine ekleriz.",
         privacyNote = "Yalnızca ad ve klasör yolu okunur; dosya içeriği açılmaz veya dışarı aktarılmaz.",
-        actionLabel = "İndekslemeyi Aç"
-    )
+        actionLabel = "İndekslemeyi Aç",
+    ),
 }
 
 @Composable
 fun ContextualPermissionDialog(
     permission: ContextualPermission,
     onGranted: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
     val permissionPrefs = remember {
@@ -90,16 +89,18 @@ fun ContextualPermissionDialog(
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
+        ActivityResultContracts.RequestPermission(),
     ) { granted ->
         // Callback'ten donen boolean bazi OEM'lerde/multi-window'da guvenilmez olabilir —
         // sistemden checkSelfPermission ile yeniden dogrula (madde 1 fix, buton takili kalma).
-        val actuallyGranted = granted || (permission.permission != null &&
-            ContextCompat.checkSelfPermission(context, permission.permission) == PermissionChecker.PERMISSION_GRANTED)
+        val actuallyGranted = granted || (
+            permission.permission != null &&
+                ContextCompat.checkSelfPermission(context, permission.permission) == PermissionChecker.PERMISSION_GRANTED
+            )
         if (actuallyGranted) onGranted() else onDismiss()
     }
     val multiplePermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
+        ActivityResultContracts.RequestMultiplePermissions(),
     ) { grants ->
         if (grants.values.any { it }) onGranted() else onDismiss()
     }
@@ -126,30 +127,40 @@ fun ContextualPermissionDialog(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(24.dp)
+                .padding(24.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 // İkon + Başlık
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Icon(permission.icon, null,
+                        Icon(
+                            permission.icon,
+                            null,
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(24.dp))
+                            modifier = Modifier.size(24.dp),
+                        )
                     }
                     Column {
-                        Text("İzin Gerekli", fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(0.6f))
-                        Text(permission.title, fontSize = 18.sp, fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            "İzin Gerekli",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
+                        )
+                        Text(
+                            permission.title,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 }
 
@@ -159,7 +170,7 @@ fun ContextualPermissionDialog(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(12.dp)
+                        .padding(12.dp),
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Box(
@@ -167,21 +178,29 @@ fun ContextualPermissionDialog(
                                 .width(3.dp)
                                 .height(48.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(MaterialTheme.colorScheme.primary)
+                                .background(MaterialTheme.colorScheme.primary),
                         )
-                        Text(permission.reason, fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+                        Text(
+                            permission.reason,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 20.sp,
+                        )
                     }
                 }
 
                 // Gizlilik notu
-                Text("🔒 ${permission.privacyNote}", fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(0.55f), lineHeight = 18.sp)
+                Text(
+                    "🔒 ${permission.privacyNote}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(0.55f),
+                    lineHeight = 18.sp,
+                )
 
                 // Butonlar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text("Daha Sonra", color = MaterialTheme.colorScheme.onSurface.copy(0.6f))
@@ -189,16 +208,21 @@ fun ContextualPermissionDialog(
                     Button(onClick = {
                         when (permission) {
                             ContextualPermission.USAGE_ACCESS -> {
-                                context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                context.startActivity(
+                                    Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                                )
                                 onDismiss()
                             }
                             ContextualPermission.NOTIFICATIONS -> {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     val alreadyGranted = ContextCompat.checkSelfPermission(
-                                        context, android.Manifest.permission.POST_NOTIFICATIONS
+                                        context, android.Manifest.permission.POST_NOTIFICATIONS,
                                     ) == PermissionChecker.PERMISSION_GRANTED
-                                    if (alreadyGranted) { onGranted(); return@Button }
+                                    if (alreadyGranted) {
+                                        onGranted()
+                                        return@Button
+                                    }
                                     val askedBefore = permissionPrefs.getBoolean("asked_post_notifications", false)
                                     val shouldShow = (context as? Activity)
                                         ?.shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS) != false
@@ -206,16 +230,20 @@ fun ContextualPermissionDialog(
                                         permissionPrefs.edit().putBoolean("asked_post_notifications", true).apply()
                                         permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                                     } else {
-                                        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                            .setData(Uri.parse("package:${context.packageName}"))
-                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                        context.startActivity(
+                                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                                .setData(Uri.parse("package:${context.packageName}"))
+                                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                                        )
                                         onDismiss()
                                     }
-                                } else onGranted()
+                                } else {
+                                    onGranted()
+                                }
                             }
                             ContextualPermission.CONTACTS -> {
                                 val alreadyGranted = ContextCompat.checkSelfPermission(
-                                    context, android.Manifest.permission.READ_CONTACTS
+                                    context, android.Manifest.permission.READ_CONTACTS,
                                 ) == PermissionChecker.PERMISSION_GRANTED
                                 if (alreadyGranted) {
                                     onGranted()
@@ -224,21 +252,25 @@ fun ContextualPermissionDialog(
                                 val askedBefore = permissionPrefs.getBoolean("asked_read_contacts", false)
                                 val activity = context as? Activity
                                 val shouldShow = activity?.shouldShowRequestPermissionRationale(
-                                    android.Manifest.permission.READ_CONTACTS
+                                    android.Manifest.permission.READ_CONTACTS,
                                 ) != false
                                 if (!askedBefore || shouldShow) {
                                     permissionPrefs.edit().putBoolean("asked_read_contacts", true).apply()
                                     permissionLauncher.launch(android.Manifest.permission.READ_CONTACTS)
                                 } else {
-                                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                        .setData(Uri.parse("package:${context.packageName}"))
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                            .setData(Uri.parse("package:${context.packageName}"))
+                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                                    )
                                     onDismiss()
                                 }
                             }
                             ContextualPermission.NOTIFICATION_LISTENER -> {
-                                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                                context.startActivity(
+                                    Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                                )
                                 onDismiss()
                             }
                             ContextualPermission.FILES -> {

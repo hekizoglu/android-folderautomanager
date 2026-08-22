@@ -77,20 +77,20 @@ private data class PermissionGuideItem(
 fun PermissionsGuideScreen(onNavigateBack: () -> Unit = {}) {
     val context = LocalContext.current
 
-    var launcherSet     by remember { mutableStateOf(isDefaultLauncher(context)) }
-    var usageStatsOk     by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
+    var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
+    var usageStatsOk by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
     var notifListenerOk by remember { mutableStateOf(isNotificationListenerGranted(context)) }
-    var notifGranted     by remember { mutableStateOf(isNotifGranted(context)) }
+    var notifGranted by remember { mutableStateOf(isNotifGranted(context)) }
 
     // ON_RESUME'da yeniden kontrol — izin verilip dönünce durum ✓ olur (mevcut pattern)
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                launcherSet     = isDefaultLauncher(context)
-                usageStatsOk     = UsageStatsHelper.hasPermission(context)
+                launcherSet = isDefaultLauncher(context)
+                usageStatsOk = UsageStatsHelper.hasPermission(context)
                 notifListenerOk = isNotificationListenerGranted(context)
-                notifGranted     = isNotifGranted(context)
+                notifGranted = isNotifGranted(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -98,7 +98,7 @@ fun PermissionsGuideScreen(onNavigateBack: () -> Unit = {}) {
     }
 
     val notifLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
+        ActivityResultContracts.RequestPermission(),
     ) { notifGranted = it }
 
     val items = listOf(
@@ -111,9 +111,11 @@ fun PermissionsGuideScreen(onNavigateBack: () -> Unit = {}) {
             actionLabel = "Ayarları Aç",
             onAction = {
                 runCatching {
-                    context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    })
+                    context.startActivity(
+                        Intent(Settings.ACTION_HOME_SETTINGS).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        },
+                    )
                 }
             },
         ),
@@ -135,9 +137,11 @@ fun PermissionsGuideScreen(onNavigateBack: () -> Unit = {}) {
             actionLabel = "İzin Ver",
             onAction = {
                 runCatching {
-                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    })
+                    context.startActivity(
+                        Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        },
+                    )
                 }
             },
         ),
@@ -153,10 +157,12 @@ fun PermissionsGuideScreen(onNavigateBack: () -> Unit = {}) {
                     notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
                     runCatching {
-                        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = android.net.Uri.fromParts("package", context.packageName, null)
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        })
+                        context.startActivity(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = android.net.Uri.fromParts("package", context.packageName, null)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            },
+                        )
                     }
                 }
             },
@@ -173,13 +179,14 @@ fun PermissionsGuideScreen(onNavigateBack: () -> Unit = {}) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Text(
-                    if (missingCount == 0)
+                    if (missingCount == 0) {
                         "Tüm izinler verildi — uygulama tam performansla çalışıyor."
-                    else
-                        "Tam performans için $missingCount izin eksik. Her kartta neyin çalışmadığını görebilirsin.",
+                    } else {
+                        "Tam performans için $missingCount izin eksik. Her kartta neyin çalışmadığını görebilirsin."
+                    },
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -193,7 +200,7 @@ fun PermissionsGuideScreen(onNavigateBack: () -> Unit = {}) {
                 "🔒 Tüm veriler yalnızca cihazınızda kalır — dışarı çıkmaz.",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
             )
         }
     }
@@ -210,14 +217,15 @@ private fun PermissionGuideCard(item: PermissionGuideItem) {
             .background(MaterialTheme.colorScheme.surface)
             .border(1.dp, statusColor.copy(alpha = 0.35f), RoundedCornerShape(18.dp))
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         // Başlık satırı: ikon + izin adı + durum
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Icon(
-                item.icon, null,
+                item.icon,
+                null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
             Spacer(Modifier.width(12.dp))
             Text(
@@ -225,14 +233,14 @@ private fun PermissionGuideCard(item: PermissionGuideItem) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     if (item.granted) Icons.Default.CheckCircle else Icons.Default.Warning,
                     null,
                     tint = statusColor,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
                 Spacer(Modifier.width(4.dp))
                 Text(
@@ -246,8 +254,12 @@ private fun PermissionGuideCard(item: PermissionGuideItem) {
 
         // Neden gerekli
         Row(modifier = Modifier.fillMaxWidth()) {
-            Text("Neden gerekli:  ", fontSize = 13.sp, fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                "Neden gerekli:  ",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Text(item.why, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
@@ -257,7 +269,7 @@ private fun PermissionGuideCard(item: PermissionGuideItem) {
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(MissingColor.copy(alpha = 0.10f))
-                .padding(horizontal = 10.dp, vertical = 8.dp)
+                .padding(horizontal = 10.dp, vertical = 8.dp),
         ) {
             Text("Kapalıyken:  ", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = MissingColor)
             Text(item.whenOff, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
@@ -269,7 +281,7 @@ private fun PermissionGuideCard(item: PermissionGuideItem) {
                 onClick = item.onAction,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             ) {
                 Text(item.actionLabel, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
             }

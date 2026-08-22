@@ -10,13 +10,13 @@ import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
 import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 /**
  * P1 — [CategoryUsageSnapshotProvider]. Sahte [MissionUsageStatsSource] + [AppDao] ile

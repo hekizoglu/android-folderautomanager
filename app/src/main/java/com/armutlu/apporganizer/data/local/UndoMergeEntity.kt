@@ -22,7 +22,7 @@ data class UndoMergeEntity(
 
     val timestamp: Long = System.currentTimeMillis(),
 
-    val mergedAt: Long = System.currentTimeMillis()
+    val mergedAt: Long = System.currentTimeMillis(),
 ) : Serializable {
 
     /**
@@ -43,12 +43,12 @@ data class UndoMergeEntity(
         fun create(
             sourceCategoryId: String,
             targetCategoryId: String,
-            affectedPackages: List<String>
+            affectedPackages: List<String>,
         ): UndoMergeEntity {
             return UndoMergeEntity(
                 sourceCategoryId = sourceCategoryId,
                 targetCategoryId = targetCategoryId,
-                affectedPackages = affectedPackages.joinToString("|")
+                affectedPackages = affectedPackages.joinToString("|"),
             )
         }
     }

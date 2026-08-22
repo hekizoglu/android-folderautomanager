@@ -9,7 +9,7 @@ class AppPrefsFolderShapeTest {
     fun `yeni kurulumda varsayilan klasor sekli rounded doner`() {
         val result = AppPrefs.resolveFolderShapePreference(
             hasStoredValue = false,
-            storedShape = "circle"
+            storedShape = "circle",
         )
 
         assertEquals(AppPrefs.DEFAULT_FOLDER_SHAPE, result)
@@ -20,7 +20,7 @@ class AppPrefsFolderShapeTest {
     fun `kayitli klasor sekli varsa korunur`() {
         val result = AppPrefs.resolveFolderShapePreference(
             hasStoredValue = true,
-            storedShape = "circle"
+            storedShape = "circle",
         )
 
         assertEquals("circle", result)

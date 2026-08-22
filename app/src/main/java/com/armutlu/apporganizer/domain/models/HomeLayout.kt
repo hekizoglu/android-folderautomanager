@@ -13,6 +13,7 @@ enum class HomeSectionId(
     DAILY_CONTROL_CENTER(HomeLayoutZone.CONTENT),
     MISSIONS_AND_SCORE(HomeLayoutZone.CONTENT),
     MISSIONS(HomeLayoutZone.CONTENT),
+
     // P7b — TodayCard bağlantısı: MISSIONS_AND_SCORE/MISSIONS section'larından BAĞIMSIZ, üçüncü
     // isteğe bağlı kart (roadmap §9 karar 1 — yerine geçmiyor, yanına eklenir).
     TODAY_CARD(HomeLayoutZone.CONTENT),
@@ -111,10 +112,12 @@ fun HomeLayoutConfig.withSearchZone(zone: HomeLayoutZone): HomeLayoutConfig {
     }
     val current = items.single { it.sectionId == HomeSectionId.MAIN_SEARCH }
     if (current.zone == zone) return this
-    return copy(items = items.map { item ->
-        when (item.sectionId) {
-            HomeSectionId.MAIN_SEARCH -> item.copy(zone = zone, order = 0)
-            else -> item
-        }
-    })
+    return copy(
+        items = items.map { item ->
+            when (item.sectionId) {
+                HomeSectionId.MAIN_SEARCH -> item.copy(zone = zone, order = 0)
+                else -> item
+            }
+        },
+    )
 }

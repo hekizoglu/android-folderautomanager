@@ -49,7 +49,7 @@ internal fun PremiumGlassSurface(
             objectPalette.borderTint.copy(alpha = palette.highlightAlpha),
             objectPalette.surfaceTint.copy(alpha = palette.coolLayerAlpha + palette.fillAlpha),
             objectPalette.surfaceTint.copy(alpha = palette.fillAlpha),
-        )
+        ),
     )
     Box(
         modifier = modifier

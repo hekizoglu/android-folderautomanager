@@ -102,8 +102,11 @@ object NotificationPreviewStore {
             .replace(Regex("\\s+"), " ")
             .trim()
             .let { normalized ->
-                if (normalized.length <= MAX_PREVIEW_LENGTH) normalized
-                else normalized.take(MAX_PREVIEW_LENGTH - 1).trimEnd() + "…"
+                if (normalized.length <= MAX_PREVIEW_LENGTH) {
+                    normalized
+                } else {
+                    normalized.take(MAX_PREVIEW_LENGTH - 1).trimEnd() + "…"
+                }
             }
     }
 

@@ -49,11 +49,10 @@ fun SettingsLauncherScreen(
     var isDefault by remember(context.packageName) { mutableStateOf(isDefaultLauncher()) }
 
     val roleRequestLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
+        ActivityResultContracts.StartActivityForResult(),
     ) { isDefault = isDefaultLauncher() }
 
     SettingsSubScreenScaffold(title = "Launcher", onNavigateBack = onNavigateBack) {
-
         // ── Varsayılan Launcher ───────────────────────────────────────────
         item { SettingsSectionTitle("Varsayılan Launcher") }
         item {
@@ -62,12 +61,13 @@ fun SettingsLauncherScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        Icons.Default.Home, null,
+                        Icons.Default.Home,
+                        null,
                         tint = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(22.dp),
                     )
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
@@ -75,7 +75,7 @@ fun SettingsLauncherScreen(
                         Text(
                             if (isDefault) "Aktif" else "Henüz seçilmedi",
                             fontSize = 12.sp,
-                            color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isDefault) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     val launcherAction: () -> Unit = {
@@ -96,14 +96,14 @@ fun SettingsLauncherScreen(
                             Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                             OutlinedButton(
                                 onClick = launcherAction,
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                             ) { Text(stringResource(R.string.settings_launcher_change), fontSize = 12.sp) }
                         }
                     } else {
                         Button(
                             onClick = launcherAction,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         ) { Text("Seç", fontSize = 13.sp) }
                     }
                 }
@@ -116,7 +116,7 @@ fun SettingsLauncherScreen(
             var contextualDock by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_CONTEXTUAL_DOCK,
-                read = { AppPrefs.isContextualDockEnabled(context) }
+                read = { AppPrefs.isContextualDockEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -127,7 +127,7 @@ fun SettingsLauncherScreen(
                     onCheckedChange = {
                         contextualDock = it
                         AppPrefs.setContextualDockEnabled(context, it)
-                    }
+                    },
                 )
                 if (contextualDock) {
                     var smartSlots by remember(context) {
@@ -147,7 +147,7 @@ fun SettingsLauncherScreen(
             var folderPageInsights by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_FOLDER_PAGE_INSIGHTS_ENABLED,
-                read = { AppPrefs.isFolderPageInsightsEnabled(context) }
+                read = { AppPrefs.isFolderPageInsightsEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -159,7 +159,7 @@ fun SettingsLauncherScreen(
                         folderPageInsights = it
                         AppPrefs.setFolderPageInsightsEnabled(context, it)
                         if (it) AppPrefs.muteFolderPageInsights(context, 0L)
-                    }
+                    },
                 )
             }
         }
@@ -167,7 +167,7 @@ fun SettingsLauncherScreen(
             var folderPageNotifications by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_FOLDER_PAGE_NOTIFICATIONS_ENABLED,
-                read = { AppPrefs.isFolderPageNotificationsEnabled(context) }
+                read = { AppPrefs.isFolderPageNotificationsEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -178,7 +178,7 @@ fun SettingsLauncherScreen(
                     onCheckedChange = {
                         folderPageNotifications = it
                         AppPrefs.setFolderPageNotificationsEnabled(context, it)
-                    }
+                    },
                 )
             }
         }
@@ -188,7 +188,11 @@ fun SettingsLauncherScreen(
             SettingsCard {
                 if (dockPkgs.isEmpty()) {
                     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.settings_dock_empty), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            stringResource(R.string.settings_dock_empty),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 } else {
                     dockPkgs.forEachIndexed { index, pkg ->
@@ -205,16 +209,21 @@ fun SettingsLauncherScreen(
                                 runCatching { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
                             }
                         }
-                        if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
+                        if (index > 0) {
+                            HorizontalDivider(
+                                Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f),
+                            )
+                        }
                         Row(
                             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
                                 if (folderId != null) Icons.Default.Folder else Icons.Default.Apps,
                                 null,
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(20.dp),
                             )
                             Spacer(Modifier.width(12.dp))
                             Text(label, Modifier.weight(1f), fontSize = 14.sp)
@@ -236,7 +245,7 @@ fun SettingsLauncherScreen(
                     title = stringResource(R.string.settings_reset_defaults),
                     subtitle = stringResource(R.string.settings_dock_default_apps),
                     showChevron = false,
-                    onClick = { showDockResetDialog = true }
+                    onClick = { showDockResetDialog = true },
                 )
                 if (showDockResetDialog) {
                     AlertDialog(
@@ -252,7 +261,7 @@ fun SettingsLauncherScreen(
                         },
                         dismissButton = {
                             TextButton(onClick = { showDockResetDialog = false }) { Text("İptal") }
-                        }
+                        },
                     )
                 }
             }
@@ -264,11 +273,16 @@ fun SettingsLauncherScreen(
             var dockDefaultCategory by rememberStringPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_DOCK_DEFAULT_CATEGORY,
-                read = { AppPrefs.getDockDefaultCategory(context) }
+                read = { AppPrefs.getDockDefaultCategory(context) },
             )
             SettingsCard {
                 Column(Modifier.fillMaxWidth().padding(16.dp)) {
-                    Text("Seçili Klasor", fontWeight = FontWeight.Medium, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "Seçili Klasor",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Spacer(Modifier.height(8.dp))
                     val categories = Category.getDefaultCategories()
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -324,17 +338,17 @@ fun SettingsLauncherScreen(
             var folderCarousel by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_FOLDER_CAROUSEL_ENABLED,
-                read = { AppPrefs.isFolderCarouselEnabled(context) }
+                read = { AppPrefs.isFolderCarouselEnabled(context) },
             )
             var folderCarouselPosition by rememberStringPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_FOLDER_CAROUSEL_POSITION,
-                read = { AppPrefs.getFolderCarouselPosition(context) }
+                read = { AppPrefs.getFolderCarouselPosition(context) },
             )
             var folderNotifications by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_FOLDER_NOTIFICATIONS_ENABLED,
-                read = { AppPrefs.isFolderNotificationsEnabled(context) }
+                read = { AppPrefs.isFolderNotificationsEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -345,7 +359,7 @@ fun SettingsLauncherScreen(
                     onCheckedChange = {
                         folderNotifications = it
                         AppPrefs.setFolderNotificationsEnabled(context, it)
-                    }
+                    },
                 )
                 HorizontalDivider(
                     Modifier.padding(horizontal = 16.dp),
@@ -359,7 +373,7 @@ fun SettingsLauncherScreen(
                     onCheckedChange = {
                         folderCarousel = it
                         AppPrefs.setFolderCarouselEnabled(context, it)
-                    }
+                    },
                 )
                 HorizontalDivider(
                     Modifier.padding(horizontal = 16.dp),
@@ -411,7 +425,7 @@ fun SettingsLauncherScreen(
                 var folderTransitionEffect by rememberStringPreferenceState(
                     context = context,
                     key = AppPrefs.KEY_FOLDER_TRANSITION_EFFECT,
-                    read = { AppPrefs.getFolderTransitionEffect(context) }
+                    read = { AppPrefs.getFolderTransitionEffect(context) },
                 )
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(
@@ -455,7 +469,7 @@ fun SettingsLauncherScreen(
             var folderFreeGrid by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_FOLDER_FREE_GRID_ENABLED,
-                read = { AppPrefs.isFolderFreeGridEnabled(context) }
+                read = { AppPrefs.isFolderFreeGridEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -466,7 +480,7 @@ fun SettingsLauncherScreen(
                     onCheckedChange = {
                         folderFreeGrid = it
                         AppPrefs.setFolderFreeGridEnabled(context, it)
-                    }
+                    },
                 )
             }
         }
@@ -478,12 +492,12 @@ fun SettingsLauncherScreen(
             var quickWheel by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_QUICK_WHEEL,
-                read = { AppPrefs.isQuickWheelEnabled(context) }
+                read = { AppPrefs.isQuickWheelEnabled(context) },
             )
             var focusMode by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_FOCUS_MODE,
-                read = { AppPrefs.isFocusModeEnabled(context) }
+                read = { AppPrefs.isFocusModeEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -494,7 +508,7 @@ fun SettingsLauncherScreen(
                     onCheckedChange = {
                         quickWheel = it
                         AppPrefs.setQuickWheelEnabled(context, it)
-                    }
+                    },
                 )
                 HorizontalDivider(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.08f))
                 // P18 — Odak Modu artık klasörleri/aramayı gizleyen ayrı bir ekran değil, ana
@@ -512,7 +526,7 @@ fun SettingsLauncherScreen(
                         // acilista baslangic zamani kaydedilir, kapanista gecen sure gunun
                         // toplamina eklenir (bkz. AppPrefs.startFocusSession/endFocusSession).
                         if (it) AppPrefs.startFocusSession(context) else AppPrefs.endFocusSession(context)
-                    }
+                    },
                 )
             }
         }
@@ -559,8 +573,11 @@ private fun SettingsDockSmartSlotsRow(
                 style = MaterialTheme.typography.bodyLarge,
             )
             Text(
-                text = if (smartSlots == 0) "Dock tamamen sabit uygulamalardan oluşur"
-                else "$smartSlots slot saat ve kullanım alışkanlığına göre dolar",
+                text = if (smartSlots == 0) {
+                    "Dock tamamen sabit uygulamalardan oluşur"
+                } else {
+                    "$smartSlots slot saat ve kullanım alışkanlığına göre dolar"
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

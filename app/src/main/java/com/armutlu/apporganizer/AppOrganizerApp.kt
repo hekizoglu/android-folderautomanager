@@ -109,7 +109,7 @@ class AppOrganizerApp : Application() {
     private fun enableGrantedContactSearchByDefault() {
         val contactsGranted = ContextCompat.checkSelfPermission(
             this,
-            Manifest.permission.READ_CONTACTS
+            Manifest.permission.READ_CONTACTS,
         ) == PackageManager.PERMISSION_GRANTED
 
         if (contactsGranted && !AppPrefs.hasSearchSourceContactsPreference(this)) {

@@ -12,22 +12,22 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -39,9 +39,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -220,7 +220,7 @@ fun FolderScreen(
                 animationSpec = settleSpec(),
             )
             val moved = viewModel.openAdjacentFolder(
-                next = mapFolderTransitionDirectionToNextFlag(direction)
+                next = mapFolderTransitionDirectionToNextFlag(direction),
             )
             if (!moved) {
                 contentOffset.snapTo(0f)
@@ -277,7 +277,8 @@ fun FolderScreen(
         val carouselPosition = when (folderCarouselPosition) {
             AppPrefs.FOLDER_CAROUSEL_POS_TOP,
             AppPrefs.FOLDER_CAROUSEL_POS_MIDDLE,
-            AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM -> folderCarouselPosition
+            AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM,
+            -> folderCarouselPosition
             else -> AppPrefs.FOLDER_CAROUSEL_POS_BOTTOM
         }
         val folderNavigatorMuted = folderNavigatorMutedUntil > System.currentTimeMillis()
@@ -290,8 +291,9 @@ fun FolderScreen(
 
         val trLocale = java.util.Locale("tr")
         val sortedApps = remember(f.apps, sortMode, searchQuery) {
-            val base = if (searchQuery.isBlank()) f.apps
-            else {
+            val base = if (searchQuery.isBlank()) {
+                f.apps
+            } else {
                 val q = searchQuery.lowercase(trLocale)
                 f.apps.filter { it.appName.lowercase(trLocale).contains(q) }
             }
@@ -309,7 +311,7 @@ fun FolderScreen(
                     .filter { (badgeCounts[it.packageName] ?: 0) > 0 }
                     .sortedWith(
                         compareByDescending<AppInfo> { badgeCounts[it.packageName] ?: 0 }
-                            .thenByDescending { lastPostedAt[it.packageName] ?: 0L }
+                            .thenByDescending { lastPostedAt[it.packageName] ?: 0L },
                     )
             }
         }
@@ -342,7 +344,7 @@ fun FolderScreen(
                     (contentOffset.value + dragDelta).coerceIn(
                         -folderTransitionOffsetPx,
                         folderTransitionOffsetPx,
-                    )
+                    ),
                 )
             }
         }
@@ -384,9 +386,9 @@ fun FolderScreen(
                         )
                     } else {
                         Modifier
-                    }
+                    },
                 )
-                .background(objectPalette.folderBackground)
+                .background(objectPalette.folderBackground),
         ) { // NOT: navigationBarsPadding kök Box'ta uygulanır (D241) — HomeShell'in folderOverlay slotu
             // insets uygulamıyor (statusBars da uygulamıyor, sadece HomeShell'in kendi iç Column'u
             // alıyor), bu yüzden alt navigasyon çubuğu payı burada, doğrudan FolderScreen'de eklendi.
@@ -410,7 +412,7 @@ fun FolderScreen(
                         scaleX = transitionFrame.currentScale
                         scaleY = transitionFrame.currentScale
                         rotationY = transitionFrame.currentRotationY
-                    }
+                    },
             ) {
                 // Üst bar — geri + klasör başlık + düzenle
                 Row(
@@ -515,46 +517,48 @@ fun FolderScreen(
                 }
 
                 // Arama çubuğu — varsayılan KAPALI, Ayarlar > Klasör İçi Arama ile açılır
-                if (folderSearchEnabled) Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                        .height(42.dp)
-                        .clip(RoundedCornerShape(21.dp))
-                        .background(onSurface.copy(alpha = 0.10f))
-                        .padding(horizontal = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Icon(
-                        Icons.Default.Search,
-                        null,
-                        tint = textSecondary,
-                        modifier = Modifier.size(16.dp),
-                    )
-                    Box(modifier = Modifier.weight(1f)) {
-                        if (searchQuery.isEmpty()) {
-                            Text(
-                                "${customName.ifBlank { f.category.categoryName }} içinde ara...",
-                                color = textSecondary,
-                                fontSize = 13.sp,
+                if (folderSearchEnabled) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .height(42.dp)
+                            .clip(RoundedCornerShape(21.dp))
+                            .background(onSurface.copy(alpha = 0.10f))
+                            .padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            null,
+                            tint = textSecondary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    "${customName.ifBlank { f.category.categoryName }} içinde ara...",
+                                    color = textSecondary,
+                                    fontSize = 13.sp,
+                                )
+                            }
+                            BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                singleLine = true,
+                                cursorBrush = SolidColor(primary),
+                                textStyle = TextStyle(color = onSurface, fontSize = 13.sp),
                             )
                         }
-                        BasicTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            singleLine = true,
-                            cursorBrush = SolidColor(primary),
-                            textStyle = TextStyle(color = onSurface, fontSize = 13.sp),
-                        )
-                    }
-                    if (searchQuery.isNotEmpty()) {
-                        Icon(
-                            Icons.Default.Close,
-                            "Aramayı temizle",
-                            tint = textSecondary,
-                            modifier = Modifier.size(16.dp).clickable { searchQuery = "" },
-                        )
+                        if (searchQuery.isNotEmpty()) {
+                            Icon(
+                                Icons.Default.Close,
+                                "Aramayı temizle",
+                                tint = textSecondary,
+                                modifier = Modifier.size(16.dp).clickable { searchQuery = "" },
+                            )
+                        }
                     }
                 }
 
@@ -622,7 +626,13 @@ fun FolderScreen(
                 // Sıralama chip'leri — her kriter (A-Z, Kullanım, Boyut, Yükleme) TEK buton;
                 // aktif kriterin butonuna tekrar basınca yön (asc/desc) değişir (D210 — çift buton kaldırıldı)
                 val sortBaseModes = remember {
-                    listOf(AllAppsSortMode.SMART, AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
+                    listOf(
+                        AllAppsSortMode.SMART,
+                        AllAppsSortMode.ALPHA,
+                        AllAppsSortMode.USAGE,
+                        AllAppsSortMode.SIZE_DESC,
+                        AllAppsSortMode.INSTALL_DATE,
+                    )
                 }
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
@@ -816,14 +826,18 @@ fun FolderScreen(
                 androidx.compose.material3.AlertDialog(
                     onDismissRequest = { showDeleteConfirmDialog = false },
                     title = { Text("Klasörü Sil") },
-                    text = { Text("'${customName.ifBlank { f.category.categoryName }}' klasörü silinsin mi? İçindeki uygulamalar 'Diğer' klasörüne taşınacaktır.") },
+                    text = {
+                        Text(
+                            "'${customName.ifBlank { f.category.categoryName }}' klasörü silinsin mi? İçindeki uygulamalar 'Diğer' klasörüne taşınacaktır.",
+                        )
+                    },
                     confirmButton = {
                         androidx.compose.material3.TextButton(
                             onClick = {
                                 showDeleteConfirmDialog = false
                                 viewModel.deleteFolder(f.category.categoryId)
                                 onBack()
-                            }
+                            },
                         ) {
                             Text("Sil", color = MaterialTheme.colorScheme.error)
                         }
@@ -832,7 +846,7 @@ fun FolderScreen(
                         androidx.compose.material3.TextButton(onClick = { showDeleteConfirmDialog = false }) {
                             Text("İptal")
                         }
-                    }
+                    },
                 )
             }
 
@@ -1071,7 +1085,7 @@ private fun FolderIndexNavigator(
                     onClick = {
                         menuOpen = false
                         AppPrefs.setFolderNavigatorMutedUntil(context, System.currentTimeMillis() + duration)
-                    }
+                    },
                 )
             }
             DropdownMenuItem(
@@ -1079,7 +1093,7 @@ private fun FolderIndexNavigator(
                 onClick = {
                     menuOpen = false
                     AppPrefs.setFolderCarouselEnabled(context, false)
-                }
+                },
             )
         }
     }

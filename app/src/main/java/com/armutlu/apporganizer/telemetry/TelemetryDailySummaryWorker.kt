@@ -23,9 +23,14 @@ class TelemetryDailySummaryWorker(context: Context, params: WorkerParameters) : 
         fun sync(context: Context, enabled: Boolean) {
             LocalTelemetryStore.initialize(context)
             val workManager = WorkManager.getInstance(context)
-            if (!enabled) { workManager.cancelUniqueWork(UNIQUE_NAME); return }
+            if (!enabled) {
+                workManager.cancelUniqueWork(UNIQUE_NAME)
+                return
+            }
             val request = PeriodicWorkRequestBuilder<TelemetryDailySummaryWorker>(24, TimeUnit.HOURS)
-                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).setRequiresBatteryNotLow(true).build()).build()
+                .setConstraints(
+                    Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).setRequiresBatteryNotLow(true).build(),
+                ).build()
             workManager.enqueueUniquePeriodicWork(UNIQUE_NAME, ExistingPeriodicWorkPolicy.KEEP, request)
         }
     }

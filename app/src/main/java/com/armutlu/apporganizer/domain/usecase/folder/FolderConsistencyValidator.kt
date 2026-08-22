@@ -1,7 +1,6 @@
 package com.armutlu.apporganizer.domain.usecase.folder
 
 import com.armutlu.apporganizer.domain.models.AppInfo
-import com.armutlu.apporganizer.domain.models.Category
 import timber.log.Timber
 
 /**

@@ -2,6 +2,7 @@ package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -19,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -31,7 +31,7 @@ internal fun SettingsSectionTitle(title: String) {
         title,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 28.dp, top = 20.dp, bottom = 6.dp, end = 16.dp)
+        modifier = Modifier.padding(start = 28.dp, top = 20.dp, bottom = 6.dp, end = 16.dp),
     )
 }
 
@@ -43,7 +43,7 @@ internal fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) { Column(content = content) }
 }
 
@@ -57,7 +57,7 @@ internal fun SettingsExpandableCard(
     title: String,
     subtitle: String,
     initiallyExpanded: Boolean = false,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     var expanded by remember { mutableStateOf(initiallyExpanded) }
     SettingsCard {
@@ -66,26 +66,30 @@ internal fun SettingsExpandableCard(
                 .fillMaxWidth()
                 .clickable { expanded = !expanded }
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    title,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
                 Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Icon(
                 if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                 contentDescription = if (expanded) "Daralt" else "Genişlet",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         }
         if (expanded) {
             HorizontalDivider(
                 Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
             )
             content()
         }
@@ -101,20 +105,24 @@ internal fun SettingsSwitchRow(
     subtitle: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = enabled) { onCheckedChange(!checked) }
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                title,
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Switch(
@@ -123,8 +131,8 @@ internal fun SettingsSwitchRow(
             enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.primary,
-                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
-            )
+                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
         )
     }
 }
@@ -138,25 +146,33 @@ internal fun SettingsButtonRow(
     subtitle: String,
     iconTint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
     showChevron: Boolean = true,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                title,
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (showChevron) {
-            Icon(Icons.Default.ChevronRight, null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+            Icon(
+                Icons.Default.ChevronRight,
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp),
+            )
         }
     }
 }
@@ -167,14 +183,22 @@ internal fun SettingsButtonRow(
 internal fun SettingsInfoRow(icon: ImageVector, title: String, subtitle: String) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(22.dp))
+        Icon(
+            icon,
+            null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(22.dp),
+        )
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                title,
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
@@ -203,14 +227,14 @@ internal fun SettingsSubScreenScaffold(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
             )
-        }
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            contentPadding = PaddingValues(bottom = 32.dp),
         ) { content() }
     }
 }
@@ -224,7 +248,7 @@ internal fun SettingsListPreferenceRow(
     subtitle: String,
     currentValue: String,
     options: List<Pair<String, String>>,
-    onValueSelected: (String) -> Unit
+    onValueSelected: (String) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -233,7 +257,7 @@ internal fun SettingsListPreferenceRow(
         title = title,
         subtitle = subtitle,
         showChevron = true,
-        onClick = { showDialog = true }
+        onClick = { showDialog = true },
     )
 
     if (showDialog) {
@@ -243,7 +267,7 @@ internal fun SettingsListPreferenceRow(
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     options.forEach { (value, label) ->
                         Row(
@@ -254,14 +278,14 @@ internal fun SettingsListPreferenceRow(
                                     showDialog = false
                                 }
                                 .padding(vertical = 12.dp, horizontal = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(
                                 selected = (value == currentValue),
                                 onClick = {
                                     onValueSelected(value)
                                     showDialog = false
-                                }
+                                },
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
@@ -273,7 +297,7 @@ internal fun SettingsListPreferenceRow(
                 TextButton(onClick = { showDialog = false }) {
                     Text("İptal")
                 }
-            }
+            },
         )
     }
 }
@@ -282,8 +306,12 @@ internal fun SettingsListPreferenceRow(
 fun SectionHeader(title: String) = SettingsSectionTitle(title)
 
 @Composable
-fun SettingSwitch(title: String, description: String, checked: Boolean,
-                  onCheckedChange: (Boolean) -> Unit) =
+fun SettingSwitch(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) =
     SettingsSwitchRow(Icons.Default.Settings, title, description, checked, onCheckedChange)
 
 @Composable
@@ -297,7 +325,12 @@ fun SettingInfo(title: String, description: String) =
 @Suppress("UNUSED_PARAMETER")
 @Composable
 fun DebugInfoCard(
-    appCount: Int, categoryCount: Int, error: String?, logs: List<String>,
-    launcherInfo: String, a11yActive: Boolean,
-    onSendBugReport: () -> Unit, onClearLogs: () -> Unit
+    appCount: Int,
+    categoryCount: Int,
+    error: String?,
+    logs: List<String>,
+    launcherInfo: String,
+    a11yActive: Boolean,
+    onSendBugReport: () -> Unit,
+    onClearLogs: () -> Unit,
 ) {}

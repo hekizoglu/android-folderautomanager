@@ -26,7 +26,7 @@ data class AppListScreenState(
     val categoryStats: Map<String, Int> = emptyMap(),
     val showCategoryDialog: Boolean = false,
     val showSettingsDialog: Boolean = false,
-    val selectedAppForEdit: AppInfo? = null
+    val selectedAppForEdit: AppInfo? = null,
 ) {
     fun countAppsByCategory(categoryId: String): Int = categoryStats[categoryId] ?: 0
 
@@ -51,7 +51,7 @@ data class AppListScreenState(
             return AppListScreenState(
                 isLoading = false,
                 isInitializing = false,
-                error = message
+                error = message,
             )
         }
     }
@@ -62,7 +62,7 @@ internal fun computeFilteredApps(
     selectedCategory: String,
     searchQuery: String,
     showSystemApps: Boolean,
-    sortBy: SortOption
+    sortBy: SortOption,
 ): List<AppInfo> {
     var result = apps
 
@@ -89,7 +89,7 @@ internal fun computeFilteredApps(
 
 internal fun computeCategoryStats(
     apps: List<AppInfo>,
-    categories: List<Category>
+    categories: List<Category>,
 ): Map<String, Int> {
     val counts = apps.groupingBy { it.categoryId }.eachCount()
     return categories.associate { category -> category.categoryId to (counts[category.categoryId] ?: 0) }
@@ -97,7 +97,7 @@ internal fun computeCategoryStats(
 
 internal fun computeVisibleCategories(
     categories: List<Category>,
-    categoryStats: Map<String, Int>
+    categoryStats: Map<String, Int>,
 ): List<Category> {
     return categories
         .asSequence()
@@ -157,5 +157,5 @@ enum class SortOption(val label: String) {
     NAME_DESC("İsim Z→A"),
     INSTALL_DATE_NEWEST("En yeni kurulum"),
     INSTALL_DATE_OLDEST("En eski kurulum"),
-    CATEGORY("Kategoriye göre")
+    CATEGORY("Kategoriye göre"),
 }

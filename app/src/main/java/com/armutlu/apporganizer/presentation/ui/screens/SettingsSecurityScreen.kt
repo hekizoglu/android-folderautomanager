@@ -56,7 +56,7 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
             var biometricLock by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_BIOMETRIC_SETTINGS_LOCK,
-                read = { AppPrefs.isBiometricSettingsLockEnabled(context) }
+                read = { AppPrefs.isBiometricSettingsLockEnabled(context) },
             )
             val activity = context as? FragmentActivity
             val biometricAvailable = remember(context) {
@@ -65,7 +65,7 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
             SettingsCard {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.Fingerprint, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(14.dp))
@@ -74,7 +74,13 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                         Text(
                             if (biometricAvailable) "Ayarlar açılışında parmak izi / yüz doğrulama" else "Cihazda biyometrik doğrulama bulunamadı",
                             fontSize = 12.sp,
-                            color = if (biometricAvailable) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                            color = if (biometricAvailable) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.error.copy(
+                                    alpha = 0.7f,
+                                )
+                            },
                         )
                     }
                     Switch(
@@ -93,9 +99,9 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                                     // bu ekranda kalmaya devam eder, hemen çıkarılmaz).
                                     SettingsLockSession.reset()
                                 },
-                                onFailure = { /* doğrulama başarısız/iptal — toggle değişmez */ }
+                                onFailure = { /* doğrulama başarısız/iptal — toggle değişmez */ },
                             )
-                        }
+                        },
                     )
                 }
             }
@@ -104,12 +110,12 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
             var privacyReportEnabled by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_PRIVACY_REPORT_ENABLED,
-                read = { AppPrefs.isPrivacyReportEnabled(context) }
+                read = { AppPrefs.isPrivacyReportEnabled(context) },
             )
             SettingsCard {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Default.Security, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(14.dp))
@@ -117,12 +123,12 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                         Text(
                             androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_privacy_report_toggle_title),
                             fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp
+                            fontSize = 15.sp,
                         )
                         Text(
                             androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_privacy_report_toggle_desc),
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Switch(
@@ -130,7 +136,7 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                         onCheckedChange = {
                             privacyReportEnabled = it
                             AppPrefs.setPrivacyReportEnabled(context, it)
-                        }
+                        },
                     )
                 }
             }
@@ -149,12 +155,15 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                     Text(
                         stringResource(R.string.settings_deepseek_key_desc),
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(12.dp))
                     OutlinedTextField(
                         value = apiKeyInput,
-                        onValueChange = { apiKeyInput = it; AppPrefs.setDeepSeekApiKey(context, it) },
+                        onValueChange = {
+                            apiKeyInput = it
+                            AppPrefs.setDeepSeekApiKey(context, it)
+                        },
                         label = { Text(stringResource(R.string.settings_deepseek_key_label), fontSize = 12.sp) },
                         placeholder = { Text(stringResource(R.string.settings_deepseek_key_placeholder), fontSize = 12.sp) },
                         singleLine = true,
@@ -163,10 +172,14 @@ fun SettingsSecurityScreen(onNavigateBack: () -> Unit) {
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         trailingIcon = {
                             IconButton(onClick = { showApiKey = !showApiKey }) {
-                                Icon(if (showApiKey) Icons.Default.VisibilityOff else Icons.Default.Visibility, null, modifier = Modifier.size(18.dp))
+                                Icon(
+                                    if (showApiKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    null,
+                                    modifier = Modifier.size(18.dp),
+                                )
                             }
                         },
-                        textStyle = TextStyle(fontSize = 13.sp)
+                        textStyle = TextStyle(fontSize = 13.sp),
                     )
                 }
             }

@@ -64,8 +64,10 @@ object TickerComposer {
 
     /** Ozellik ipucu her gosterimde 24 saat sonra "bayatlar" — autoAdvance disinda tazelik siniri. */
     private const val TIP_EXPIRY_MS = MS_PER_DAY
+
     /** Haftalik ozet sadece o gun (pazartesi) icin gecerli. */
     private const val WEEKLY_SUMMARY_EXPIRY_MS = MS_PER_DAY
+
     /** Bildirim ozeti hizla bayatlar — yeni bildirim gelince zaten yeniden uretilir. */
     private const val NOTIFICATION_EXPIRY_MS = 6L * 3600 * 1000
 
@@ -141,7 +143,7 @@ object TickerComposer {
                     action = TickerAction.OpenNotificationReport,
                     suggestionKey = "notification_summary",
                     sensitive = true,
-                )
+                ),
             )
         }
 
@@ -166,7 +168,7 @@ object TickerComposer {
                         createdAt = nowMillis,
                         action = TickerAction.OpenApp(app.packageName),
                         suggestionKey = "forgotten_${app.packageName}",
-                    )
+                    ),
                 )
             }
 
@@ -187,7 +189,7 @@ object TickerComposer {
                     createdAt = nowMillis,
                     action = action,
                     suggestionKey = insight.id,
-                )
+                ),
             )
         }
 
@@ -204,7 +206,7 @@ object TickerComposer {
                     createdAt = nowMillis,
                     action = TickerAction.OpenClassificationReview,
                     suggestionKey = "low_confidence_review",
-                )
+                ),
             )
         }
 
@@ -222,7 +224,7 @@ object TickerComposer {
                 expiresAt = nowMillis + TIP_EXPIRY_MS,
                 action = if (tip.section != null) TickerAction.OpenSettings(tip.section) else TickerAction.OpenAppList,
                 autoAdvanceAllowed = true,
-            )
+            ),
         )
 
         // 6) Haftalik ozet — sadece pazartesi (dayOfWeek == 1)
@@ -242,7 +244,7 @@ object TickerComposer {
                         createdAt = nowMillis,
                         expiresAt = nowMillis + WEEKLY_SUMMARY_EXPIRY_MS,
                         action = TickerAction.OpenReportsCenter,
-                    )
+                    ),
                 )
             }
         }

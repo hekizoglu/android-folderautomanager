@@ -1,6 +1,6 @@
 ﻿package com.armutlu.apporganizer.presentation.ui.launcher
 
-import android.graphics.drawable.Drawable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,26 +20,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.DockPrefs
-import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private val SheetBg    = Color(0xFF1A1A2E)
+private val SheetBg = Color(0xFF1A1A2E)
+
 // MaterialTheme.colorScheme.primary kaldırıldı — MaterialTheme.colorScheme.primary kullanılıyor
-private val SearchBg   = Color.White.copy(alpha = 0.09f)
-private val TextPrimary   = Color.White
+private val SearchBg = Color.White.copy(alpha = 0.09f)
+private val TextPrimary = Color.White
 private val TextSecondary = Color.White.copy(alpha = 0.55f)
 
 @Composable
@@ -63,7 +63,7 @@ fun DockEditSheet(
     onAdd: (String) -> Unit,
     onRemove: (String) -> Unit,
     onDismiss: () -> Unit,
-    maxDock: Int = DockPrefs.MAX_SLOTS
+    maxDock: Int = DockPrefs.MAX_SLOTS,
 ) {
     // dockDefaultCategory burada kullanılmıyor ama parametreden geçiliyor —
     // future: dock varsayılan kategorisi belirtiliyse onu gösterebiliriz
@@ -75,8 +75,9 @@ fun DockEditSheet(
         dockPackages.count { it in installed }
     }
     val filtered = remember(allApps, query) {
-        if (query.isBlank()) allApps
-        else {
+        if (query.isBlank()) {
+            allApps
+        } else {
             val q = query.lowercase(java.util.Locale("tr"))
             allApps.filter { it.appName.lowercase(java.util.Locale("tr")).contains(q) }
         }
@@ -90,13 +91,13 @@ fun DockEditSheet(
             Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
                 Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(0.2f)))
             }
-        }
+        },
     ) {
         Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
             // Başlık
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Dock Düzenle", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary, modifier = Modifier.weight(1f))
                 Text("$validDockCount/$maxDock", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
@@ -108,11 +109,16 @@ fun DockEditSheet(
 
             // Mevcut dock uygulamaları
             if (dockPackages.isNotEmpty()) {
-                Text("Mevcut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 20.dp, bottom = 6.dp))
+                Text(
+                    "Mevcut",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 20.dp, bottom = 6.dp),
+                )
                 Row(
                     Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     dockPackages.forEach { item ->
                         val icon = rememberIcon(item)
@@ -121,16 +127,20 @@ fun DockEditSheet(
                                 Image(
                                     bitmap = icon,
                                     contentDescription = null,
-                                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp))
+                                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)),
                                 )
                             } else {
-                                Box(Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.primary.copy(0.3f)))
+                                Box(
+                                    Modifier.size(
+                                        48.dp,
+                                    ).clip(RoundedCornerShape(10.dp)).background(MaterialTheme.colorScheme.primary.copy(0.3f)),
+                                )
                             }
                             Box(
                                 modifier = Modifier.size(18.dp).clip(CircleShape)
                                     .background(Color(0xFFE53935))
                                     .clickable { onRemove(item) },
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Icon(Icons.Default.Close, null, tint = Color.White, modifier = Modifier.size(11.dp))
                             }
@@ -147,7 +157,7 @@ fun DockEditSheet(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                     .height(42.dp).clip(RoundedCornerShape(21.dp)).background(SearchBg)
                     .padding(horizontal = 14.dp),
-                contentAlignment = Alignment.CenterStart
+                contentAlignment = Alignment.CenterStart,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Search, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
@@ -155,9 +165,11 @@ fun DockEditSheet(
                     Box(Modifier.weight(1f)) {
                         if (query.isEmpty()) Text("Uygulama ara...", color = TextSecondary, fontSize = 13.sp)
                         BasicTextField(
-                            value = query, onValueChange = { query = it },
-                            singleLine = true, cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                            textStyle = TextStyle(color = TextPrimary, fontSize = 13.sp)
+                            value = query,
+                            onValueChange = { query = it },
+                            singleLine = true,
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            textStyle = TextStyle(color = TextPrimary, fontSize = 13.sp),
                         )
                     }
                 }
@@ -168,47 +180,69 @@ fun DockEditSheet(
             // Hero dock yalnız uygulama içerir; klasörler Sayfa 1+ içinde kalır.
             LazyColumn(modifier = Modifier.heightIn(max = 420.dp), contentPadding = PaddingValues(bottom = 16.dp)) {
                 items(items = filtered, key = { it.packageName }) { app ->
-                        val inDock = app.packageName in dockPackages
-                        val full = isDockAdditionBlocked(validDockCount, inDock, maxDock)
-                        val icon = rememberIcon(app.packageName)
+                    val inDock = app.packageName in dockPackages
+                    val full = isDockAdditionBlocked(validDockCount, inDock, maxDock)
+                    val icon = rememberIcon(app.packageName)
 
-                        Row(
-                            Modifier.fillMaxWidth().height(52.dp)
-                                .clickable {
-                                    if (inDock) onRemove(app.packageName)
-                                    else if (!full) onAdd(app.packageName)
-                                }
-                                .background(if (inDock) MaterialTheme.colorScheme.primary.copy(0.12f) else Color.Transparent)
-                                .padding(horizontal = 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (icon != null) {
-                                Image(
-                                    bitmap = icon,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)),
-                                    alpha = if (full && !inDock) 0.4f else 1f
-                                )
-                            } else {
-                                Box(Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.primary.copy(0.2f)))
+                    Row(
+                        Modifier.fillMaxWidth().height(52.dp)
+                            .clickable {
+                                if (inDock) {
+                                    onRemove(app.packageName)
+                                } else if (!full) onAdd(app.packageName)
                             }
-                            Spacer(Modifier.width(14.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    app.appName, fontSize = 15.sp,
-                                    color = if (full && !inDock) TextSecondary else TextPrimary,
-                                    maxLines = 1, overflow = TextOverflow.Ellipsis
-                                )
-                                if (full && !inDock) {
-                                    Text("Dock dolu — önce çıkar", fontSize = 10.sp, color = Color(0xFFE57373))
-                                }
-                            }
-                            when {
-                                inDock -> Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                                !full  -> Icon(Icons.Default.Add, null, tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
-                                else   -> Icon(Icons.Default.Add, null, tint = Color(0xFFE57373).copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
+                            .background(if (inDock) MaterialTheme.colorScheme.primary.copy(0.12f) else Color.Transparent)
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (icon != null) {
+                            Image(
+                                bitmap = icon,
+                                contentDescription = null,
+                                modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)),
+                                alpha = if (full && !inDock) 0.4f else 1f,
+                            )
+                        } else {
+                            Box(
+                                Modifier.size(
+                                    36.dp,
+                                ).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.primary.copy(0.2f)),
+                            )
+                        }
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                app.appName,
+                                fontSize = 15.sp,
+                                color = if (full && !inDock) TextSecondary else TextPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            if (full && !inDock) {
+                                Text("Dock dolu — önce çıkar", fontSize = 10.sp, color = Color(0xFFE57373))
                             }
                         }
+                        when {
+                            inDock -> Icon(
+                                Icons.Default.Check,
+                                null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp),
+                            )
+                            !full -> Icon(
+                                Icons.Default.Add,
+                                null,
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                modifier = Modifier.size(20.dp),
+                            )
+                            else -> Icon(
+                                Icons.Default.Add,
+                                null,
+                                tint = Color(0xFFE57373).copy(alpha = 0.5f),
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                    }
                 }
             }
         }

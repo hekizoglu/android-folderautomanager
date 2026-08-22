@@ -67,7 +67,7 @@ object WrappedEngine {
     data class ScoreReason(val label: String, val delta: Int)
 
     data class DigitalLifeScore(
-        val score: Int,       // 0-100
+        val score: Int, // 0-100
         val reasons: List<ScoreReason>,
     )
 
@@ -92,7 +92,7 @@ object WrappedEngine {
 
     data class InterestingStats(
         val mostOpenedApp: AppSnapshot?,
-        val leastOpenedApp: AppSnapshot?,   // usageCount > 0 olanlar icinde min
+        val leastOpenedApp: AppSnapshot?, // usageCount > 0 olanlar icinde min
         val largestApp: AppSnapshot?,
         val oldestInstalledApp: AppSnapshot?,
         val newestInstalledApp: AppSnapshot?,
@@ -166,7 +166,7 @@ object WrappedEngine {
                 taskScoreContribution = input.taskScoreContribution,
                 hasUsageAccess = input.hasUsageAccess,
                 nowMillis = input.nowMillis,
-            )
+            ),
         )
         // Geriye uyumluluk: DigitalLifeScore.reasons AI Coach prompt'u için ASCII log
         // etiketleriyle doldurulur (kullanıcıya gösterilmez — UI pulse.reasons'ı resource ile çözer).
@@ -316,7 +316,9 @@ object WrappedEngine {
             input.unlockCount <= input.previousUnlockCount
         val avgSizeMb = if (apps.isNotEmpty()) {
             (apps.sumOf { it.appSizeBytes }.toDouble() / apps.size) / (1024.0 * 1024.0)
-        } else 0.0
+        } else {
+            0.0
+        }
 
         return listOf(
             Badge(

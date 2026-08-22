@@ -10,67 +10,67 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface CategoryDao {
-    
+
     /**
      * Insert a single category
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: Category)
-    
+
     /**
      * Insert multiple categories
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategories(categories: List<Category>)
-    
+
     /**
      * Update a category
      */
     @Update
     suspend fun updateCategory(category: Category)
-    
+
     /**
      * Delete a category
      */
     @Delete
     suspend fun deleteCategory(category: Category)
-    
+
     /**
      * Delete category by ID
      */
     @Query("DELETE FROM categories WHERE categoryId = :categoryId AND isSystemCategory = 0")
     suspend fun deleteCategoryById(categoryId: String)
-    
+
     /**
      * Get category by ID
      */
     @Query("SELECT * FROM categories WHERE categoryId = :categoryId")
     suspend fun getCategoryById(categoryId: String): Category?
-    
+
     /**
      * Get all categories (one-time)
      */
     @Query("SELECT * FROM categories ORDER BY displayOrder ASC")
     suspend fun getAllCategories(): List<Category>
-    
+
     /**
      * Get all categories as Flow (real-time updates)
      */
     @Query("SELECT * FROM categories ORDER BY displayOrder ASC")
     fun getAllCategoriesFlow(): Flow<List<Category>>
-    
+
     /**
      * Get system categories only
      */
     @Query("SELECT * FROM categories WHERE isSystemCategory = 1 ORDER BY displayOrder ASC")
     fun getSystemCategories(): Flow<List<Category>>
-    
+
     /**
      * Get custom user categories
      */
     @Query("SELECT * FROM categories WHERE isSystemCategory = 0 ORDER BY displayOrder ASC")
     fun getCustomCategories(): Flow<List<Category>>
-    
+
     /**
      * Search categories by name
      */
@@ -79,49 +79,49 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE LOWER(categoryName) = LOWER(:name) LIMIT 1")
     suspend fun findByCategoryName(name: String): Category?
-    
+
     /**
      * Count total categories
      */
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun countCategories(): Int
-    
+
     /**
      * Count custom categories
      */
     @Query("SELECT COUNT(*) FROM categories WHERE isSystemCategory = 0")
     suspend fun countCustomCategories(): Int
-    
+
     /**
      * Get category by emoji
      */
     @Query("SELECT * FROM categories WHERE iconEmoji = :emoji")
     suspend fun getCategoryByEmoji(emoji: String): Category?
-    
+
     /**
      * Check if category exists
      */
     @Query("SELECT EXISTS(SELECT 1 FROM categories WHERE categoryId = :categoryId)")
     suspend fun categoryExists(categoryId: String): Boolean
-    
+
     /**
      * Update category display order
      */
     @Query("UPDATE categories SET displayOrder = :order WHERE categoryId = :categoryId")
     suspend fun updateCategoryOrder(categoryId: String, order: Int)
-    
+
     /**
      * Update category color
      */
     @Query("UPDATE categories SET colorHex = :colorHex WHERE categoryId = :categoryId")
     suspend fun updateCategoryColor(categoryId: String, colorHex: String)
-    
+
     /**
      * Update category icon
      */
     @Query("UPDATE categories SET iconEmoji = :emoji WHERE categoryId = :categoryId")
     suspend fun updateCategoryIcon(categoryId: String, emoji: String)
-    
+
     /**
      * Update category name and description
      */
@@ -129,27 +129,27 @@ interface CategoryDao {
     suspend fun updateCategoryInfo(
         categoryId: String,
         name: String,
-        description: String
+        description: String,
     )
-    
+
     /**
      * Get maximum display order
      */
     @Query("SELECT MAX(displayOrder) FROM categories")
     suspend fun getMaxDisplayOrder(): Int?
-    
+
     /**
      * Delete all custom categories
      */
     @Query("DELETE FROM categories WHERE isSystemCategory = 0")
     suspend fun deleteAllCustomCategories()
-    
+
     /**
      * Reset all categories to defaults
      */
     @Query("DELETE FROM categories")
     suspend fun deleteAllCategories()
-    
+
     /**
      * Get all category IDs
      */
@@ -160,16 +160,18 @@ interface CategoryDao {
      * P0.5: Atomically move all apps from source category to target category.
      * Used when deleting a category — prevents orphaned app records.
      */
-    @Query("""
+    @Query(
+        """
         UPDATE apps
         SET categoryId = :targetCategoryId,
             lastUpdated = :timestamp
         WHERE categoryId = :sourceCategoryId
-    """)
+    """,
+    )
     suspend fun moveAppsToCategory(
         sourceCategoryId: String,
         targetCategoryId: String,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     )
 
     /**
@@ -180,7 +182,7 @@ interface CategoryDao {
     @Transaction
     suspend fun deleteCategoryWithFallback(
         categoryId: String,
-        fallbackCategoryId: String = Category.CAT_OTHER
+        fallbackCategoryId: String = Category.CAT_OTHER,
     ) {
         // The DELETE query protects system categories, but moving first would still
         // reassign their apps. Guard the whole operation before touching app rows.

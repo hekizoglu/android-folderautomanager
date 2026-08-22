@@ -19,7 +19,7 @@ import com.armutlu.apporganizer.domain.models.HomeSectionId
 data class DashboardUiState(
     val pulse: HomePulseSummary?,
     val smartAccess: SmartAccessUiState,
-    val pendingClassificationCount: Int = 0,  // P1.2: Badge için beklemede olan sınıflandırma sayısı
+    val pendingClassificationCount: Int = 0, // P1.2: Badge için beklemede olan sınıflandırma sayısı
     // D240 — Ana Ekranı Düzenle editöründen (HomeLayoutEditorScreen) gelen gerçek CONTENT sırası/
     // görünürlüğü. HomeSectionRenderer.dashboardContentOrder(config) ile üretilir, HeroDashboardPage
     // bu listeye göre CLOCK/MISSIONS_AND_SCORE'u sıralar ve SmartAccessCard grubunu gizler/gösterir.
@@ -37,7 +37,7 @@ data class DashboardActions(
     val onOpenNotificationAccessSettings: () -> Unit,
     val onLaunchApp: (String) -> Unit,
     val onAppLongClick: (String) -> Unit,
-    val onOpenClassificationReview: () -> Unit = {},  // P1.2: Sınıflandırma inceleme ekranı
+    val onOpenClassificationReview: () -> Unit = {}, // P1.2: Sınıflandırma inceleme ekranı
     val onOpenMissions: () -> Unit = {},
     val onOpenFolderReview: () -> Unit = {},
     val onOpenNotificationHistory: () -> Unit = {},

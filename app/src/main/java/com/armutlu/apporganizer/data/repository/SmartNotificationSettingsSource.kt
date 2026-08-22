@@ -4,8 +4,8 @@ import android.content.Context
 import com.armutlu.apporganizer.domain.models.SmartNotificationSettings
 import com.armutlu.apporganizer.utils.SmartNotificationPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 interface SmartNotificationSettingsSource {
     val settings: StateFlow<SmartNotificationSettings>

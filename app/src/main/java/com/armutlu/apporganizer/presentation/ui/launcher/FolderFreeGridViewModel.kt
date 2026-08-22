@@ -8,11 +8,10 @@ import com.armutlu.apporganizer.domain.home.GridPosition
 import com.armutlu.apporganizer.domain.home.HomeGridItemType
 import com.armutlu.apporganizer.domain.home.HomeGridItemTypeCodec
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

@@ -23,7 +23,7 @@ internal fun GlassCard(
     backgroundAlpha: Float = 0.15f,
     borderAlpha: Float = 0.30f,
     borderColor: Color = Color.White,
-    content: @Composable BoxScope.() -> Unit
+    content: @Composable BoxScope.() -> Unit,
 ) {
     val palette = LocalHomeObjectPalette.current
     val shape = RoundedCornerShape(cornerRadius)
@@ -34,6 +34,6 @@ internal fun GlassCard(
             .clip(shape)
             .background(palette.surfaceTint.copy(alpha = backgroundAlpha))
             .border(1.dp, resolvedBorder.copy(alpha = borderAlpha), shape),
-        content = content
+        content = content,
     )
 }

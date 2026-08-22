@@ -44,7 +44,7 @@ fun SettingsAppsScreen(
             llmCategorizing = llmCategorizing,
             llmProgress = llmProgress,
             onNavigateToClassificationReview = onNavigateToClassificationReview,
-            onNavigateToFolderSuggestions = onNavigateToFolderSuggestions
+            onNavigateToFolderSuggestions = onNavigateToFolderSuggestions,
         )
     }
 }

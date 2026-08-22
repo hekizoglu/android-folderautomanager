@@ -30,13 +30,13 @@ class WeeklyGoalMigrationTest {
                 """
                 INSERT INTO weekly_goals(categoryId, targetMinutes, weekStartEpochDay, createdAt, achievedAt)
                 VALUES ('social', 300, 19000, 1000, 0)
-                """.trimIndent()
+                """.trimIndent(),
             )
             execSQL(
                 """
                 INSERT INTO weekly_goals(categoryId, targetMinutes, weekStartEpochDay, createdAt, achievedAt)
                 VALUES ('games', 200, 19000, 1000, 5000)
-                """.trimIndent()
+                """.trimIndent(),
             )
             close()
         }
@@ -53,7 +53,7 @@ class WeeklyGoalMigrationTest {
             SELECT categoryId, targetMinutes, mode, status, achievedAt
             FROM weekly_goals
             WHERE categoryId = 'social'
-            """.trimIndent()
+            """.trimIndent(),
         ).use { cursor ->
             org.junit.Assert.assertTrue(cursor.moveToFirst())
             assertEquals(300, cursor.getInt(cursor.getColumnIndexOrThrow("targetMinutes")))
@@ -66,7 +66,7 @@ class WeeklyGoalMigrationTest {
             SELECT categoryId, mode, status
             FROM weekly_goals
             WHERE categoryId = 'games'
-            """.trimIndent()
+            """.trimIndent(),
         ).use { cursor ->
             org.junit.Assert.assertTrue(cursor.moveToFirst())
             assertEquals("MANUAL", cursor.getString(cursor.getColumnIndexOrThrow("mode")))

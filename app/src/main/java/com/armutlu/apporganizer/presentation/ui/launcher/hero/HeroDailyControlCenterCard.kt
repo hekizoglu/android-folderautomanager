@@ -106,16 +106,25 @@ internal fun HeroDailyControlCenterCard(
                     progress = missionSummary?.takeIf { it.totalCount > 0 }?.let {
                         (it.completedCount.toFloat() / it.totalCount).coerceIn(0f, 1f)
                     },
-                    onClick = { TelemetryManager.log(TelemetryEvent.HomeMissionCardOpened(TelemetryEvent.HomeMissionType.NONE, missionStatus)); onOpenMissions() },
-                    contentDescription = stringResource(R.string.hero_daily_control_missions_description, missionAccessibleValue(missionSummary)),
+                    onClick = {
+                        TelemetryManager.log(TelemetryEvent.HomeMissionCardOpened(TelemetryEvent.HomeMissionType.NONE, missionStatus))
+                        onOpenMissions()
+                    },
+                    contentDescription = stringResource(
+                        R.string.hero_daily_control_missions_description,
+                        missionAccessibleValue(missionSummary),
+                    ),
                 )
                 SegmentDivider()
                 DailyControlSegment(
                     modifier = Modifier.testTag("hero_daily_control_notifications"),
                     title = stringResource(R.string.hero_daily_control_notifications),
                     value = notificationPrimaryValue(notificationCount24h, notificationAccessGranted),
-                    detail = if (notificationAccessGranted) stringResource(R.string.hero_daily_control_last_24_hours_with_history_limit)
-                    else stringResource(R.string.hero_daily_control_access_required),
+                    detail = if (notificationAccessGranted) {
+                        stringResource(R.string.hero_daily_control_last_24_hours_with_history_limit)
+                    } else {
+                        stringResource(R.string.hero_daily_control_access_required)
+                    },
                     icon = { Icon(Icons.Default.Notifications, null, tint = NotificationOrange, modifier = Modifier.size(20.dp)) },
                     accent = NotificationOrange,
                     progress = null,
@@ -249,7 +258,9 @@ private fun missionPrimaryValue(summary: HomeMissionSummary?): String = when {
 
 @Composable
 private fun missionDetail(summary: HomeMissionSummary?): String = when {
-    summary == null || summary.primaryStatus == MissionStatus.DATA_UNAVAILABLE -> stringResource(R.string.hero_daily_control_access_required)
+    summary == null || summary.primaryStatus == MissionStatus.DATA_UNAVAILABLE -> stringResource(
+        R.string.hero_daily_control_access_required,
+    )
     summary.totalCount > 0 && summary.completedCount == summary.totalCount -> stringResource(R.string.missions_home_card_all_completed)
     else -> summary?.primaryCurrentText ?: summary?.primaryTitle ?: stringResource(R.string.missions_home_chip_subtitle)
 }

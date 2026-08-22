@@ -9,8 +9,11 @@ object WidgetPrefs {
     fun getWidgetIds(context: Context): List<Int> {
         val raw = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getString(KEY_WIDGET_IDS, "") ?: ""
-        return if (raw.isBlank()) emptyList()
-        else raw.split(",").mapNotNull { it.trim().toIntOrNull() }
+        return if (raw.isBlank()) {
+            emptyList()
+        } else {
+            raw.split(",").mapNotNull { it.trim().toIntOrNull() }
+        }
     }
 
     fun saveWidgetIds(context: Context, ids: List<Int>) {

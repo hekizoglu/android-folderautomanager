@@ -16,9 +16,9 @@ import javax.inject.Singleton
  */
 @Singleton
 class PackageManagerHelper @Inject constructor(@ApplicationContext private val context: Context) {
-    
+
     private val packageManager = context.packageManager
-    
+
     companion object {
         // Kullanıcıya gösterilmemesi gereken sistem paketi önekleri
         private val HIDDEN_PREFIXES = listOf(
@@ -36,8 +36,8 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
 
         fun shouldHide(packageName: String): Boolean =
             HIDDEN_PREFIXES.any { packageName.startsWith(it) } ||
-            packageName == "android" ||
-            packageName.contains(".overlay.")
+                packageName == "android" ||
+                packageName.contains(".overlay.")
     }
 
     /**
@@ -47,7 +47,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
      */
     suspend fun getInstalledApps(
         includeSystem: Boolean = true,
-        onlyLaunchable: Boolean = true
+        onlyLaunchable: Boolean = true,
     ): List<AppInfo> {
         return withContext(Dispatchers.IO) {
             try {
@@ -88,7 +88,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                                     firstInstalledTime = pkgInfo.firstInstallTime,
                                     lastUpdatedTime = pkgInfo.lastUpdateTime,
                                     targetSdkVersion = appInfo.targetSdkVersion,
-                                    versionName = pkgInfo.versionName ?: ""
+                                    versionName = pkgInfo.versionName ?: "",
                                 )
                             }.onFailure {
                                 Timber.w(it, "Error loading package: ${ri.activityInfo.packageName}")
@@ -119,7 +119,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                                     firstInstalledTime = pkgInfo.firstInstallTime,
                                     lastUpdatedTime = pkgInfo.lastUpdateTime,
                                     targetSdkVersion = appInfo.targetSdkVersion,
-                                    versionName = pkgInfo.versionName ?: ""
+                                    versionName = pkgInfo.versionName ?: "",
                                 )
                             }.onFailure {
                                 Timber.w(it, "Error loading package: ${pkgInfo.packageName}")
@@ -135,14 +135,14 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
             }
         }
     }
-    
+
     /**
      * Get only user-installed apps (excluding system apps)
      */
     suspend fun getUserInstalledApps(): List<AppInfo> {
         return getInstalledApps(includeSystem = false)
     }
-    
+
     /**
      * Get only system apps
      */
@@ -152,7 +152,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                 .filter { it.isSystemApp }
         }
     }
-    
+
     /**
      * Check if app is installed
      */
@@ -164,7 +164,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
             false
         }
     }
-    
+
     /**
      * Get app info by package name
      */
@@ -185,7 +185,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
                     firstInstalledTime = pkgInfo.firstInstallTime,
                     lastUpdatedTime = pkgInfo.lastUpdateTime,
                     targetSdkVersion = appInfo.targetSdkVersion,
-                    versionName = pkgInfo.versionName ?: ""
+                    versionName = pkgInfo.versionName ?: "",
                 )
             } catch (e: Exception) {
                 Timber.e(e, "Error getting app info for $packageName")
@@ -193,7 +193,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
             }
         }
     }
-    
+
     /**
      * Launch app
      */
@@ -213,7 +213,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
             false
         }
     }
-    
+
     /**
      * Uninstall app (opens system uninstall dialog)
      */
@@ -230,7 +230,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
             false
         }
     }
-    
+
     /**
      * Get app size
      */
@@ -244,7 +244,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
             0L
         }
     }
-    
+
     /**
      * Get app version
      */
@@ -257,7 +257,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
             "Unknown"
         }
     }
-    
+
     /**
      * Check if app is system app
      */
@@ -269,7 +269,7 @@ class PackageManagerHelper @Inject constructor(@ApplicationContext private val c
         val source = publicSourceDir ?: sourceDir ?: return ""
         return java.io.File(source).nameWithoutExtension
     }
-    
+
     /**
      * Get installed app count
      */

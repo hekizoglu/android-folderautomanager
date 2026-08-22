@@ -46,7 +46,7 @@ class SmartNotificationServiceIntegrationTest {
         appDao = mockk(relaxed = true)
         readState = FakeReadStateSource()
         settings = FakeSettingsSource(
-            SmartNotificationSettings.defaults(engineEnabled = true)
+            SmartNotificationSettings.defaults(engineEnabled = true),
         )
         repository = InMemorySmartNotificationRepository(readState, settings)
         service = MutableSnapshotService().apply {

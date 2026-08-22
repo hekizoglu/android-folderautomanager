@@ -1,11 +1,10 @@
 ﻿package com.armutlu.apporganizer.presentation.ui.screens
 
-import androidx.compose.foundation.background
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.launcher.HomePageTelemetryPolicy
 import com.armutlu.apporganizer.utils.AppAnalytics
@@ -40,37 +40,39 @@ fun SettingsHomeScreenSection(
 
     // ── Ana Ekran Özellikleri ─────────────────────────────────────────────
     SettingsSectionTitle("Ana Ekran Özellikleri")
-    var swipeHintEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
-    var newBadgeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
+    var swipeHintEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSwipeHintEnabled(context)) }
+    var newBadgeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNewBadgeEnabled(context)) }
     var folderCountVisible by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderCountVisible(context)) }
-    var folderSwipeHint    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
-    var notifTextEnabled   by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var folderSwipeHint by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSwipeHintEnabled(context)) }
+    var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
     var previewBlocklistOpen by remember { mutableStateOf(false) }
     var previewBlocklistDraft by remember {
         mutableStateOf(
             com.armutlu.apporganizer.utils.AppPrefs.getNotificationPreviewBlockedPackages(context)
                 .sorted()
-                .joinToString("\n")
+                .joinToString("\n"),
         )
     }
-    var hideNavButtons     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
-    var allAppsBgAlpha     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
-    var suggestionsEnabled       by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
-    var recentNotificationAppsRowEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentNotificationAppsRowEnabled(context)) }
-    var recentAppsEnabled        by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
-    var favoritesEnabled         by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
+    var hideNavButtons by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNavButtonsHidden(context)) }
+    var allAppsBgAlpha by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
+    var suggestionsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSuggestionsEnabled(context)) }
+    var recentNotificationAppsRowEnabled by remember {
+        mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentNotificationAppsRowEnabled(context))
+    }
+    var recentAppsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabled(context)) }
+    var favoritesEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabled(context)) }
     var recentAppsEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isRecentAppsEnabledAllApps(context)) }
-    var favoritesEnabledAllApps  by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
-    var autoFolderSizeEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
-    var assistantCardsEnabled    by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
-    var editingCenterEnabled     by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isEditingCenterEnabled(context)) }
+    var favoritesEnabledAllApps by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFavoritesEnabledAllApps(context)) }
+    var autoFolderSizeEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAutoFolderSizeEnabled(context)) }
+    var assistantCardsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isAssistantCardsEnabled(context)) }
+    var editingCenterEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isEditingCenterEnabled(context)) }
 
     // Genişleyebilir kart — 13 ayar tek başlık altında, scroll yorgunluğunu azaltır (D199)
     SettingsExpandableCard(
         icon = Icons.Default.Home,
         title = "Ana Ekran Ayarları",
         subtitle = "Ana ekranın görünümü ve davranışları",
-        initiallyExpanded = false
+        initiallyExpanded = false,
     ) {
         HomeSettingsGroupTitle("Arama")
         SettingsButtonRow(
@@ -79,7 +81,10 @@ fun SettingsHomeScreenSection(
             subtitle = "Arama kaynakları, hız ve sonuç düzeni",
             onClick = onNavigateToSearchSettings,
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         // T05: eskiden burada tek "Haber Şeridi" aç/kapat switch'i vardı — artık kullanıcı
         // içerik türlerini, otomatik geçişi ve hassas bilgi gösterimini ayrı ayrı kontrol
         // edebildiği için dedike ekrana taşındı (SmartTickerSettingsScreen).
@@ -89,7 +94,10 @@ fun SettingsHomeScreenSection(
             subtitle = "Günün akışı, hatırlatmalar ve gösterilecek içerik türleri",
             onClick = onNavigateToSmartTickerSettings,
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         var shineEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isSearchShineEnabled(context)) }
         SettingsSwitchRow(
             icon = Icons.Default.AutoAwesome,
@@ -99,9 +107,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 shineEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setSearchShineEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         var folderSearchEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isFolderSearchEnabled(context)) }
         SettingsSwitchRow(
             icon = Icons.Default.FolderOpen,
@@ -111,9 +122,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 folderSearchEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setFolderSearchEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         // S3 — çekmece sadeleştirme: varsayılan kapalı, kapalıyken çekmecede tek menü butonu kullanılır
         var drawerChipRowsEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isDrawerChipRowsEnabled(context)) }
         SettingsSwitchRow(
@@ -124,9 +138,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 drawerChipRowsEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setDrawerChipRowsEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         HomeSettingsGroupTitle("Öneriler ve bildirimler")
         // "Bildirim Analizi" toggle'ı Ayarlar > Bildirimler ekranına taşındı (Döngü 226) —
         // ana ekran ayarı değil, bildirim veri toplama ayarıdır.
@@ -139,9 +156,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 folderBadgeEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setFolderBadgeEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = "Favoriler",
@@ -150,9 +170,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 favoritesEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setFavoritesEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.AutoAwesome,
             title = "Uygulama Önerileri",
@@ -161,12 +184,20 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 suggestionsEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setSuggestionsEnabled(context, it)
-            }
+            },
         )
         if (suggestionsEnabled) {
-            var suggestionsIconSizeDp by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context)) }
+            var suggestionsIconSizeDp by remember {
+                mutableStateOf(
+                    com.armutlu.apporganizer.utils.AppPrefs.getSuggestionsIconSizeDp(context),
+                )
+            }
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Text("Öneriler Bölümü Boyutu: ${suggestionsIconSizeDp}dp", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "Öneriler Bölümü Boyutu: ${suggestionsIconSizeDp}dp",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Slider(
                     value = suggestionsIconSizeDp.toFloat(),
                     onValueChange = {
@@ -174,7 +205,7 @@ fun SettingsHomeScreenSection(
                         com.armutlu.apporganizer.utils.AppPrefs.setSuggestionsIconSizeDp(context, it.toInt())
                     },
                     valueRange = 32f..52f,
-                    steps = 4
+                    steps = 4,
                 )
             }
             Box(
@@ -183,28 +214,31 @@ fun SettingsHomeScreenSection(
                     .padding(horizontal = 16.dp, vertical = 6.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         "🧠 Öneri Algoritması",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
                         "Son kullanımlarınıza göre sıralama yapılır:\n" +
-                        "• Daha yeni açılanlar öne çıkabilir\n" +
-                        "• Sık açtıkların daha görünür olur\n" +
-                        "• Gün içindeki alışkanlıklarına göre sıralama uyarlanır",
+                            "• Daha yeni açılanlar öne çıkabilir\n" +
+                            "• Sık açtıkların daha görünür olur\n" +
+                            "• Gün içindeki alışkanlıklarına göre sıralama uyarlanır",
                         fontSize = 11.sp,
                         lineHeight = 16.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
         }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.NotificationsActive,
             title = "Son Bildirim Alanlar",
@@ -213,9 +247,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 recentNotificationAppsRowEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setRecentNotificationAppsRowEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.History,
             title = "Son Kullanılanlar",
@@ -224,9 +261,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 recentAppsEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setRecentAppsEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         HomeSettingsGroupTitle("Temel davranışlar")
         SettingsSwitchRow(
             icon = Icons.Default.SwipeUp,
@@ -236,9 +276,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 swipeHintEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setSwipeHintEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Info,
             title = "Assistant Kartları",
@@ -247,9 +290,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 assistantCardsEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setAssistantCardsEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Edit,
             title = "Düzenleme Merkezi",
@@ -258,9 +304,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 editingCenterEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setEditingCenterEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         HomeSettingsGroupTitle("Görsel")
         SettingsSwitchRow(
             icon = Icons.Default.NewReleases,
@@ -270,9 +319,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 newBadgeEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setNewBadgeEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.AspectRatio,
             title = "Otomatik Boyut Ayarla",
@@ -281,9 +333,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 autoFolderSizeEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setAutoFolderSizeEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.FormatListNumbered,
             title = "Klasör Uygulama Sayısı",
@@ -292,9 +347,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 folderCountVisible = it
                 com.armutlu.apporganizer.utils.AppPrefs.setFolderCountVisible(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.SwipeUp,
             title = "Klasör Alt Yazısı",
@@ -303,9 +361,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 folderSwipeHint = it
                 com.armutlu.apporganizer.utils.AppPrefs.setFolderSwipeHintEnabled(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Notifications,
             title = "Bildirim Metni",
@@ -324,9 +385,12 @@ fun SettingsHomeScreenSection(
                         }
                     }
                 }
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsButtonRow(
             icon = Icons.Default.Lock,
             title = "Hassas Uygulama Engeli",
@@ -337,9 +401,12 @@ fun SettingsHomeScreenSection(
                     .sorted()
                     .joinToString("\n")
                 previewBlocklistOpen = true
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.HideSource,
             title = "Sistem Navigasyonunu Gizle",
@@ -348,16 +415,23 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 hideNavButtons = it
                 com.armutlu.apporganizer.utils.AppPrefs.setNavButtonsHidden(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Opacity, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Tüm Uygulamalar Arka Plan", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                    Text("Arka plan görünürlüğü: ${(allAppsBgAlpha * 100).toInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "Arka plan görünürlüğü: ${(allAppsBgAlpha * 100).toInt()}%",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -368,7 +442,7 @@ fun SettingsHomeScreenSection(
                     com.armutlu.apporganizer.utils.AppPrefs.setAllAppsBgAlpha(context, it)
                 },
                 valueRange = 0.1f..1.0f,
-                steps = 8
+                steps = 8,
             )
         }
     }
@@ -403,7 +477,7 @@ fun SettingsHomeScreenSection(
                 TextButton(onClick = {
                     com.armutlu.apporganizer.utils.AppPrefs.setNotificationPreviewBlockedPackages(
                         context,
-                        previewBlocklistDraft.lines().map { it.trim() }.filter { it.isNotBlank() }.toSet()
+                        previewBlocklistDraft.lines().map { it.trim() }.filter { it.isNotBlank() }.toSet(),
                     )
                     previewBlocklistOpen = false
                 }) {
@@ -421,7 +495,7 @@ fun SettingsHomeScreenSection(
                     Text(
                         "Her satıra bir paket adı yaz. Listedeki uygulamalarda içerik kapatılır ve yalnızca bildirim sayısı görünür.",
                         fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     OutlinedTextField(
                         value = previewBlocklistDraft,
@@ -429,10 +503,10 @@ fun SettingsHomeScreenSection(
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 4,
                         maxLines = 8,
-                        label = { Text("Örnek: com.whatsapp") }
+                        label = { Text("Örnek: com.whatsapp") },
                     )
                 }
-            }
+            },
         )
     }
     SettingsCard {
@@ -455,8 +529,11 @@ fun SettingsHomeScreenSection(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                if (selected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                },
                             )
                             .clickable {
                                 clockStyle = styleKey
@@ -473,7 +550,10 @@ fun SettingsHomeScreenSection(
                 }
             }
         }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         var searchBarPosition by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getSearchBarPosition(context)) }
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(
@@ -498,8 +578,11 @@ fun SettingsHomeScreenSection(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                if (selected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                },
                             )
                             .clickable {
                                 searchBarPosition = posKey
@@ -516,7 +599,10 @@ fun SettingsHomeScreenSection(
                 }
             }
         }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Star,
             title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_digital_life_card_visible_title),
@@ -525,9 +611,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 digitalLifeCardVisible = it
                 com.armutlu.apporganizer.utils.AppPrefs.setDigitalLifeCardVisible(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Info,
             title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_insight_visible_title),
@@ -536,9 +625,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 homeInsightVisible = it
                 com.armutlu.apporganizer.utils.AppPrefs.setHomeInsightVisible(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Info,
             title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_usage_chart_visible_title),
@@ -547,9 +639,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 homeUsageChartVisible = it
                 com.armutlu.apporganizer.utils.AppPrefs.setHomeUsageChartVisible(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.Cloud,
             title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_visible_title),
@@ -558,14 +653,19 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 homeWeatherEnabled = it
                 com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherEnabled(context, it)
-            }
+            },
         )
         if (homeWeatherEnabled) {
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            )
             SettingsSwitchRow(
                 icon = Icons.Default.MyLocation,
                 title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_use_location_title),
-                subtitle = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_use_location_desc),
+                subtitle = androidx.compose.ui.res.stringResource(
+                    com.armutlu.apporganizer.R.string.settings_home_weather_use_location_desc,
+                ),
                 checked = homeWeatherUseLocation,
                 onCheckedChange = { enabled ->
                     if (enabled) {
@@ -583,9 +683,12 @@ fun SettingsHomeScreenSection(
                         homeWeatherUseLocation = false
                         com.armutlu.apporganizer.utils.AppPrefs.setHomeWeatherUseLocation(context, false)
                     }
-                }
+                },
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+            )
             SettingsButtonRow(
                 icon = Icons.Default.LocationCity,
                 title = androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_city_title),
@@ -607,7 +710,11 @@ fun SettingsHomeScreenSection(
                     value = draftCity,
                     onValueChange = { draftCity = it },
                     singleLine = true,
-                    label = { Text(androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_city_hint)) },
+                    label = {
+                        Text(
+                            androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_home_weather_city_hint),
+                        )
+                    },
                 )
             },
             confirmButton = {
@@ -655,9 +762,12 @@ fun SettingsHomeScreenSection(
                     com.armutlu.apporganizer.utils.HomePagePrefs.setStartPageMode(context, startPageMode)
                     AppAnalytics.homeStartModeChanged(HomePageTelemetryPolicy.startMode(startPageMode))
                 }
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(
                 androidx.compose.ui.res.stringResource(com.armutlu.apporganizer.R.string.settings_start_page_mode_title),
@@ -686,8 +796,11 @@ fun SettingsHomeScreenSection(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(
-                                if (selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                if (selected) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                },
                             )
                             .clickable(enabled = optionEnabled) {
                                 startPageMode = mode
@@ -722,9 +835,12 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 favoritesEnabledAllApps = it
                 com.armutlu.apporganizer.utils.AppPrefs.setFavoritesEnabledAllApps(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         SettingsSwitchRow(
             icon = Icons.Default.History,
             title = "Son Kullanılanlar (Tüm Uygulamalar)",
@@ -733,7 +849,7 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 recentAppsEnabledAllApps = it
                 com.armutlu.apporganizer.utils.AppPrefs.setRecentAppsEnabledAllApps(context, it)
-            }
+            },
         )
     }
 
@@ -750,7 +866,7 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 widgetAreaEnabledLocal = it
                 com.armutlu.apporganizer.utils.AppPrefs.setWidgetAreaEnabled(context, it)
-            }
+            },
         )
         SettingsSwitchRow(
             icon = Icons.Default.AspectRatio,
@@ -760,7 +876,7 @@ fun SettingsHomeScreenSection(
             onCheckedChange = {
                 widgetAutoResizeLocal = it
                 com.armutlu.apporganizer.utils.AppPrefs.setWidgetAutoResizeEnabled(context, it)
-            }
+            },
         )
     }
 
@@ -788,7 +904,7 @@ fun SettingsHomeScreenSection(
                             missionTempo = tempo
                             com.armutlu.apporganizer.utils.AppPrefs.setMissionTempo(context, tempo)
                         },
-                        label = { Text(label, fontSize = 12.sp) }
+                        label = { Text(label, fontSize = 12.sp) },
                     )
                 }
             }
@@ -833,7 +949,7 @@ fun SettingsHomeScreenSection(
     SettingsCard {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(Icons.Default.Palette, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
             Spacer(Modifier.width(14.dp))
@@ -852,6 +968,6 @@ private fun HomeSettingsGroupTitle(title: String) {
         fontSize = 12.sp,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp, end = 16.dp)
+        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp, end = 16.dp),
     )
 }

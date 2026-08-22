@@ -10,17 +10,15 @@ import com.armutlu.apporganizer.domain.advice.CategoryGoalForAdvice
 import com.armutlu.apporganizer.domain.advice.DigitalAdvice
 import com.armutlu.apporganizer.domain.advice.computeDigitalAdvice
 import com.armutlu.apporganizer.domain.models.WeeklyGoal
-import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import com.armutlu.apporganizer.domain.models.WeeklyGoalMode
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.goals.CategoryUsageSnapshotProvider
 import com.armutlu.apporganizer.domain.usecase.goals.EnsureCurrentWeekAdaptiveGoalsUseCase
 import com.armutlu.apporganizer.domain.usecase.goals.SettlePreviousWeekAdaptiveGoalsUseCase
+import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import com.armutlu.apporganizer.utils.AppPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.time.Clock
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,8 +26,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.Clock
+import javax.inject.Inject
 
 /**
  * P5 — Dashboard'a özel business logic. `AppListViewModel` büyütülmeyecek diye (CLAUDE.md §7)

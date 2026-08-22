@@ -14,8 +14,8 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import java.util.concurrent.TimeUnit
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 /**
  * Ticker arşivi ("Tüm haberler") günlük temizlik işi — [TickerHistoryDao.deleteOlderThan] ile

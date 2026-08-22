@@ -12,36 +12,36 @@ import javax.inject.Singleton
 @Singleton
 class AppClassifier @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val appDatabaseService: AppDatabaseService
+    private val appDatabaseService: AppDatabaseService,
 ) {
     constructor(context: Context) : this(context, AppDatabaseService(context))
 
     // Üretici prefix → üretici kategorisi: exactMap'ten sonra, keyword'den önce kontrol edilir
     private val MANUFACTURER_PREFIX_MAP = mapOf(
         // Google
-        "com.google"                            to Category.CAT_GOOGLE,
-        "com.android.google"                    to Category.CAT_GOOGLE,
+        "com.google" to Category.CAT_GOOGLE,
+        "com.android.google" to Category.CAT_GOOGLE,
         // Samsung
-        "com.samsung"                           to Category.CAT_SAMSUNG,
-        "com.sec.android"                       to Category.CAT_SAMSUNG,
+        "com.samsung" to Category.CAT_SAMSUNG,
+        "com.sec.android" to Category.CAT_SAMSUNG,
         // Microsoft
-        "com.microsoft"                         to Category.CAT_MICROSOFT,
+        "com.microsoft" to Category.CAT_MICROSOFT,
         // Xiaomi / MIUI
-        "com.xiaomi"                            to Category.CAT_XIAOMI,
-        "com.miui"                              to Category.CAT_XIAOMI,
+        "com.xiaomi" to Category.CAT_XIAOMI,
+        "com.miui" to Category.CAT_XIAOMI,
         // Huawei / Honor
-        "com.huawei"                            to Category.CAT_HUAWEI,
-        "com.hihonor"                           to Category.CAT_HUAWEI,
+        "com.huawei" to Category.CAT_HUAWEI,
+        "com.hihonor" to Category.CAT_HUAWEI,
         // Meta (Facebook ekosistemi)
-        "com.meta"                              to Category.CAT_META,
-        "com.facebook"                          to Category.CAT_META,
-        "com.instagram"                         to Category.CAT_META,
+        "com.meta" to Category.CAT_META,
+        "com.facebook" to Category.CAT_META,
+        "com.instagram" to Category.CAT_META,
         // Spotify
-        "com.spotify"                           to Category.CAT_SPOTIFY,
+        "com.spotify" to Category.CAT_SPOTIFY,
         // Amazon
-        "com.amazon"                            to Category.CAT_AMAZON,
+        "com.amazon" to Category.CAT_AMAZON,
         // Apple
-        "com.apple"                             to Category.CAT_APPLE,
+        "com.apple" to Category.CAT_APPLE,
     )
 
     // Üretici kategorileri kümesi — tek uygulamalı üretici klasörlerini CAT_OTHER'a almak için
@@ -49,21 +49,20 @@ class AppClassifier @Inject constructor(
 
     // Üretici adı → üretici kategorisi: uygulama adında üretici adı geçiyorsa da eşleştirir
     private val MANUFACTURER_NAME_MAP = mapOf(
-        "samsung"   to Category.CAT_SAMSUNG,
-        "xiaomi"    to Category.CAT_XIAOMI,
-        "miui"      to Category.CAT_XIAOMI,
-        "huawei"    to Category.CAT_HUAWEI,
-        "honor"     to Category.CAT_HUAWEI,
+        "samsung" to Category.CAT_SAMSUNG,
+        "xiaomi" to Category.CAT_XIAOMI,
+        "miui" to Category.CAT_XIAOMI,
+        "huawei" to Category.CAT_HUAWEI,
+        "honor" to Category.CAT_HUAWEI,
         "microsoft" to Category.CAT_MICROSOFT,
-        "amazon"    to Category.CAT_AMAZON,
-        "apple"     to Category.CAT_APPLE,
-        "meta"      to Category.CAT_META,
-        "spotify"   to Category.CAT_SPOTIFY,
+        "amazon" to Category.CAT_AMAZON,
+        "apple" to Category.CAT_APPLE,
+        "meta" to Category.CAT_META,
+        "spotify" to Category.CAT_SPOTIFY,
     )
 
     // Paket adına göre kesin kategori eşlemesi — assets/app_categories.json'dan lazy yüklenir
     private val exactMatchMap: Map<String, String> get() = AppClassifierAssets.getExactMatchMap(context)
-
 
     fun classifyApp(appInfo: AppInfo, manufacturerClassifyEnabled: Boolean = true): String =
         classifyAppDecision(appInfo, manufacturerClassifyEnabled).categoryId
@@ -76,7 +75,7 @@ class AppClassifier @Inject constructor(
      */
     fun classifyAppDecision(
         appInfo: AppInfo,
-        manufacturerClassifyEnabled: Boolean = true
+        manufacturerClassifyEnabled: Boolean = true,
     ): ClassificationDecision {
         val mode = if (manufacturerClassifyEnabled) {
             AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
@@ -97,7 +96,7 @@ class AppClassifier @Inject constructor(
      */
     fun classifyAppDecision(
         appInfo: AppInfo,
-        mode: AppPrefs.ClassificationMode
+        mode: AppPrefs.ClassificationMode,
     ): ClassificationDecision {
         userDecision(appInfo)?.let { return it }
 
@@ -239,13 +238,13 @@ class AppClassifier @Inject constructor(
 
     private fun strongestKeywordDecision(
         appNameDecision: ClassificationDecision?,
-        packageDecision: ClassificationDecision?
+        packageDecision: ClassificationDecision?,
     ): ClassificationDecision? {
         if (appNameDecision == null) return packageDecision
         if (packageDecision == null) return appNameDecision
         if (appNameDecision.categoryId == packageDecision.categoryId) {
             return appNameDecision.copy(
-                confidence = ClassificationConfidence.clampAutomatic(appNameDecision.confidence + 5)
+                confidence = ClassificationConfidence.clampAutomatic(appNameDecision.confidence + 5),
             )
         }
         return appNameDecision.copy(
@@ -298,7 +297,7 @@ class AppClassifier @Inject constructor(
 
     private fun hasConflictingSignals(
         first: ClassificationDecision?,
-        second: ClassificationDecision?
+        second: ClassificationDecision?,
     ): Boolean = first != null && second != null && first.categoryId != second.categoryId
 
     // ApplicationInfo.category (API 26+) — uygulama gelistiricisinin manifestte beyan ettigi
@@ -323,7 +322,7 @@ class AppClassifier @Inject constructor(
 
     fun classifyApps(
         apps: List<AppInfo>,
-        manufacturerClassifyEnabled: Boolean = true
+        manufacturerClassifyEnabled: Boolean = true,
     ): Map<String, String> {
         val raw = apps.associateBy({ it.packageName }, { classifyApp(it, manufacturerClassifyEnabled) })
         if (!manufacturerClassifyEnabled) return raw
@@ -353,7 +352,7 @@ class AppClassifier @Inject constructor(
     fun findSimilarApps(
         packageName: String,
         categoryId: String,
-        allApps: List<AppInfo>
+        allApps: List<AppInfo>,
     ): List<AppInfo> {
         val source = allApps.firstOrNull { it.packageName == packageName } ?: return emptyList()
         val manualOverrides = AppPrefs.getManualCategoryOverrides(context)
@@ -396,7 +395,7 @@ class AppClassifier @Inject constructor(
         newCategoryId: String,
         allApps: List<AppInfo>,
         manualOverrides: Map<String, String>,
-        limit: Int = 10
+        limit: Int = 10,
     ): List<AppInfo> {
         if (oldCategoryId == newCategoryId) return emptyList()
         return allApps
@@ -489,5 +488,3 @@ class AppClassifier @Inject constructor(
         const val LOW_CONFIDENCE_THRESHOLD = ClassificationConfidence.REVIEW_THRESHOLD
     }
 }
-
-

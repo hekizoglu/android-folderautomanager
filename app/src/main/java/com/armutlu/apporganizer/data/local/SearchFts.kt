@@ -7,5 +7,5 @@ package com.armutlu.apporganizer.data.local
  */
 data class SearchFts(
     val searchText: String,
-    val keywords: String = ""
+    val keywords: String = "",
 )

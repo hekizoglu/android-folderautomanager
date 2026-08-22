@@ -47,8 +47,8 @@ import com.armutlu.apporganizer.domain.home.detectEdgeScroll
 import com.armutlu.apporganizer.domain.home.findFirstFreeCell
 import com.armutlu.apporganizer.domain.home.isValidPlacement
 import com.armutlu.apporganizer.utils.WidgetHostManager
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * Faz S3 — Dashboard widget alanının serbest 2D grid yerleşimi. `AppPrefs.KEY_WIDGET_FREE_GRID_ENABLED`
@@ -222,8 +222,10 @@ fun WidgetFreeGrid(
                                                 now - lastEdgeScrollAt >= 700L
                                             ) {
                                                 lastEdgeScrollAt = now
-                                                val targetPage = (pagerState.currentPage +
-                                                    if (direction == EdgeScrollDirection.NEXT) 1 else -1)
+                                                val targetPage = (
+                                                    pagerState.currentPage +
+                                                        if (direction == EdgeScrollDirection.NEXT) 1 else -1
+                                                    )
                                                     .coerceIn(0, (pagerState.pageCount - 1).coerceAtLeast(0))
                                                 coroutineScope.launch {
                                                     pagerState.animateScrollToPage(targetPage)
@@ -264,9 +266,9 @@ fun WidgetFreeGrid(
                             // ile aynı desen (uzun basış zaten sürükleme için kullanılıyor).
                             .pointerInput(itemId) {
                                 detectTapGestures(
-                                    onDoubleTap = { showRemoveButton = !showRemoveButton }
+                                    onDoubleTap = { showRemoveButton = !showRemoveButton },
                                 )
-                            }
+                            },
                     ) {
                         hostView?.let { widgetView ->
                             AndroidView(
@@ -289,7 +291,7 @@ fun WidgetFreeGrid(
                                                 showRemoveButton = false
                                                 onRemoveWidget(widgetId)
                                                 viewModel.removePosition(widgetId)
-                                            }
+                                            },
                                         )
                                     },
                                 contentAlignment = Alignment.Center,
@@ -304,7 +306,7 @@ fun WidgetFreeGrid(
                         }
                     }
                 }
-            }
+            },
         ) { measurables, constraints ->
             val placeables = measurables.mapIndexed { index, measurable ->
                 val widgetId = widgetIds.getOrNull(index)
@@ -317,7 +319,7 @@ fun WidgetFreeGrid(
                         maxWidth = widthPx.coerceAtLeast(0),
                         minHeight = 0,
                         maxHeight = heightPx.coerceAtLeast(0),
-                    )
+                    ),
                 )
             }
             layout(constraints.maxWidth, (cellSizePx * rows).roundToInt()) {

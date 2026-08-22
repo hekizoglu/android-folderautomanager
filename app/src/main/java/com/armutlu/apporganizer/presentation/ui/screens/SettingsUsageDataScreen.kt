@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -38,14 +38,16 @@ import java.util.Date
 @Composable
 fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
     val context = LocalContext.current.applicationContext
-    val model: UsageDataViewModel = viewModel(factory = object : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = UsageDataViewModel(
-            initialSharingEnabled = AppPrefs.isTelemetryEnabled(context),
-            persistSharingEnabled = { TelemetryConsentManager.setConsent(context, it) },
-            testConnection = FirebaseConnectionTester(context)::test,
-        ) as T
-    })
+    val model: UsageDataViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = UsageDataViewModel(
+                initialSharingEnabled = AppPrefs.isTelemetryEnabled(context),
+                persistSharingEnabled = { TelemetryConsentManager.setConsent(context, it) },
+                testConnection = FirebaseConnectionTester(context)::test,
+            ) as T
+        },
+    )
     val state by model.uiState.collectAsState()
 
     SettingsSubScreenScaffold(stringResource(R.string.usage_data_title), onNavigateBack) {
@@ -58,12 +60,17 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
                 ) {
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.usage_data_sharing_title))
-                        Text(stringResource(R.string.usage_data_sharing_description), fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            stringResource(R.string.usage_data_sharing_description),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     val switchState = if (state.sharingEnabled) {
                         stringResource(R.string.usage_data_enabled)
-                    } else stringResource(R.string.usage_data_disabled)
+                    } else {
+                        stringResource(R.string.usage_data_disabled)
+                    }
                     Switch(
                         checked = state.sharingEnabled,
                         onCheckedChange = model::setSharingEnabled,
@@ -95,14 +102,16 @@ fun SettingsUsageDataScreen(onNavigateBack: () -> Unit) {
 @Composable
 fun FirebaseHealthCheckSection() {
     val context = LocalContext.current.applicationContext
-    val model: UsageDataViewModel = viewModel(factory = object : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = UsageDataViewModel(
-            initialSharingEnabled = AppPrefs.isTelemetryEnabled(context),
-            persistSharingEnabled = { TelemetryConsentManager.setConsent(context, it) },
-            testConnection = FirebaseConnectionTester(context)::test,
-        ) as T
-    })
+    val model: UsageDataViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = UsageDataViewModel(
+                initialSharingEnabled = AppPrefs.isTelemetryEnabled(context),
+                persistSharingEnabled = { TelemetryConsentManager.setConsent(context, it) },
+                testConnection = FirebaseConnectionTester(context)::test,
+            ) as T
+        },
+    )
     val state by model.uiState.collectAsState()
     val firebaseBuildEnabled = BuildConfig.FIREBASE_BUILD_ENABLED
 
@@ -122,13 +131,15 @@ fun FirebaseHealthCheckSection() {
                 if (state.connectionStatus == ConnectionTestStatus.TESTING) {
                     CircularProgressIndicator(Modifier.padding(end = 8.dp), strokeWidth = 2.dp)
                 }
-                Text(stringResource(
-                    if (firebaseBuildEnabled) {
-                        R.string.usage_data_test_button
-                    } else {
-                        R.string.usage_data_ci_build_test_disabled
-                    },
-                ))
+                Text(
+                    stringResource(
+                        if (firebaseBuildEnabled) {
+                            R.string.usage_data_test_button
+                        } else {
+                            R.string.usage_data_ci_build_test_disabled
+                        },
+                    ),
+                )
             }
         }
     }
@@ -159,10 +170,12 @@ private fun ConnectionTestDetails(result: FirebaseConnectionTestResult) {
         Text(stringResource(R.string.usage_data_result_analytics, result.analyticsQueued.asQueuedText()))
         Text(stringResource(R.string.usage_data_result_crashlytics, result.crashlyticsReady.asReadyText()))
         Text(stringResource(R.string.usage_data_result_performance, result.performanceReady.asReadyText()))
-        Text(stringResource(
-            R.string.usage_data_result_tested_at,
-            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(result.testedAt)),
-        ))
+        Text(
+            stringResource(
+                R.string.usage_data_result_tested_at,
+                DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(result.testedAt)),
+            ),
+        )
         result.safeErrorCode?.let { Text(stringResource(R.string.usage_data_result_error, it)) }
         Text(
             stringResource(R.string.usage_data_analytics_disclaimer),
@@ -217,10 +230,12 @@ private fun notCollectedItems() = listOf(
 )
 
 @Composable
-private fun connectionStatusText(status: ConnectionTestStatus): String = stringResource(when (status) {
-    ConnectionTestStatus.IDLE -> R.string.usage_data_status_idle
-    ConnectionTestStatus.TESTING -> R.string.usage_data_status_testing
-    ConnectionTestStatus.SUCCESS -> R.string.usage_data_status_success
-    ConnectionTestStatus.PARTIAL_SUCCESS -> R.string.usage_data_status_partial
-    ConnectionTestStatus.FAILED -> R.string.usage_data_status_failed
-})
+private fun connectionStatusText(status: ConnectionTestStatus): String = stringResource(
+    when (status) {
+        ConnectionTestStatus.IDLE -> R.string.usage_data_status_idle
+        ConnectionTestStatus.TESTING -> R.string.usage_data_status_testing
+        ConnectionTestStatus.SUCCESS -> R.string.usage_data_status_success
+        ConnectionTestStatus.PARTIAL_SUCCESS -> R.string.usage_data_status_partial
+        ConnectionTestStatus.FAILED -> R.string.usage_data_status_failed
+    },
+)

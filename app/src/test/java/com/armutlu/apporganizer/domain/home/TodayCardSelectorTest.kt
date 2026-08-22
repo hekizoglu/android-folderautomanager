@@ -236,7 +236,11 @@ class TodayCardSelectorTest {
 
     @Test
     fun `mission with empty list and no pulse and no advice returns null`() {
-        val spec = TodayCardSelector.select(mission = mission(urgent = false, totalCount = 0, completedCount = 0), pulse = null, weeklyReportReady = false)
+        val spec = TodayCardSelector.select(
+            mission = mission(urgent = false, totalCount = 0, completedCount = 0),
+            pulse = null,
+            weeklyReportReady = false,
+        )
         assertNull(spec)
     }
 }

@@ -11,7 +11,7 @@ class NotificationReportV2OverviewTest {
     @Test
     fun `metrics calculate actionable and suppressed percentages`() {
         val metrics = NotificationReportV2Metrics.from(
-            report(total = 10, actionable = 7, suppressed = 3, highPriority = 2, night = 4)
+            report(total = 10, actionable = 7, suppressed = 3, highPriority = 2, night = 4),
         )
 
         assertEquals(10, metrics.totalReceived)
@@ -32,7 +32,7 @@ class NotificationReportV2OverviewTest {
     @Test
     fun `invalid negative values are clamped for display`() {
         val metrics = NotificationReportV2Metrics.from(
-            report(total = -5, actionable = -2, suppressed = -1, highPriority = -3, night = -4)
+            report(total = -5, actionable = -2, suppressed = -1, highPriority = -3, night = -4),
         )
 
         assertEquals(0, metrics.totalReceived)

@@ -27,7 +27,7 @@ import javax.inject.Inject
 class FolderMergeViewModel @Inject constructor(
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
-    private val undoMergeDao: UndoMergeDao
+    private val undoMergeDao: UndoMergeDao,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FolderMergeUiState())
@@ -79,7 +79,7 @@ class FolderMergeViewModel @Inject constructor(
                 _uiState.update { state ->
                     state.copy(
                         suggestions = suggestions,
-                        error = null
+                        error = null,
                     )
                 }
             } catch (e: Exception) {
@@ -105,7 +105,7 @@ class FolderMergeViewModel @Inject constructor(
                     selectableApps = selectableApps,
                     selectedAppsToMove = emptySet(),
                     targetFolderId = suggestion.targetCategoryId,
-                    error = null
+                    error = null,
                 )
             }
         }
@@ -146,7 +146,7 @@ class FolderMergeViewModel @Inject constructor(
                         reason = suggestion.reason,
                         confidence = suggestion.confidence,
                         sourceAppCount = state.sourceFolderApps.size,
-                        targetAppCount = 0
+                        targetAppCount = 0,
                     )
                     _uiState.update { it.copy(mergePlan = plan) }
 
@@ -170,14 +170,14 @@ class FolderMergeViewModel @Inject constructor(
             appDao.batchUpdateCategoryForMerge(
                 packageNames = plan.movablePackageNames,
                 sourceCategoryId = plan.sourceCategoryId,
-                targetCategoryId = plan.targetCategoryId
+                targetCategoryId = plan.targetCategoryId,
             )
 
             // 2. Record undo history
             val undoRecord = UndoMergeEntity.create(
                 sourceCategoryId = plan.sourceCategoryId,
                 targetCategoryId = plan.targetCategoryId,
-                affectedPackages = plan.movablePackageNames
+                affectedPackages = plan.movablePackageNames,
             )
             undoMergeDao.insertUndoMerge(undoRecord)
 
@@ -189,7 +189,6 @@ class FolderMergeViewModel @Inject constructor(
                 newStack
             }
             _canUndo.update { true }
-
         } catch (e: Exception) {
             _uiState.update { it.copy(error = "Birleştirme başarısız: ${e.message}") }
         }
@@ -209,7 +208,7 @@ class FolderMergeViewModel @Inject constructor(
                 appDao.batchUpdateCategoryForMerge(
                     packageNames = undoRecord.getAffectedPackagesList(),
                     sourceCategoryId = undoRecord.targetCategoryId,
-                    targetCategoryId = undoRecord.sourceCategoryId
+                    targetCategoryId = undoRecord.sourceCategoryId,
                 )
 
                 // Pop from undo stack
@@ -238,7 +237,7 @@ class FolderMergeViewModel @Inject constructor(
                 selectedAppsToMove = emptySet(),
                 targetFolderId = null,
                 mergePlan = null,
-                error = null
+                error = null,
             )
         }
     }

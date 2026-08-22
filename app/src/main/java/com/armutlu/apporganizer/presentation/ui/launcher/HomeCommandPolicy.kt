@@ -40,12 +40,16 @@ data class HomeCommandContext(
 sealed interface HomeCommand {
     /** Tam ekran aramayı/klasör arama sorgusunu kapat — pager'a dokunma. */
     data object CloseSearch : HomeCommand
+
     /** Açık modal'ı (dock edit, context menu, kategori seçici) kapat — pager'a dokunma. */
     data object CloseModal : HomeCommand
+
     /** Başlangıç sayfasına (Dashboard veya kullanıcı ayarına göre ilk sayfa) anında dön. */
     data object GoToStartPage : HomeCommand
+
     /** İkinci Home (≤500ms) — All Apps çekmecesini aç. */
     data object OpenAllApps : HomeCommand
+
     /** Yapacak bir şey yok (savunma amaçlı — bugün üretilmez, exhaustive when için). */
     data object None : HomeCommand
 }

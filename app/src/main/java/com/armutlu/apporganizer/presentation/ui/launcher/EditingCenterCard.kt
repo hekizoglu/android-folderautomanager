@@ -22,11 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.armutlu.apporganizer.R
 
 @Composable
 fun EditingCenterCard(
@@ -36,7 +34,7 @@ fun EditingCenterCard(
     onNavigateToAppCorrections: () -> Unit = {},
     onNavigateToPermissions: () -> Unit = {},
     onNavigateToStaleApps: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (!state.hasAnyAlert) {
         return // Hiç uyarı yoksa kartı gösterme
@@ -51,25 +49,25 @@ fun EditingCenterCard(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(cardBgColor)
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         // Başlık
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(
                 imageVector = Icons.Default.Edit,
                 contentDescription = null,
                 tint = accentColor,
-                modifier = Modifier.width(20.dp)
+                modifier = Modifier.width(20.dp),
             )
             Text(
                 text = "Düzenleme Merkezi",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.weight(1f))
             // Toplam uyarı sayısı badge
@@ -78,16 +76,16 @@ fun EditingCenterCard(
                     modifier = Modifier
                         .background(
                             color = Color(0xFFFF6B6B),
-                            shape = RoundedCornerShape(50)
+                            shape = RoundedCornerShape(50),
                         )
                         .padding(horizontal = 8.dp, vertical = 2.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "${state.totalAlerts}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White,
                     )
                 }
             }
@@ -101,7 +99,7 @@ fun EditingCenterCard(
                 icon = "📋",
                 title = "Sınıflandırma Onayı",
                 count = state.pendingClassificationCount,
-                onClick = onNavigateToClassificationReview
+                onClick = onNavigateToClassificationReview,
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -111,7 +109,7 @@ fun EditingCenterCard(
                 icon = "🔗",
                 title = "Klasör Birleşimi",
                 count = state.folderMergeCandidates,
-                onClick = onNavigateToFolderMerge
+                onClick = onNavigateToFolderMerge,
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -121,7 +119,7 @@ fun EditingCenterCard(
                 icon = "✏️",
                 title = "Yanlış Konumlandırma",
                 count = state.appCorrectionsCount,
-                onClick = onNavigateToAppCorrections
+                onClick = onNavigateToAppCorrections,
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -131,7 +129,7 @@ fun EditingCenterCard(
                 icon = "🔐",
                 title = "Eksik İzinler",
                 count = state.missingPermissionsCount,
-                onClick = onNavigateToPermissions
+                onClick = onNavigateToPermissions,
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -141,7 +139,7 @@ fun EditingCenterCard(
                 icon = "⏰",
                 title = "Kullanılmayan Uygulamalar",
                 count = state.staleAppsCount,
-                onClick = onNavigateToStaleApps
+                onClick = onNavigateToStaleApps,
             )
         }
     }
@@ -153,7 +151,7 @@ private fun EditingCenterAlertItem(
     title: String,
     count: Int,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
@@ -163,25 +161,25 @@ private fun EditingCenterAlertItem(
             .background(MaterialTheme.colorScheme.surface)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
             text = icon,
-            fontSize = 20.sp
+            fontSize = 20.sp,
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         Text(
             text = "$count",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
         )
     }
 }

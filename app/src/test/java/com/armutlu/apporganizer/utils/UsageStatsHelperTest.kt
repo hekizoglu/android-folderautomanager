@@ -4,9 +4,9 @@ import android.app.AppOpsManager
 import android.content.Context
 import io.mockk.every
 import io.mockk.mockk
-import java.time.LocalDate
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.LocalDate
 
 /**
  * Zaman-Kisitli Gorev — getScreenOnEventsInWindow() izin-yok yolunu dogrular. UsageStatsManager

@@ -43,7 +43,9 @@ class HomePagePrefsTest {
 
     @Test fun `legacy page 0 with folder A maps to folder A anchor`() {
         val anchor = HomePagePrefs.deriveAnchorFromLegacyIndex(
-            legacyIndex = 0, folders = listOf(folder("A"), folder("B")), pageSize = 1,
+            legacyIndex = 0,
+            folders = listOf(folder("A"), folder("B")),
+            pageSize = 1,
         )
         assertEquals(HomePageAnchor.Folder("A"), anchor)
     }
@@ -57,7 +59,9 @@ class HomePagePrefsTest {
 
     @Test fun `legacy index out of range falls back to dashboard`() {
         val anchor = HomePagePrefs.deriveAnchorFromLegacyIndex(
-            legacyIndex = 9, folders = listOf(folder("A")), pageSize = 1,
+            legacyIndex = 9,
+            folders = listOf(folder("A")),
+            pageSize = 1,
         )
         assertEquals(HomePageAnchor.Dashboard, anchor)
     }
@@ -194,7 +198,8 @@ private class HomePagePrefsFakeSharedPreferences : SharedPreferences {
     override fun getAll(): MutableMap<String, *> = map
     override fun getString(key: String?, defValue: String?): String? = map[key] as? String ?: defValue
     override fun getStringSet(key: String?, defValues: MutableSet<String>?): MutableSet<String>? =
-        @Suppress("UNCHECKED_CAST") (map[key] as? MutableSet<String> ?: defValues)
+        @Suppress("UNCHECKED_CAST")
+        (map[key] as? MutableSet<String> ?: defValues)
     override fun getInt(key: String?, defValue: Int): Int = map[key] as? Int ?: defValue
     override fun getLong(key: String?, defValue: Long): Long = map[key] as? Long ?: defValue
     override fun getFloat(key: String?, defValue: Float): Float = map[key] as? Float ?: defValue
@@ -210,31 +215,40 @@ private class HomePagePrefsFakeSharedPreferences : SharedPreferences {
         private var clearAll = false
 
         override fun putString(key: String?, value: String?): SharedPreferences.Editor {
-            key?.let { pending[it] = value }; return this
+            key?.let { pending[it] = value }
+            return this
         }
         override fun putStringSet(key: String?, values: MutableSet<String>?): SharedPreferences.Editor {
-            key?.let { pending[it] = values }; return this
+            key?.let { pending[it] = values }
+            return this
         }
         override fun putInt(key: String?, value: Int): SharedPreferences.Editor {
-            key?.let { pending[it] = value }; return this
+            key?.let { pending[it] = value }
+            return this
         }
         override fun putLong(key: String?, value: Long): SharedPreferences.Editor {
-            key?.let { pending[it] = value }; return this
+            key?.let { pending[it] = value }
+            return this
         }
         override fun putFloat(key: String?, value: Float): SharedPreferences.Editor {
-            key?.let { pending[it] = value }; return this
+            key?.let { pending[it] = value }
+            return this
         }
         override fun putBoolean(key: String?, value: Boolean): SharedPreferences.Editor {
-            key?.let { pending[it] = value }; return this
+            key?.let { pending[it] = value }
+            return this
         }
         override fun remove(key: String?): SharedPreferences.Editor {
-            key?.let { removals.add(it) }; return this
+            key?.let { removals.add(it) }
+            return this
         }
         override fun clear(): SharedPreferences.Editor {
-            clearAll = true; return this
+            clearAll = true
+            return this
         }
         override fun commit(): Boolean {
-            apply(); return true
+            apply()
+            return true
         }
         override fun apply() {
             if (clearAll) map.clear()

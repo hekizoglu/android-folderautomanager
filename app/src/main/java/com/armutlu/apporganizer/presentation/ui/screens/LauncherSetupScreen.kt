@@ -93,7 +93,7 @@ fun LauncherSetupScreen(
             context.startActivity(
                 Intent(Settings.ACTION_HOME_SETTINGS).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
+                },
             )
         }
     }
@@ -124,8 +124,8 @@ fun LauncherSetupScreen(
                                 listOf(
                                     MaterialTheme.colorScheme.primary,
                                     MaterialTheme.colorScheme.primaryContainer,
-                                )
-                            )
+                                ),
+                            ),
                         ),
                     contentAlignment = Alignment.Center,
                 ) {

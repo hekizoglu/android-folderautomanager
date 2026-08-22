@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.domain.usecase.pulse
 
 import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 

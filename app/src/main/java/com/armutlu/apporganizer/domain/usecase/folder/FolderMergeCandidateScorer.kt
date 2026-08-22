@@ -94,7 +94,7 @@ object FolderMergeCandidateScorer {
 
         return plans.sortedWith(
             compareByDescending<FolderMergePlan> { it.confidence }
-                .thenBy { it.sourceCategoryId.lowercase(Locale("tr")) }
+                .thenBy { it.sourceCategoryId.lowercase(Locale("tr")) },
         )
     }
 

@@ -12,22 +12,22 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.BuildConfig
-import com.armutlu.apporganizer.data.local.FilesIndexWorker
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.CategoryDao
-import com.armutlu.apporganizer.data.local.NotificationEventDao
+import com.armutlu.apporganizer.data.local.FilesIndexWorker
+import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.MissionHistoryDao
 import com.armutlu.apporganizer.data.local.MissionInstanceDao
+import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.local.TaskScoreEventDao
 import com.armutlu.apporganizer.domain.home.HomeIntelligenceCoordinator
 import com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport
 import com.armutlu.apporganizer.domain.models.MissionHistoryEntry
-import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
-import com.armutlu.apporganizer.domain.usecase.missions.MissionWorkScheduler
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnostics
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDiagnosticsCalculator
+import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
+import com.armutlu.apporganizer.domain.usecase.missions.MissionWorkScheduler
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeLayoutMath
 import com.armutlu.apporganizer.workers.MissionSettlementWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -259,7 +259,11 @@ class DiagnosticsReportManager @Inject constructor(
         val notificationLatestAt = notificationEventDao.latestPostedAt()
         val latestTaskScore = runCatching { taskScoreEventDao.getLatestEvent() }.getOrNull()
         val dailyMissionCompletions = runCatching { missionHistoryDao.getCompletionCount(MissionHistoryEntry.PERIOD_DAILY) }.getOrDefault(0)
-        val weeklyMissionCompletions = runCatching { missionHistoryDao.getCompletionCount(MissionHistoryEntry.PERIOD_WEEKLY) }.getOrDefault(0)
+        val weeklyMissionCompletions = runCatching {
+            missionHistoryDao.getCompletionCount(
+                MissionHistoryEntry.PERIOD_WEEKLY,
+            )
+        }.getOrDefault(0)
         val viewingMissionCompletions = runCatching {
             missionHistoryDao.getCompletionCountByMissionIds(listOf(MissionEngine.DAILY_VIEW_NOTIF_REPORT))
         }.getOrDefault(0)
@@ -272,7 +276,7 @@ class DiagnosticsReportManager @Inject constructor(
                     MissionEngine.DAILY_CLASSIFICATION_CLEANUP,
                     MissionEngine.WEEKLY_SCREEN_LESS,
                     MissionEngine.WEEKLY_POSITIVE_ACTIONS,
-                )
+                ),
             )
         }.getOrDefault(0)
         val positiveTaskScore = runCatching { taskScoreEventDao.getPositiveScore() }.getOrDefault(0)
@@ -326,8 +330,16 @@ class DiagnosticsReportManager @Inject constructor(
                 readContactsState = permissionState(isPermissionGranted(Manifest.permission.READ_CONTACTS)),
                 coarseLocationState = permissionState(isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)),
                 permissionHealthSummary = listOf(
-                    permissionHealthLine("Konum", isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION), AppPrefs.isHomeWeatherEnabled(context)),
-                    permissionHealthLine("Kisiler", isPermissionGranted(Manifest.permission.READ_CONTACTS), AppPrefs.isSearchSourceContactsEnabled(context)),
+                    permissionHealthLine(
+                        "Konum",
+                        isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION),
+                        AppPrefs.isHomeWeatherEnabled(context),
+                    ),
+                    permissionHealthLine(
+                        "Kisiler",
+                        isPermissionGranted(Manifest.permission.READ_CONTACTS),
+                        AppPrefs.isSearchSourceContactsEnabled(context),
+                    ),
                 ),
                 storageSummary = storageSummary,
                 totalApps = apps.size,
@@ -339,7 +351,15 @@ class DiagnosticsReportManager @Inject constructor(
                 lastUsageSyncAt = formatDateTime(AppPrefs.getLastUsageSyncTime(context)),
                 classificationMode = AppPrefs.getClassificationMode(context).name,
                 classificationDiagnostics = classificationDiagnostics,
-                searchSourcesLine = "apps=${yesNo(AppPrefs.isSearchSourceAppsEnabled(context))}, categories=${yesNo(AppPrefs.isSearchSourceCategoriesEnabled(context))}, settings=${yesNo(AppPrefs.isSearchSourceSettingsEnabled(context))}, contacts=${yesNo(AppPrefs.isSearchSourceContactsEnabled(context))}, files=${yesNo(AppPrefs.isSearchSourceFilesEnabled(context))}",
+                searchSourcesLine = "apps=${yesNo(
+                    AppPrefs.isSearchSourceAppsEnabled(context),
+                )}, categories=${yesNo(
+                    AppPrefs.isSearchSourceCategoriesEnabled(context),
+                )}, settings=${yesNo(
+                    AppPrefs.isSearchSourceSettingsEnabled(context),
+                )}, contacts=${yesNo(
+                    AppPrefs.isSearchSourceContactsEnabled(context),
+                )}, files=${yesNo(AppPrefs.isSearchSourceFilesEnabled(context))}",
                 fileIndexItemCount = AppPrefs.getFileIndexItemCount(context),
                 fileIndexLastIndexedAt = formatDateTime(AppPrefs.getFileIndexLastIndexedAt(context)),
                 fileIndexFailureReason = AppPrefs.getFileIndexFailureReason(context) ?: "-",
@@ -502,7 +522,7 @@ class DiagnosticsReportManager @Inject constructor(
                         lastBackupAt = AppPrefs.getLastBackupTime(context),
                         telemetry = telemetry,
                         formatDate = ::formatDateTime,
-                    )
+                    ),
                 )
             }
         }
@@ -533,7 +553,11 @@ class DiagnosticsReportManager @Inject constructor(
         val manager = context.getSystemService(ActivityManager::class.java) ?: return "okunamadi"
         val exits = runCatching { manager.getHistoricalProcessExitReasons(context.packageName, 0, 0) }.getOrDefault(emptyList())
         fun count(reason: Int) = exits.count { it.reason == reason }
-        return "kayit=${exits.size}, ANR=${count(ApplicationExitInfo.REASON_ANR)}, lowMemory=${count(ApplicationExitInfo.REASON_LOW_MEMORY)}, nativeCrash=${count(ApplicationExitInfo.REASON_CRASH_NATIVE)}; trace=rapora_dahil_degil"
+        return "kayit=${exits.size}, ANR=${count(
+            ApplicationExitInfo.REASON_ANR,
+        )}, lowMemory=${count(
+            ApplicationExitInfo.REASON_LOW_MEMORY,
+        )}, nativeCrash=${count(ApplicationExitInfo.REASON_CRASH_NATIVE)}; trace=rapora_dahil_degil"
     }
 
     private fun File.safeTreeSize(): Long = runCatching {
@@ -588,7 +612,9 @@ class DiagnosticsReportManager @Inject constructor(
     private val WORK_SPECS = listOf(
         WorkerSpec("Auto backup", "auto_backup_weekly", WorkerKind.PERIODIC, enabled = { AppPrefs.isAutoBackupEnabled(context) }),
         WorkerSpec("Smart insight", "smart_insight_daily", WorkerKind.PERIODIC, enabled = { AppPrefs.isSmartNotifEnabled(context) }),
-        WorkerSpec("Suggestion notification", "suggestion_notification_daily", WorkerKind.PERIODIC, enabled = { AppPrefs.isSuggestionNotificationsEnabled(context) }),
+        WorkerSpec("Suggestion notification", "suggestion_notification_daily", WorkerKind.PERIODIC, enabled = {
+            AppPrefs.isSuggestionNotificationsEnabled(context)
+        }),
         WorkerSpec("Weekly digest", "weekly_digest", WorkerKind.PERIODIC, enabled = { AppPrefs.isWeeklyDigestEnabled(context) }),
         WorkerSpec(
             "Files index periodic",
@@ -774,7 +800,9 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine("Tamamlanan haftalik gorev: ${snapshot.weeklyMissionCompletions}")
     appendLine("Davranis degisikligi gorevi: ${snapshot.behaviorMissionCompletions}")
     appendLine("Goruntuleme gorevi: ${snapshot.viewingMissionCompletions}")
-    appendLine("Gorev skoru: pozitif=${snapshot.positiveTaskScore}, negatif=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}")
+    appendLine(
+        "Gorev skoru: pozitif=${snapshot.positiveTaskScore}, negatif=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}",
+    )
     appendLine("Dijital yasam skoru toplam yildizdan bagimsizdir.")
     appendLine("Tekrar odul engeli: aktif (ayni rapor goruntulemesi gunde bir kez puanlanir; misyonlar donem basina tekildir)")
     appendLine()
@@ -828,7 +856,9 @@ internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String = buildSt
     appendLine()
     appendLine("[Kritik Hatalar]")
     if (!classification.isConsistent) {
-        appendLine("Siniflandirma sayac uyusmazligi: userApps=${classification.totalUserApps}, bucketTotal=${classification.reconciledTotal}")
+        appendLine(
+            "Siniflandirma sayac uyusmazligi: userApps=${classification.totalUserApps}, bucketTotal=${classification.reconciledTotal}",
+        )
     }
     if (snapshot.crashSummary.isEmpty()) {
         if (classification.isConsistent) appendLine("Crash kaydi yok.")
@@ -870,7 +900,9 @@ private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportS
     appendLine("Amac: Bu bolum yapay zeka analizine uygun, gizlilik-korumali ve yapilandirilmis hata sinyalleri icerir.")
     appendLine("Gizlilik siniri: Paket adi, bildirim metni, kisi, dosya adi ve arama sorgusu yoktur.")
     appendLine("GeneratedAt=${snapshot.generatedAt}")
-    appendLine("Build=${snapshot.appVersionName}(${snapshot.appVersionCode}), package=${snapshot.packageVersionName}(${snapshot.packageLongVersionCode})")
+    appendLine(
+        "Build=${snapshot.appVersionName}(${snapshot.appVersionCode}), package=${snapshot.packageVersionName}(${snapshot.packageLongVersionCode})",
+    )
     appendLine("Device=${snapshot.deviceName}, Android=${snapshot.androidVersion}")
     appendLine("ConsentDerivedSignals=diagnostics_only")
     appendLine()
@@ -884,12 +916,14 @@ private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportS
 
     appendLine("## AI_ISSUES")
     if (issues.isEmpty()) {
-        appendLine("severity=INFO | area=overall | signal=no_blocking_signal | evidence=Rapor icinde kritik/uyari sinyali yok | next=Normal izleme")
+        appendLine(
+            "severity=INFO | area=overall | signal=no_blocking_signal | evidence=Rapor icinde kritik/uyari sinyali yok | next=Normal izleme",
+        )
     } else {
         issues.sortedWith(compareByDescending<AiDiagnosticIssue> { it.rank }.thenBy { it.area }).forEach { issue ->
             appendLine(
                 "severity=${issue.severity} | area=${issue.area} | signal=${issue.signal} | " +
-                    "evidence=${issue.evidence} | next=${issue.nextAction}"
+                    "evidence=${issue.evidence} | next=${issue.nextAction}",
             )
         }
     }
@@ -902,26 +936,48 @@ private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportS
     appendLine("classification.needsAttention=${snapshot.classificationDiagnostics.needsAttention}")
     appendLine("classification.uncategorized=${snapshot.classificationDiagnostics.uncategorized}")
     appendLine("classification.invalidOrUnknown=${snapshot.classificationDiagnostics.invalidOrUnknown}")
-    appendLine("classification.attentionByReason=${snapshot.classificationDiagnostics.attentionByReason.entries.joinToString { "${it.key.name}:${it.value}" }}")
+    appendLine(
+        "classification.attentionByReason=${snapshot.classificationDiagnostics.attentionByReason.entries.joinToString { "${it.key.name}:${it.value}" }}",
+    )
     appendLine("search.counters=${snapshot.searchCounterLine}")
     appendLine("search.interactions=${snapshot.searchInteractionLine}")
     appendLine("search.clickSources=${snapshot.searchClickSourcesLine}")
     appendLine("search.actions=${snapshot.searchActionLine}")
     appendLine("notifications.listener=${snapshot.notificationListenerEnabled}")
     appendLine("notifications.freshness=${snapshot.notificationFreshness}")
-    appendLine("notifications.total=${snapshot.notificationTotal}, last7d=${snapshot.notificationLast7d}, last24h=${snapshot.notificationLast24h}")
-    appendLine("permissions.postNotifications=${snapshot.postNotificationsState}, readContacts=${snapshot.readContactsState}, coarseLocation=${snapshot.coarseLocationState}")
-    appendLine("homeLayout.version=${snapshot.homeLayoutSummary.version}, customized=${snapshot.homeLayoutSummary.customized}, searchZone=${snapshot.homeLayoutSummary.searchZone.name}")
+    appendLine(
+        "notifications.total=${snapshot.notificationTotal}, last7d=${snapshot.notificationLast7d}, last24h=${snapshot.notificationLast24h}",
+    )
+    appendLine(
+        "permissions.postNotifications=${snapshot.postNotificationsState}, readContacts=${snapshot.readContactsState}, coarseLocation=${snapshot.coarseLocationState}",
+    )
+    appendLine(
+        "homeLayout.version=${snapshot.homeLayoutSummary.version}, customized=${snapshot.homeLayoutSummary.customized}, searchZone=${snapshot.homeLayoutSummary.searchZone.name}",
+    )
     appendLine("homeLayout.hidden=${snapshot.homeLayoutSummary.hiddenSections.joinToString { it.name }.ifBlank { "-" }}")
-    appendLine("homeLayout.widgetCount=${snapshot.homeLayoutSummary.widgetCount}, dockItemCount=${snapshot.homeLayoutSummary.dockItemCount}")
+    appendLine(
+        "homeLayout.widgetCount=${snapshot.homeLayoutSummary.widgetCount}, dockItemCount=${snapshot.homeLayoutSummary.dockItemCount}",
+    )
     appendLine("homePage.startMode=${snapshot.homeStartPageMode}, lastAnchorType=${snapshot.homeLastPageAnchorType}")
-    appendLine("homeArchitecture.mode=${snapshot.homeArchitecture.homeMode}, startPage=${snapshot.homeArchitecture.startPage}, lastPageType=${snapshot.homeArchitecture.lastPageType}")
-    appendLine("homeArchitecture.totalPages=${snapshot.homeArchitecture.totalPageCount}, folderPages=${snapshot.homeArchitecture.folderPageCount}, searchPosition=${snapshot.homeArchitecture.globalSearchPosition}")
-    appendLine("homeArchitecture.pagerRestore=${snapshot.homeArchitecture.pagerRestore}, gesturePolicy=${snapshot.homeArchitecture.gesturePolicy}")
-    appendLine("homeArchitecture.pagerV2Enabled=${snapshot.homeArchitecture.pagerV2Enabled}, pagerV2SafeMode=${snapshot.homeArchitecture.pagerV2SafeMode}")
-    appendLine("missions.enabled=${snapshot.missionsEnabled}, wrapped=${snapshot.wrappedEnabled}, prefsMigrated=${snapshot.missionPrefsMigrated}")
+    appendLine(
+        "homeArchitecture.mode=${snapshot.homeArchitecture.homeMode}, startPage=${snapshot.homeArchitecture.startPage}, lastPageType=${snapshot.homeArchitecture.lastPageType}",
+    )
+    appendLine(
+        "homeArchitecture.totalPages=${snapshot.homeArchitecture.totalPageCount}, folderPages=${snapshot.homeArchitecture.folderPageCount}, searchPosition=${snapshot.homeArchitecture.globalSearchPosition}",
+    )
+    appendLine(
+        "homeArchitecture.pagerRestore=${snapshot.homeArchitecture.pagerRestore}, gesturePolicy=${snapshot.homeArchitecture.gesturePolicy}",
+    )
+    appendLine(
+        "homeArchitecture.pagerV2Enabled=${snapshot.homeArchitecture.pagerV2Enabled}, pagerV2SafeMode=${snapshot.homeArchitecture.pagerV2SafeMode}",
+    )
+    appendLine(
+        "missions.enabled=${snapshot.missionsEnabled}, wrapped=${snapshot.wrappedEnabled}, prefsMigrated=${snapshot.missionPrefsMigrated}",
+    )
     appendLine("missions.dailyCompletions=${snapshot.dailyMissionCompletions}, weeklyCompletions=${snapshot.weeklyMissionCompletions}")
-    appendLine("taskScore.positive=${snapshot.positiveTaskScore}, negative=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}")
+    appendLine(
+        "taskScore.positive=${snapshot.positiveTaskScore}, negative=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}",
+    )
     appendLine("startup=${snapshot.startupSummary}")
     appendLine("exit=${snapshot.exitSummary}")
     appendLine("storage=${snapshot.storageSummary}")

@@ -16,7 +16,7 @@ interface MissionHistoryDao {
         """
         SELECT missionId FROM mission_history
         WHERE periodType = :periodType AND periodStartEpoch = :periodStartEpoch
-        """
+        """,
     )
     suspend fun getCompletedMissionIds(periodType: String, periodStartEpoch: Long): List<String>
 
@@ -25,7 +25,7 @@ interface MissionHistoryDao {
         SELECT DISTINCT missionId FROM mission_history
         WHERE periodType = :periodType
         AND periodStartEpoch BETWEEN :fromPeriodStartEpoch AND :toPeriodStartEpoch
-        """
+        """,
     )
     suspend fun getCompletedMissionIdsBetween(
         periodType: String,

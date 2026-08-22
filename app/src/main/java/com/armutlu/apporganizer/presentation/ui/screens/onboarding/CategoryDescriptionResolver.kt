@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.screens.onboarding
 
-import android.content.Context
 import androidx.annotation.StringRes
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.Category

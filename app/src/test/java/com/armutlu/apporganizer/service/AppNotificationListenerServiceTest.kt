@@ -83,7 +83,7 @@ class AppNotificationListenerServiceTest {
                 pkg = "com.akbank.android.apps.akbank_direkt",
                 title = "Kampanya",
                 text = "Kartınıza özel yüzde 50 indirim fırsatı",
-            )
+            ),
         )
 
         coVerify(timeout = 2_000) {
@@ -94,7 +94,7 @@ class AppNotificationListenerServiceTest {
                         event.category == NotificationCategory.PROMOTION.name &&
                         event.importanceScore < 40 &&
                         event.wasSuppressed
-                }
+                },
             )
         }
     }

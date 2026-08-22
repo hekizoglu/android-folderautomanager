@@ -153,7 +153,7 @@ class AppRepositoryTest {
     fun `insertApps classifies each app via classifier`() = runTest {
         val apps = listOf(
             app("com.instagram.android", "Instagram", "other"),
-            app("com.pubg.mobile", "PUBG", "other")
+            app("com.pubg.mobile", "PUBG", "other"),
         )
         every {
             mockClassifier.classifyAppDecision(match { it.packageName == "com.instagram.android" }, any<AppPrefs.ClassificationMode>())
@@ -166,10 +166,12 @@ class AppRepositoryTest {
         advanceUntilIdle()
 
         coVerify {
-            mockAppDao.insertApps(match { list ->
-                list.any { it.packageName == "com.instagram.android" && it.categoryId == "social" } &&
-                list.any { it.packageName == "com.pubg.mobile" && it.categoryId == "games" }
-            })
+            mockAppDao.insertApps(
+                match { list ->
+                    list.any { it.packageName == "com.instagram.android" && it.categoryId == "social" } &&
+                        list.any { it.packageName == "com.pubg.mobile" && it.categoryId == "games" }
+                },
+            )
         }
     }
 
@@ -237,7 +239,9 @@ class AppRepositoryTest {
 
     @Test
     fun `updateAppCategory delegates to dao`() = runTest {
-        coEvery { mockAppDao.updateAppCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns 1
+        coEvery {
+            mockAppDao.updateAppCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        } returns 1
 
         repository.updateAppCategory("com.test.app", "productivity")
         advanceUntilIdle()
@@ -305,13 +309,17 @@ class AppRepositoryTest {
         }
 
         assertTrue(thrown != null)
-        coVerify(exactly = 0) { mockAppDao.updateAppsCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        coVerify(exactly = 0) {
+            mockAppDao.updateAppsCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        }
     }
 
     @Test
     fun `updateAppsCategory delegates to dao with list`() = runTest {
         val packages = listOf("com.a", "com.b", "com.c")
-        coEvery { mockAppDao.updateAppsCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns packages.size
+        coEvery {
+            mockAppDao.updateAppsCategoryWithClassification(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any())
+        } returns packages.size
 
         repository.updateAppsCategory(packages, "games")
         advanceUntilIdle()
@@ -448,11 +456,13 @@ class AppRepositoryTest {
         advanceUntilIdle()
 
         coVerify {
-            mockAppDao.insertApps(match { list ->
-                list.size == 1 &&
-                    list[0].packageName == "com.newlyinstalled" &&
-                    list[0].categoryId == "productivity"
-            })
+            mockAppDao.insertApps(
+                match { list ->
+                    list.size == 1 &&
+                        list[0].packageName == "com.newlyinstalled" &&
+                        list[0].categoryId == "productivity"
+                },
+            )
         }
 
         // Room invalidation simülasyonu — gerçek DB'de insertApps sonrası Flow otomatik yeniden
@@ -472,16 +482,18 @@ class AppRepositoryTest {
 
         val installed = listOf(
             app("com.existing", "Existing"),
-            app("com.new", "New App")
+            app("com.new", "New App"),
         )
 
         repository.syncInstalledApps(installed)
         advanceUntilIdle()
 
         coVerify {
-            mockAppDao.insertApps(match { list ->
-                list.size == 1 && list[0].packageName == "com.new"
-            })
+            mockAppDao.insertApps(
+                match { list ->
+                    list.size == 1 && list[0].packageName == "com.new"
+                },
+            )
         }
     }
 
@@ -489,7 +501,7 @@ class AppRepositoryTest {
     fun `syncInstalledApps removes uninstalled apps`() = runTest {
         coEvery { mockAppDao.getAllApps() } returns listOf(
             app("com.installed", "Still Here"),
-            app("com.uninstalled", "Removed")
+            app("com.uninstalled", "Removed"),
         )
         every { mockClassifier.classifyAppDecision(any(), any<AppPrefs.ClassificationMode>()) } returns decision("social")
 

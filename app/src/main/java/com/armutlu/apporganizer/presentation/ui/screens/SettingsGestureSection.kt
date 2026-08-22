@@ -19,8 +19,8 @@ fun SettingsGestureSection() {
     val context = LocalContext.current
 
     var doubleTapAction by remember { mutableStateOf(AppPrefs.getGestureDoubleTap(context)) }
-    var longPressAction  by remember { mutableStateOf(AppPrefs.getGestureLongPress(context)) }
-    var swipeUpAction    by remember { mutableStateOf(AppPrefs.getGestureSwipeUp(context)) }
+    var longPressAction by remember { mutableStateOf(AppPrefs.getGestureLongPress(context)) }
+    var swipeUpAction by remember { mutableStateOf(AppPrefs.getGestureSwipeUp(context)) }
 
     SettingsSectionTitle("Gesture Aksiyonları")
     SettingsCard {
@@ -31,9 +31,12 @@ fun SettingsGestureSection() {
             onSelect = {
                 doubleTapAction = it
                 AppPrefs.setGestureDoubleTap(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         GestureActionRow(
             icon = Icons.Default.PanTool,
             label = "Uzun Bas (Boş Alan)",
@@ -41,9 +44,12 @@ fun SettingsGestureSection() {
             onSelect = {
                 longPressAction = it
                 AppPrefs.setGestureLongPress(context, it)
-            }
+            },
         )
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
         GestureActionRow(
             icon = Icons.Default.SwipeUp,
             label = "Yukarı Kaydır",
@@ -51,7 +57,7 @@ fun SettingsGestureSection() {
             onSelect = {
                 swipeUpAction = it
                 AppPrefs.setGestureSwipeUp(context, it)
-            }
+            },
         )
     }
 }
@@ -61,14 +67,14 @@ private fun GestureActionRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     selected: AppPrefs.GestureAction,
-    onSelect: (AppPrefs.GestureAction) -> Unit
+    onSelect: (AppPrefs.GestureAction) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.width(12.dp))
@@ -84,11 +90,15 @@ private fun GestureActionRow(
                 AppPrefs.GestureAction.entries.forEach { action ->
                     DropdownMenuItem(
                         text = { Text(action.label) },
-                        onClick = { onSelect(action); expanded = false },
+                        onClick = {
+                            onSelect(action)
+                            expanded = false
+                        },
                         leadingIcon = {
-                            if (selected == action)
+                            if (selected == action) {
                                 Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
-                        }
+                            }
+                        },
                     )
                 }
             }

@@ -44,7 +44,7 @@ class FolderNotificationStateTest {
                 appName = "Mail",
                 notificationCount = 2,
                 notificationText = "Eski",
-            )
+            ),
         )
 
         val result = apps.withLiveNotificationState(

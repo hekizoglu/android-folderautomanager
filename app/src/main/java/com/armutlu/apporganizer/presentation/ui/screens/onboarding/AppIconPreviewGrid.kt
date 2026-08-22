@@ -1,14 +1,11 @@
 package com.armutlu.apporganizer.presentation.ui.screens.onboarding
 
-import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -39,7 +36,7 @@ fun AppIconPreviewGrid(
     apps: List<AppInfo>,
     modifier: Modifier = Modifier,
     iconSizeDp: Dp = 26.dp,
-    fallbackEmoji: String = "📁"
+    fallbackEmoji: String = "📁",
 ) {
     val displayApps = apps.take(4)
 
@@ -48,14 +45,14 @@ fun AppIconPreviewGrid(
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White.copy(alpha = 0.08f))
             .padding(6.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         if (displayApps.isEmpty()) {
             Text(text = fallbackEmoji, fontSize = 20.sp)
         } else {
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     PreviewIconItem(displayApps.getOrNull(0), iconSizeDp)
@@ -79,7 +76,7 @@ private fun PreviewIconItem(app: AppInfo?, iconSizeDp: Dp) {
             modifier = Modifier
                 .size(iconSizeDp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.05f))
+                .background(Color.White.copy(alpha = 0.05f)),
         )
         return
     }
@@ -102,7 +99,7 @@ private fun PreviewIconItem(app: AppInfo?, iconSizeDp: Dp) {
             contentDescription = app.appName,
             modifier = Modifier
                 .size(iconSizeDp)
-                .clip(RoundedCornerShape(6.dp))
+                .clip(RoundedCornerShape(6.dp)),
         )
     } else {
         Box(
@@ -110,12 +107,12 @@ private fun PreviewIconItem(app: AppInfo?, iconSizeDp: Dp) {
                 .size(iconSizeDp)
                 .clip(RoundedCornerShape(6.dp))
                 .background(Color.White.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = app.appName.take(1).uppercase(),
                 fontSize = 11.sp,
-                color = Color.White
+                color = Color.White,
             )
         }
     }

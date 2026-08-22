@@ -32,15 +32,15 @@ import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.TickerComposer
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import timber.log.Timber
 import java.time.Clock
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import timber.log.Timber
 
 /**
  * Döngü T01 — [SmartTickerEngine] için GERÇEK kaynak. [TickerComposer]'ın ürettiği

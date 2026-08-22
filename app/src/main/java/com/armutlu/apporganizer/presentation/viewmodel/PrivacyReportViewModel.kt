@@ -8,7 +8,6 @@ import com.armutlu.apporganizer.domain.usecase.privacy.PrivacyAnalyzer
 import com.armutlu.apporganizer.utils.AppPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import javax.inject.Inject
 
 /** Gizlilik Raporu ekranının net UI durumları. */
 sealed interface PrivacyReportUiState {

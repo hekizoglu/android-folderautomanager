@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.di
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
@@ -22,7 +23,6 @@ import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.missions.DefaultMissionUsageStatsSource
 import com.armutlu.apporganizer.domain.usecase.missions.MissionSettlementTransactionRunner
 import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
-import androidx.room.withTransaction
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -138,7 +138,7 @@ object AppModule {
     @Singleton
     fun provideFilesIndexer(
         @ApplicationContext context: Context,
-        searchDao: SearchDao
+        searchDao: SearchDao,
     ): FilesIndexer = FilesIndexer(context, searchDao)
 
     @Provides
@@ -151,7 +151,7 @@ object AppModule {
         indexer: SearchIndexer,
         contactsIndexer: ContactsIndexer,
         filesIndexer: FilesIndexer,
-        db: AppDatabase
+        db: AppDatabase,
     ): SearchRepository = SearchRepository(context, searchDao, appDao, categoryDao, indexer, contactsIndexer, filesIndexer, db)
 
     @Provides
@@ -179,5 +179,4 @@ object AppModule {
     @Provides
     @HomeIoDispatcher
     fun provideHomeIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
-
 }

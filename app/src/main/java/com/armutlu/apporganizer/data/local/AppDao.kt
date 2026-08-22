@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface AppDao {
-    
+
     /**
      * Insert a single app
      */
@@ -22,19 +22,19 @@ interface AppDao {
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertApps(apps: List<AppInfo>)
-    
+
     /**
      * Update an app
      */
     @Update
     suspend fun updateApp(app: AppInfo)
-    
+
     /**
      * Update multiple apps
      */
     @Update
     suspend fun updateApps(apps: List<AppInfo>)
-    
+
     /**
      * Update app category
      */
@@ -42,10 +42,11 @@ interface AppDao {
     suspend fun updateAppCategory(
         packageName: String,
         categoryId: String,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     )
 
-    @Query("""
+    @Query(
+        """
         UPDATE apps
         SET categoryId = :categoryId,
             classificationSource = :source,
@@ -59,7 +60,8 @@ interface AppDao {
             reviewSnoozedUntil = :snoozedUntil,
             lastUpdated = :timestamp
         WHERE packageName = :packageName
-    """)
+    """,
+    )
     suspend fun updateAppCategoryWithClassification(
         packageName: String,
         categoryId: String,
@@ -72,27 +74,27 @@ interface AppDao {
         classifiedAt: Long,
         reviewedAt: Long,
         snoozedUntil: Long,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     ): Int
-    
+
     /**
      * Delete a single app
      */
     @Delete
     suspend fun deleteApp(app: AppInfo)
-    
+
     /**
      * Delete app by package name
      */
     @Query("DELETE FROM apps WHERE packageName = :packageName")
     suspend fun deleteAppByPackageName(packageName: String)
-    
+
     /**
      * Delete all apps
      */
     @Query("DELETE FROM apps")
     suspend fun deleteAllApps()
-    
+
     /**
      * Get all apps (one-time)
      * Performans: idx_apps_appName index'i ile karsilanir (Migration 10->11) - LIMIT kullanilmaz,
@@ -114,13 +116,13 @@ interface AppDao {
      */
     @Query("SELECT * FROM apps ORDER BY appName ASC")
     fun getAllAppsFlow(): Flow<List<AppInfo>>
-    
+
     /**
      * Get apps by category
      */
     @Query("SELECT * FROM apps WHERE categoryId = :categoryId ORDER BY appName ASC")
     fun getAppsByCategory(categoryId: String): Flow<List<AppInfo>>
-    
+
     /**
      * Get uncategorized apps
      */
@@ -136,16 +138,19 @@ interface AppDao {
     @Query("SELECT packageName FROM apps WHERE categoryId = :categoryId")
     suspend fun getPackageNamesByCategory(categoryId: String): List<String>
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM apps
         WHERE classificationReviewState = 'PENDING'
             AND isSystemApp = 0
             AND (reviewSnoozedUntil = 0 OR reviewSnoozedUntil <= :now)
         ORDER BY classificationConfidence ASC, appName ASC
-    """)
+    """,
+    )
     fun getPendingClassificationApps(now: Long = System.currentTimeMillis()): Flow<List<AppInfo>>
 
-    @Query("""
+    @Query(
+        """
         UPDATE apps
         SET classificationSource = 'USER_CONFIRMED',
             classificationConfidence = 100,
@@ -157,38 +162,41 @@ interface AppDao {
             reviewSnoozedUntil = 0,
             lastUpdated = :timestamp
         WHERE packageName = :packageName
-    """)
+    """,
+    )
     suspend fun confirmClassification(
         packageName: String,
         version: Int,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     )
 
-    @Query("""
+    @Query(
+        """
         UPDATE apps
         SET classificationReviewState = 'SKIPPED',
             reviewSnoozedUntil = :snoozedUntil,
             lastUpdated = :timestamp
         WHERE packageName = :packageName
-    """)
+    """,
+    )
     suspend fun skipClassificationReview(
         packageName: String,
         snoozedUntil: Long,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     )
-    
+
     /**
      * Count total apps
      */
     @Query("SELECT COUNT(*) FROM apps")
     suspend fun countApps(): Int
-    
+
     /**
      * Count apps in category
      */
     @Query("SELECT COUNT(*) FROM apps WHERE categoryId = :categoryId")
     suspend fun countAppsByCategory(categoryId: String): Int
-    
+
     /**
      * Search apps by name
      */
@@ -196,7 +204,7 @@ interface AppDao {
     @Query(
         "SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' " +
             "OR packageName LIKE '%' || :query || '%' " +
-            "OR appFileName LIKE '%' || :query || '%' ORDER BY appName ASC"
+            "OR appFileName LIKE '%' || :query || '%' ORDER BY appName ASC",
     )
     fun searchAppsByName(query: String): Flow<List<AppInfo>>
 
@@ -206,49 +214,52 @@ interface AppDao {
     @Query(
         "SELECT * FROM apps WHERE appName LIKE '%' || :query || '%' " +
             "OR packageName LIKE '%' || :query || '%' " +
-            "OR appFileName LIKE '%' || :query || '%' ORDER BY appName ASC LIMIT :limit"
+            "OR appFileName LIKE '%' || :query || '%' ORDER BY appName ASC LIMIT :limit",
     )
     fun searchAppsByNameLimited(query: String, limit: Int = 50): Flow<List<AppInfo>>
-    
+
     /**
      * Get system apps
      */
     @Query("SELECT * FROM apps WHERE isSystemApp = 1 ORDER BY appName ASC")
     fun getSystemApps(): Flow<List<AppInfo>>
-    
+
     /**
      * Get user-installed apps (non-system)
      */
     @Query("SELECT * FROM apps WHERE isSystemApp = 0 ORDER BY appName ASC")
     fun getUserApps(): Flow<List<AppInfo>>
-    
+
     /**
      * Get recently installed apps
      */
     @Query("SELECT * FROM apps ORDER BY installTime DESC LIMIT :limit")
     suspend fun getRecentlyInstalledApps(limit: Int = 10): List<AppInfo>
-    
+
     /**
      * Get apps modified within time range
      */
     @Query("SELECT * FROM apps WHERE lastUpdated >= :fromTime AND lastUpdated <= :toTime ORDER BY lastUpdated DESC")
     suspend fun getAppsModifiedInRange(fromTime: Long, toTime: Long): List<AppInfo>
-    
+
     /**
      * Batch update app categories
      */
-    @Query("""
+    @Query(
+        """
         UPDATE apps 
         SET categoryId = :categoryId, lastUpdated = :timestamp
         WHERE packageName IN (:packageNames)
-    """)
+    """,
+    )
     suspend fun updateAppsCategory(
         packageNames: List<String>,
         categoryId: String,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     )
 
-    @Query("""
+    @Query(
+        """
         UPDATE apps
         SET categoryId = :categoryId,
             classificationSource = :source,
@@ -262,7 +273,8 @@ interface AppDao {
             reviewSnoozedUntil = :snoozedUntil,
             lastUpdated = :timestamp
         WHERE packageName IN (:packageNames)
-    """)
+    """,
+    )
     suspend fun updateAppsCategoryWithClassification(
         packageNames: List<String>,
         categoryId: String,
@@ -275,15 +287,15 @@ interface AppDao {
         classifiedAt: Long,
         reviewedAt: Long,
         snoozedUntil: Long,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     ): Int
-    
+
     /**
      * Check if app exists
      */
     @Query("SELECT EXISTS(SELECT 1 FROM apps WHERE packageName = :packageName)")
     suspend fun appExists(packageName: String): Boolean
-    
+
     /**
      * Get all package names
      */
@@ -293,7 +305,8 @@ interface AppDao {
     /**
      * Reset all app categories back to uncategorized
      */
-    @Query("""
+    @Query(
+        """
         UPDATE apps
         SET categoryId = 'uncategorized',
             classificationSource = 'UNKNOWN',
@@ -306,7 +319,8 @@ interface AppDao {
             lastReviewedAt = 0,
             reviewSnoozedUntil = 0
         WHERE isCategoryLocked = 0
-    """)
+    """,
+    )
     suspend fun resetAllAppCategories()
 
     // Adet + son kullanım zamanı: launcher açılışını tek atomik yazmada kaydet.
@@ -400,28 +414,32 @@ interface AppDao {
      * P1.2: Count pending classification reviews for badge display.
      * Returns a Flow that emits updated count whenever classification states change.
      */
-    @Query("""
+    @Query(
+        """
         SELECT COUNT(*) FROM apps
         WHERE classificationReviewState = 'PENDING'
             AND isSystemApp = 0
             AND (reviewSnoozedUntil = 0 OR reviewSnoozedUntil <= :now)
-    """)
+    """,
+    )
     fun observePendingClassificationCount(now: Long = System.currentTimeMillis()): Flow<Int>
 
     /**
      * P1.3: Atomic batch update for folder merge operation.
      * Moves multiple apps from source to target category in a single transaction.
      */
-    @Query("""
+    @Query(
+        """
         UPDATE apps
         SET categoryId = :targetCategoryId,
             lastUpdated = :timestamp
         WHERE packageName IN (:packageNames) AND categoryId = :sourceCategoryId
-    """)
+    """,
+    )
     suspend fun batchUpdateCategoryForMerge(
         packageNames: List<String>,
         sourceCategoryId: String,
         targetCategoryId: String,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     )
 }

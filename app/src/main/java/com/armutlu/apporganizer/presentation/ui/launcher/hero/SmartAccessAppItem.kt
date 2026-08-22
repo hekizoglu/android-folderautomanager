@@ -1,7 +1,5 @@
 package com.armutlu.apporganizer.presentation.ui.launcher.hero
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Text
@@ -46,7 +44,7 @@ internal fun SmartAccessAppItem(
                         Text(if (notificationCount > 99) "99+" else notificationCount.toString())
                     }
                 }
-            }
+            },
         ) {
             AppIconView(
                 app = app,

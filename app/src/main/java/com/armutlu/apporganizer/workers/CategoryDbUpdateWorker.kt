@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
  */
 class CategoryDbUpdateWorker(
     appContext: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
 
     @EntryPoint
@@ -39,7 +39,7 @@ class CategoryDbUpdateWorker(
         return runCatching {
             val service = EntryPointAccessors.fromApplication(
                 applicationContext,
-                CategoryDbUpdateEntryPoint::class.java
+                CategoryDbUpdateEntryPoint::class.java,
             ).appDatabaseService()
             val result = service.fetchAndCache()
             Timber.d("CategoryDbUpdateWorker: $result")
@@ -70,7 +70,7 @@ class CategoryDbUpdateWorker(
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.KEEP,
-                request
+                request,
             )
         }
 

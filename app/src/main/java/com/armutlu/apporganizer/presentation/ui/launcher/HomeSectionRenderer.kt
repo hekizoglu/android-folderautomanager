@@ -2,8 +2,8 @@ package com.armutlu.apporganizer.presentation.ui.launcher
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
-import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeLayoutConfig
+import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 

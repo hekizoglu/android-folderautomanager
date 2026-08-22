@@ -1,21 +1,17 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +33,7 @@ internal fun LazyListScope.settingsAppsSection(
     llmCategorizing: Boolean,
     llmProgress: String,
     onNavigateToClassificationReview: () -> Unit,
-    onNavigateToFolderSuggestions: () -> Unit
+    onNavigateToFolderSuggestions: () -> Unit,
 ) {
     // ── Uygulama Listesi → Sistem Uygulamaları ─────────────────────────────────
     item { SettingsSectionTitle("Uygulama Listesi") }
@@ -48,7 +44,7 @@ internal fun LazyListScope.settingsAppsSection(
                 title = "Sistem Uygulamalarını Göster",
                 subtitle = "Dahili sistem uygulamalarını listele",
                 checked = showSystemApps,
-                onCheckedChange = { viewModel.toggleShowSystemApps() }
+                onCheckedChange = { viewModel.toggleShowSystemApps() },
             )
         }
     }
@@ -59,13 +55,17 @@ internal fun LazyListScope.settingsAppsSection(
         SettingsCard {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Kullanılmayan Uygulamalar Gri", style = MaterialTheme.typography.bodyLarge)
-                    Text("Ayar Görünüm ekranında", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "Ayar Görünüm ekranında",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }
@@ -81,34 +81,46 @@ internal fun LazyListScope.settingsAppsSection(
                 stringResource(R.string.classification_mode_subtitle),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             )
             ClassificationModeOption(
                 titleRes = R.string.classification_mode_local_only_title,
                 descRes = R.string.classification_mode_local_only_desc,
                 selected = mode == AppPrefs.ClassificationMode.LOCAL_ONLY,
-                onSelect = { mode = AppPrefs.ClassificationMode.LOCAL_ONLY; AppPrefs.setClassificationMode(context, mode) }
+                onSelect = {
+                    mode = AppPrefs.ClassificationMode.LOCAL_ONLY
+                    AppPrefs.setClassificationMode(context, mode)
+                },
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             ClassificationModeOption(
                 titleRes = R.string.classification_mode_local_with_manufacturer_title,
                 descRes = R.string.classification_mode_local_with_manufacturer_desc,
                 selected = mode == AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER,
-                onSelect = { mode = AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER; AppPrefs.setClassificationMode(context, mode) }
+                onSelect = {
+                    mode = AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+                    AppPrefs.setClassificationMode(context, mode)
+                },
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             ClassificationModeOption(
                 titleRes = R.string.classification_mode_local_with_llm_fallback_title,
                 descRes = R.string.classification_mode_local_with_llm_fallback_desc,
                 selected = mode == AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK,
-                onSelect = { mode = AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK; AppPrefs.setClassificationMode(context, mode) }
+                onSelect = {
+                    mode = AppPrefs.ClassificationMode.LOCAL_WITH_LLM_FALLBACK
+                    AppPrefs.setClassificationMode(context, mode)
+                },
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             ClassificationModeOption(
                 titleRes = R.string.classification_mode_manual_review_only_title,
                 descRes = R.string.classification_mode_manual_review_only_desc,
                 selected = mode == AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY,
-                onSelect = { mode = AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY; AppPrefs.setClassificationMode(context, mode) }
+                onSelect = {
+                    mode = AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY
+                    AppPrefs.setClassificationMode(context, mode)
+                },
             )
         }
     }
@@ -130,7 +142,7 @@ internal fun LazyListScope.settingsAppsSection(
                 onCheckedChange = {
                     overrideSuggestions = it
                     AppPrefs.setOverrideSuggestionsEnabled(context, it)
-                }
+                },
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(
@@ -142,7 +154,7 @@ internal fun LazyListScope.settingsAppsSection(
                     folderSuggestionsEnabled = it
                     AppPrefs.setFolderSuggestionsEnabled(context, it)
                     viewModel.dismissFolderSuggestionsInfo()
-                }
+                },
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
             SettingsSwitchRow(
@@ -153,31 +165,39 @@ internal fun LazyListScope.settingsAppsSection(
                 onCheckedChange = {
                     lowConfidenceReview = it
                     AppPrefs.setLowConfidenceReviewEnabled(context, it)
-                }
+                },
             )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
-            SettingsButtonRow(icon = Icons.Default.CheckCircle,
+            SettingsButtonRow(
+                icon = Icons.Default.CheckCircle,
                 title = "Kontrol Bekleyenler",
                 subtitle = "Dusuk guvenli siniflandirmalari onayla veya duzelt",
-                onClick = onNavigateToClassificationReview)
+                onClick = onNavigateToClassificationReview,
+            )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
-            SettingsButtonRow(icon = Icons.Default.Folder,
+            SettingsButtonRow(
+                icon = Icons.Default.Folder,
                 title = "Klasor Onerileri",
                 subtitle = "Kalabalik, kucuk veya uzun suredir kullanilmayan klasorleri duzenle",
-                onClick = onNavigateToFolderSuggestions)
+                onClick = onNavigateToFolderSuggestions,
+            )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
-            SettingsButtonRow(icon = Icons.Default.AutoFixHigh,
+            SettingsButtonRow(
+                icon = Icons.Default.AutoFixHigh,
                 title = "Sınıflandırılmamışları Sınıflandır",
                 subtitle = "Kategorisiz uygulamaları otomatik ata",
                 showChevron = false,
-                onClick = { viewModel.classifyUnclassifiedApps() })
+                onClick = { viewModel.classifyUnclassifiedApps() },
+            )
             HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.5f))
-            SettingsButtonRow(icon = Icons.Default.RestartAlt,
+            SettingsButtonRow(
+                icon = Icons.Default.RestartAlt,
                 title = "Tüm Kategorileri Sıfırla",
                 subtitle = "Tüm atamaları sil ve yeniden sınıflandır",
                 iconTint = MaterialTheme.colorScheme.error,
                 showChevron = false,
-                onClick = { resetConfirmStep = 1 })
+                onClick = { resetConfirmStep = 1 },
+            )
             if (resetConfirmStep == 1) {
                 AlertDialog(
                     onDismissRequest = { resetConfirmStep = 0 },
@@ -190,13 +210,17 @@ internal fun LazyListScope.settingsAppsSection(
                     },
                     dismissButton = {
                         TextButton(onClick = { resetConfirmStep = 0 }) { Text("İptal") }
-                    }
+                    },
                 )
             } else if (resetConfirmStep == 2) {
                 AlertDialog(
                     onDismissRequest = { resetConfirmStep = 0 },
                     title = { Text("Son onay") },
-                    text = { Text("Bu işlem geri alınamaz — tüm kategori atamaları silinip yeniden sınıflandırılacak. Gerçekten sıfırlamak istiyor musunuz?") },
+                    text = {
+                        Text(
+                            "Bu işlem geri alınamaz — tüm kategori atamaları silinip yeniden sınıflandırılacak. Gerçekten sıfırlamak istiyor musunuz?",
+                        )
+                    },
                     confirmButton = {
                         TextButton(onClick = {
                             resetConfirmStep = 0
@@ -205,7 +229,7 @@ internal fun LazyListScope.settingsAppsSection(
                     },
                     dismissButton = {
                         TextButton(onClick = { resetConfirmStep = 0 }) { Text("İptal") }
-                    }
+                    },
                 )
             }
         }
@@ -217,13 +241,28 @@ internal fun LazyListScope.settingsAppsSection(
         item {
             SettingsCard {
                 hiddenApps.forEachIndexed { index, app ->
-                    if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                    if (index > 0) {
+                        HorizontalDivider(
+                            Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f),
+                        )
+                    }
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.Default.VisibilityOff,
+                            null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp),
+                        )
                         Spacer(Modifier.width(12.dp))
                         Text(app.appName, Modifier.weight(1f), fontSize = 14.sp)
-                        OutlinedButton(onClick = { viewModel.unhideApp(app.packageName) },
-                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)) {
+                        OutlinedButton(
+                            onClick = { viewModel.unhideApp(app.packageName) },
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        ) {
                             Text("Göster", fontSize = 12.sp)
                         }
                     }
@@ -239,15 +278,24 @@ internal fun LazyListScope.settingsAppsSection(
             val context = LocalContext.current
             SettingsCard {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    Text("Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. DeepSeek AI ile kategorilendirilebilir. DeepSeek API anahtarını Gizlilik & Veri ayarlarından girebilirsin.",
-                        fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "Bu uygulamalar otomatik kategorilendirilemeyen uygulamalardır. DeepSeek AI ile kategorilendirilebilir. DeepSeek API anahtarını Gizlilik & Veri ayarlarından girebilirsin.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                     Spacer(Modifier.height(12.dp))
                     val apiKeyInput = AppPrefs.getDeepSeekApiKey(context)
-                    Button(onClick = { viewModel.categorizeDigerWithLLM(apiKeyInput) },
+                    Button(
+                        onClick = { viewModel.categorizeDigerWithLLM(apiKeyInput) },
                         enabled = !llmCategorizing && apiKeyInput.isNotBlank(),
-                        modifier = Modifier.fillMaxWidth()) {
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         if (llmCategorizing) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                            )
                             Spacer(Modifier.width(8.dp))
                             Text("Kategorize ediliyor...", fontSize = 13.sp)
                         } else {
@@ -258,16 +306,35 @@ internal fun LazyListScope.settingsAppsSection(
                     }
                     if (llmProgress.isNotBlank()) {
                         Spacer(Modifier.height(6.dp))
-                        Text(llmProgress, fontSize = 12.sp,
-                            color = if (llmProgress.startsWith("Hata") || llmProgress.contains("hata"))
-                                MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                        Text(
+                            llmProgress,
+                            fontSize = 12.sp,
+                            color = if (llmProgress.startsWith("Hata") || llmProgress.contains("hata")) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            },
+                        )
                     }
                 }
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.4f))
                 otherApps.take(20).forEachIndexed { index, app ->
-                    if (index > 0) HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.AutoMirrored.Filled.Help, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                    if (index > 0) {
+                        HorizontalDivider(
+                            Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f),
+                        )
+                    }
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Help,
+                            null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp),
+                        )
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(app.appName, fontSize = 14.sp, maxLines = 1)
@@ -278,7 +345,11 @@ internal fun LazyListScope.settingsAppsSection(
                 if (otherApps.size > 20) {
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(0.3f))
                     Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
-                        Text("...ve ${otherApps.size - 20} uygulama daha", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "...ve ${otherApps.size - 20} uygulama daha",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -292,19 +363,19 @@ private fun ClassificationModeOption(
     titleRes: Int,
     descRes: Int,
     selected: Boolean,
-    onSelect: () -> Unit
+    onSelect: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .selectable(selected = selected, onClick = onSelect)
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
             selected = selected,
             onClick = onSelect,
-            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
+            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary),
         )
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
@@ -312,12 +383,12 @@ private fun ClassificationModeOption(
                 stringResource(titleRes),
                 fontWeight = FontWeight.Medium,
                 fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 stringResource(descRes),
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

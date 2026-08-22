@@ -24,7 +24,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class CategoryLLMFallback @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) {
 
     // packageName → categoryId cache (uygulama yaşam süresi boyunca)
@@ -80,12 +80,17 @@ class CategoryLLMFallback @Inject constructor(
             val prompt = buildPrompt(packageNames)
             val requestBody = JSONObject().apply {
                 put("model", "deepseek-chat")
-                put("messages", org.json.JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", prompt)
-                    })
-                })
+                put(
+                    "messages",
+                    org.json.JSONArray().apply {
+                        put(
+                            JSONObject().apply {
+                                put("role", "user")
+                                put("content", prompt)
+                            },
+                        )
+                    },
+                )
                 put("temperature", 0.0)
                 put("max_tokens", 512)
             }.toString()

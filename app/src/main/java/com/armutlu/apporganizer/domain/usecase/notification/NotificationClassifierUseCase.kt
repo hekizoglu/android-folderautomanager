@@ -175,7 +175,7 @@ class NotificationClassifierUseCase @Inject constructor() {
             segments = setOf("akbank", "garanti", "yapikredi", "ykb", "isbank", "iscep", "ziraat", "vakifbank", "halkbank", "denizbank", "qnb", "enpara", "papara", "paycell"),
         )
         val MARKET_PACKAGES = PackageRules(
-            segments = setOf("tradingview", "investing", "midas", "foreks", "bloomberg", "yahoo", "stocks")
+            segments = setOf("tradingview", "investing", "midas", "foreks", "bloomberg", "yahoo", "stocks"),
         )
         val DELIVERY_PACKAGES = PackageRules(
             prefixes = setOf("com.trendyol", "com.pozitron.hepsiburada", "com.amazon.mshop", "com.getir", "com.yemeksepeti", "com.migros"),
@@ -185,7 +185,14 @@ class NotificationClassifierUseCase @Inject constructor() {
             prefixes = setOf("com.whatsapp", "org.telegram", "org.thoughtcrime.securesms", "com.facebook.orca", "com.google.android.apps.messaging", "com.samsung.android.messaging", "com.android.mms", "com.discord", "com.slack", "com.microsoft.teams"),
         )
         val SOCIAL_PACKAGES = PackageRules(
-            prefixes = setOf("com.instagram.android", "com.facebook.katana", "com.twitter.android", "com.zhiliaoapp.musically", "com.snapchat.android", "com.linkedin.android"),
+            prefixes = setOf(
+                "com.instagram.android",
+                "com.facebook.katana",
+                "com.twitter.android",
+                "com.zhiliaoapp.musically",
+                "com.snapchat.android",
+                "com.linkedin.android",
+            ),
         )
         val PHONE_PACKAGES = PackageRules(
             prefixes = setOf("com.google.android.dialer", "com.android.dialer", "com.samsung.android.dialer", "com.android.phone"),
@@ -196,47 +203,90 @@ class NotificationClassifierUseCase @Inject constructor() {
             segments = setOf("calendar", "calendarprovider"),
         )
         val FAMILY_PACKAGES = PackageRules(
-            segments = setOf("familylink", "family", "parental", "kids", "kidspace")
+            segments = setOf("familylink", "family", "parental", "kids", "kidspace"),
         )
         val UPDATE_PACKAGES = PackageRules(
-            segments = setOf("updater", "softwareupdate", "systemupdate")
+            segments = setOf("updater", "softwareupdate", "systemupdate"),
         )
+
         // NOT: jenerik "news" segment'i kaldırıldı — "com.example.news" gibi paketlerde
         // içerik kanıtı olmadan NEWS üretiyordu (NotificationPriorityPolicyTest OTHER bekler).
         // Bilinen haber uygulamaları segment/prefix olarak korunur; içerik matcher'ları
         // ("haber", "son dakika", "breaking news"...) zaten NEWS'i yakalar.
         val NEWS_PACKAGES = PackageRules(
-            segments = setOf("flipboard", "feedly", "googlequicksearchbox")
+            segments = setOf("flipboard", "feedly", "googlequicksearchbox"),
         )
         val MEDIA_PACKAGES = PackageRules(
-            segments = setOf("youtube", "music", "spotify", "netflix", "primevideo", "podcast")
+            segments = setOf("youtube", "music", "spotify", "netflix", "primevideo", "podcast"),
         )
         val SYSTEM_PACKAGES = PackageRules(
-            prefixes = setOf("android", "com.android.systemui", "com.android.settings", "com.google.android.permissioncontroller", "com.miui.securitycenter", "com.samsung.android.securitylogagent"),
+            prefixes = setOf(
+                "android",
+                "com.android.systemui",
+                "com.android.settings",
+                "com.google.android.permissioncontroller",
+                "com.miui.securitycenter",
+                "com.samsung.android.securitylogagent",
+            ),
         )
 
-        val AUTH_CODE_MATCHERS = matchers("dogrulama kodu", "giris kodu", "guvenlik kodu", "tek kullanimlik kod", "verification code", "login code", "security code", "one time code", "one-time code", "one time password", "one-time password", "otp")
+        val AUTH_CODE_MATCHERS =
+            matchers("dogrulama kodu", "giris kodu", "guvenlik kodu", "tek kullanimlik kod", "verification code", "login code", "security code", "one time code", "one-time code", "one time password", "one-time password", "otp")
         val MISSED_CALL_MATCHERS = matchers("cevapsiz arama", "cevapsiz cagri", "cevapsiz", "missed call", "missed calls", "arama yapti")
-        val FAMILY_MATCHERS = matchers("yeni uygulama yuklendi", "uygulama yukledi", "ekran suresi", "screen time", "child installed", "parental control", "family link", "cocuk", "ebeveyn")
+        val FAMILY_MATCHERS =
+            matchers("yeni uygulama yuklendi", "uygulama yukledi", "ekran suresi", "screen time", "child installed", "parental control", "family link", "cocuk", "ebeveyn")
+
         // NOT: "yuzde" tek başına MARKET sayılmaz — "yüzde 50 indirim" gibi promosyon
         // içeriklerini yanlışlıkla MARKET'e çekiyordu (NotificationClassifierUseCaseTest).
         // Gerçek piyasa bildirimleri "artti/yukseldi/%," gibi diğer matcher'larla yakalanır.
-        val MARKET_MATCHERS = matchers("hisse", "hissesi", "hisse senedi", "borsa", "bist", "bist 30", "bist 100", "nasdaq", "s&p 500", "dow jones", "sp 500", "artti", "yukseldi", "dustu", "geriledi", "%,", "stock", "stocks", "shares", "market alert", "price alert", "altin", "dolar", "euro", "exchange rate", "index")
-        val FINANCE_MATCHERS = matchers("bakiye", "hesap hareketi", "kartiniz", "harcama", "odeme", "transfer", "havale", "eft", "yatirim", "para cekme", "fatura", "balance", "account activity", "card transaction", "transaction", "payment", "bank transfer", "wire transfer", "withdrawal", "invoice")
-        val DELIVERY_MATCHERS = matchers("kargo", "teslimat", "siparisiniz", "siparis", "kurye", "yola cikti", "dagitima cikti", "teslim edildi", "paketiniz", "gonderiniz", "shipped", "shipment", "out for delivery", "delivered", "your order", "order confirmed", "courier", "your package", "tracking number")
-        val CALENDAR_MATCHERS = matchers("takvim", "calendar event", "etkinlik", "toplanti", "meeting", "randevu", "appointment", "mesai", "vardiya", "etkinlik basliyor", "starts in", "due today")
+        val MARKET_MATCHERS =
+            matchers("hisse", "hissesi", "hisse senedi", "borsa", "bist", "bist 30", "bist 100", "nasdaq", "s&p 500", "dow jones", "sp 500", "artti", "yukseldi", "dustu", "geriledi", "%,", "stock", "stocks", "shares", "market alert", "price alert", "altin", "dolar", "euro", "exchange rate", "index")
+        val FINANCE_MATCHERS =
+            matchers("bakiye", "hesap hareketi", "kartiniz", "harcama", "odeme", "transfer", "havale", "eft", "yatirim", "para cekme", "fatura", "balance", "account activity", "card transaction", "transaction", "payment", "bank transfer", "wire transfer", "withdrawal", "invoice")
+        val DELIVERY_MATCHERS =
+            matchers("kargo", "teslimat", "siparisiniz", "siparis", "kurye", "yola cikti", "dagitima cikti", "teslim edildi", "paketiniz", "gonderiniz", "shipped", "shipment", "out for delivery", "delivered", "your order", "order confirmed", "courier", "your package", "tracking number")
+        val CALENDAR_MATCHERS =
+            matchers("takvim", "calendar event", "etkinlik", "toplanti", "meeting", "randevu", "appointment", "mesai", "vardiya", "etkinlik basliyor", "starts in", "due today")
         val REMINDER_MATCHERS = matchers("hatirlatici", "alarm", "son tarih", "reminder", "overdue")
-        val PROMOTION_MATCHERS = matchers("indirim", "kampanya", "firsat", "kupon", "sepette", "reklam", "sana ozel", "hemen al", "stoklarla sinirli", "discount", "sale", "coupon", "offer", "deal", "special price", "limited stock", "buy now", "save now")
-        val MESSAGING_MATCHERS = matchers("yeni mesaj", "mesaj gonderdi", "cevapladi", "sana yazdi", "goruntulu arama", "new message", "sent you a message", "replied to you", "voice call", "video call")
-        val SOCIAL_MATCHERS = matchers("begendi", "takip etmeye basladi", "yorum yapti", "hikaye", "reels", "gonderini", "liked your", "started following", "commented on", "new follower", "mentioned you", "new story")
+        val PROMOTION_MATCHERS =
+            matchers("indirim", "kampanya", "firsat", "kupon", "sepette", "reklam", "sana ozel", "hemen al", "stoklarla sinirli", "discount", "sale", "coupon", "offer", "deal", "special price", "limited stock", "buy now", "save now")
+        val MESSAGING_MATCHERS =
+            matchers("yeni mesaj", "mesaj gonderdi", "cevapladi", "sana yazdi", "goruntulu arama", "new message", "sent you a message", "replied to you", "voice call", "video call")
+        val SOCIAL_MATCHERS =
+            matchers("begendi", "takip etmeye basladi", "yorum yapti", "hikaye", "reels", "gonderini", "liked your", "started following", "commented on", "new follower", "mentioned you", "new story")
         val NEWS_MATCHERS = matchers("haber", "son dakika", "breaking news", "news alert", "breaking", "gundem", "news")
-        val MEDIA_MATCHERS = matchers("yeni video", "video onerisi", "seni bekliyor", "yeni sarki", "new video", "recommended video", "now playing", "new song", "playlist")
-        val UPDATE_MATCHERS = matchers("uygulama guncellemesi", "uygulama guncellendi", "guncelleme mevcut", "app update", "update available", "yazilim guncellemesi", "software update", "system update")
-        val SYSTEM_MATCHERS = matchers("sistem guncellemesi", "pil az", "depolama alani", "izin gerekli", "battery low", "storage space", "permission required")
-        val URGENT_MATCHERS = matchers("acil", "hemen", "simdi", "kritik", "gecikmis", "urgent", "immediately", "now", "critical", "overdue", "action required")
-        val TIME_SENSITIVE_MATCHERS = matchers("10 dakika", "15 dakika", "30 dakika", "5 dakika", "in 5 minutes", "in 10 minutes", "in 15 minutes", "in 30 minutes", "starts now", "simdi basliyor", "az sonra")
-        val SECURITY_MATCHERS = matchers("guvenlik", "supheli", "giris", "sifre", "onay", "dogrulama", "security", "suspicious", "login", "password", "approve", "verification", "authentication", "otp")
-        val SENSITIVE_MATCHERS = matchers("bakiye", "hesap", "kart", "sifre", "otp", "tutar", "iban", "tl", "balance", "account", "card", "password", "amount", "verification code", "login code", "security code")
-        val LOW_VALUE_MATCHERS = matchers("bulten", "onerilen", "sizin icin", "trend", "kesfet", "newsletter", "recommended", "for you", "trending", "discover")
+        val MEDIA_MATCHERS =
+            matchers("yeni video", "video onerisi", "seni bekliyor", "yeni sarki", "new video", "recommended video", "now playing", "new song", "playlist")
+        val UPDATE_MATCHERS =
+            matchers(
+                "uygulama guncellemesi",
+                "uygulama guncellendi",
+                "guncelleme mevcut",
+                "app update",
+                "update available",
+                "yazilim guncellemesi",
+                "software update",
+                "system update",
+            )
+        val SYSTEM_MATCHERS =
+            matchers(
+                "sistem guncellemesi",
+                "pil az",
+                "depolama alani",
+                "izin gerekli",
+                "battery low",
+                "storage space",
+                "permission required",
+            )
+        val URGENT_MATCHERS =
+            matchers("acil", "hemen", "simdi", "kritik", "gecikmis", "urgent", "immediately", "now", "critical", "overdue", "action required")
+        val TIME_SENSITIVE_MATCHERS =
+            matchers("10 dakika", "15 dakika", "30 dakika", "5 dakika", "in 5 minutes", "in 10 minutes", "in 15 minutes", "in 30 minutes", "starts now", "simdi basliyor", "az sonra")
+        val SECURITY_MATCHERS =
+            matchers("guvenlik", "supheli", "giris", "sifre", "onay", "dogrulama", "security", "suspicious", "login", "password", "approve", "verification", "authentication", "otp")
+        val SENSITIVE_MATCHERS =
+            matchers("bakiye", "hesap", "kart", "sifre", "otp", "tutar", "iban", "tl", "balance", "account", "card", "password", "amount", "verification code", "login code", "security code")
+        val LOW_VALUE_MATCHERS =
+            matchers("bulten", "onerilen", "sizin icin", "trend", "kesfet", "newsletter", "recommended", "for you", "trending", "discover")
     }
 }

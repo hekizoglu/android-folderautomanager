@@ -9,11 +9,11 @@ class AppPrefsFolderTransitionEffectTest {
     fun `legacy transition values migrate to android smooth`() {
         assertEquals(
             AppPrefs.FOLDER_TRANSITION_ANDROID_SMOOTH,
-            AppPrefs.resolveFolderTransitionEffectPreference("page_turn")
+            AppPrefs.resolveFolderTransitionEffectPreference("page_turn"),
         )
         assertEquals(
             AppPrefs.FOLDER_TRANSITION_ANDROID_SMOOTH,
-            AppPrefs.resolveFolderTransitionEffectPreference("slide_parallax")
+            AppPrefs.resolveFolderTransitionEffectPreference("slide_parallax"),
         )
     }
 
@@ -21,11 +21,11 @@ class AppPrefsFolderTransitionEffectTest {
     fun `ios zoom fade stays selectable`() {
         assertEquals(
             AppPrefs.FOLDER_TRANSITION_IOS_ZOOM_FADE,
-            AppPrefs.resolveFolderTransitionEffectPreference("zoom_fade")
+            AppPrefs.resolveFolderTransitionEffectPreference("zoom_fade"),
         )
         assertEquals(
             AppPrefs.FOLDER_TRANSITION_IOS_ZOOM_FADE,
-            AppPrefs.resolveFolderTransitionEffectPreference(AppPrefs.FOLDER_TRANSITION_IOS_ZOOM_FADE)
+            AppPrefs.resolveFolderTransitionEffectPreference(AppPrefs.FOLDER_TRANSITION_IOS_ZOOM_FADE),
         )
     }
 }

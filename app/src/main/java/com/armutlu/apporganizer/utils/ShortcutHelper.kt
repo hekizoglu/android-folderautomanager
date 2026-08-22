@@ -19,7 +19,7 @@ object ShortcutHelper {
                 setPackage(packageName)
                 setQueryFlags(
                     LauncherApps.ShortcutQuery.FLAG_MATCH_DYNAMIC or
-                    LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST
+                        LauncherApps.ShortcutQuery.FLAG_MATCH_MANIFEST,
                 )
             }
             la.getShortcuts(query, Process.myUserHandle()) ?: emptyList()
@@ -30,7 +30,7 @@ object ShortcutHelper {
         val la = context.getSystemService(LauncherApps::class.java) ?: return null
         return runCatching {
             val drawable = la.getShortcutIconDrawable(
-                shortcut, context.resources.displayMetrics.densityDpi
+                shortcut, context.resources.displayMetrics.densityDpi,
             ) ?: return@runCatching null
             drawable.toBitmap(sizePx).asImageBitmap()
         }.getOrNull()

@@ -28,7 +28,7 @@ class TelemetryEventValidatorTest {
             "mission_complete_bucket",
             "report_view_bucket",
             "widget_active",
-            "top_feature"
+            "top_feature",
         ),
         "daily_health_summary" to setOf(
             "health_score_bucket",
@@ -36,7 +36,7 @@ class TelemetryEventValidatorTest {
             "classification_consistent",
             "worker_failure_bucket",
             "search_latency_bucket",
-            "file_index_age_bucket"
+            "file_index_age_bucket",
         ),
         "home_mission_card_viewed" to setOf("mission_type", "status"),
         "home_mission_card_opened" to setOf("mission_type", "status"),
@@ -75,15 +75,25 @@ class TelemetryEventValidatorTest {
     @Test fun `unknown events extra parameters and free text are rejected`() {
         assertFalse(TelemetryEventValidator.isValidPayload("app_started", emptyMap()))
         assertFalse(TelemetryEventValidator.isValidPayload("search_performed", mapOf("query" to "private text")))
-        assertFalse(TelemetryEventValidator.isValidPayload("folder_opened", mapOf("folder_type" to "private name", "app_count_bucket" to "1_5")))
+        assertFalse(
+            TelemetryEventValidator.isValidPayload("folder_opened", mapOf("folder_type" to "private name", "app_count_bucket" to "1_5")),
+        )
     }
 
     @Test fun `typed events contain only bounded values`() {
         val events = listOf(
             TelemetryEvent.OnboardingStarted(TelemetryEvent.EntryType.FIRST_LAUNCH),
-            TelemetryEvent.SearchPerformed(TelemetryEvent.ResultBucket.ONE_TO_FIVE, TelemetryEvent.LatencyBucket.UNDER_100_MS, TelemetryEvent.SearchSourceMix.APPS_ONLY),
+            TelemetryEvent.SearchPerformed(
+                TelemetryEvent.ResultBucket.ONE_TO_FIVE,
+                TelemetryEvent.LatencyBucket.UNDER_100_MS,
+                TelemetryEvent.SearchSourceMix.APPS_ONLY,
+            ),
             TelemetryEvent.FolderOpened(TelemetryEvent.FolderType.USER_CREATED, FolderAppCountBucket.TWENTY_ONE_PLUS),
-            TelemetryEvent.HealthWarning(TelemetryEvent.WarningCode.DATA_STALE, TelemetryEvent.Severity.WARNING, TelemetryEvent.VersionBucket.CURRENT)
+            TelemetryEvent.HealthWarning(
+                TelemetryEvent.WarningCode.DATA_STALE,
+                TelemetryEvent.Severity.WARNING,
+                TelemetryEvent.VersionBucket.CURRENT,
+            ),
         )
         assertTrue(events.all(TelemetryEventValidator::isValid))
         assertTrue(TelemetryEventValidator.catalog.values.flatMap { it.values }.flatten().all { it.length <= 40 })
@@ -93,7 +103,9 @@ class TelemetryEventValidatorTest {
         val validName = Regex("^[a-z][a-z0-9_]{0,39}$")
         assertTrue(TelemetryEventValidator.catalog.keys.all(validName::matches))
         assertTrue(TelemetryEventValidator.catalog.values.flatMap { it.keys }.all(validName::matches))
-        assertTrue(TelemetryEventValidator.catalog.keys.none { it.startsWith("firebase_") || it.startsWith("google_") || it.startsWith("ga_") })
+        assertTrue(
+            TelemetryEventValidator.catalog.keys.none { it.startsWith("firebase_") || it.startsWith("google_") || it.startsWith("ga_") },
+        )
     }
 
     // Döngü U02 — ana ekran görev/skor/şerit telemetrisi: yasak alanların (isim/paket/bildirim
@@ -101,7 +113,10 @@ class TelemetryEventValidatorTest {
     // değerleri gönderdiğini doğrular.
     @Test fun `home intelligence events contain only bounded values`() {
         val events = listOf(
-            TelemetryEvent.HomeMissionCardViewed(TelemetryEvent.HomeMissionType.CLASSIFICATION_REVIEW, TelemetryEvent.HomeMissionStatus.IN_PROGRESS),
+            TelemetryEvent.HomeMissionCardViewed(
+                TelemetryEvent.HomeMissionType.CLASSIFICATION_REVIEW,
+                TelemetryEvent.HomeMissionStatus.IN_PROGRESS,
+            ),
             TelemetryEvent.HomeMissionCardOpened(TelemetryEvent.HomeMissionType.USAGE_REPORT, TelemetryEvent.HomeMissionStatus.AT_RISK),
             TelemetryEvent.MissionProgressViewed(TelemetryEvent.HomeMissionType.NOTIFICATION_REPORT, TelemetryEvent.ProgressBucket.HIGH),
             TelemetryEvent.MissionCardCompleted(TelemetryEvent.HomeMissionType.NONE),
@@ -120,8 +135,18 @@ class TelemetryEventValidatorTest {
     }
 
     @Test fun `home intelligence events reject free text substituted for enum wire values`() {
-        assertFalse(TelemetryEventValidator.isValidPayload("home_mission_card_opened", mapOf("mission_type" to "Bildirim İncelemesi", "status" to "in_progress")))
+        assertFalse(
+            TelemetryEventValidator.isValidPayload(
+                "home_mission_card_opened",
+                mapOf("mission_type" to "Bildirim İncelemesi", "status" to "in_progress"),
+            ),
+        )
         assertFalse(TelemetryEventValidator.isValidPayload("ticker_dismissed", mapOf("item_type" to "com.whatsapp")))
-        assertFalse(TelemetryEventValidator.isValidPayload("ticker_impression", mapOf("item_type" to "mission_progress", "position_bucket" to "first", "title" to "Unutulan uygulama: Spotify")))
+        assertFalse(
+            TelemetryEventValidator.isValidPayload(
+                "ticker_impression",
+                mapOf("item_type" to "mission_progress", "position_bucket" to "first", "title" to "Unutulan uygulama: Spotify"),
+            ),
+        )
     }
 }

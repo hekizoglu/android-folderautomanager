@@ -11,9 +11,9 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.installations.FirebaseInstallations
 import com.google.firebase.perf.FirebasePerformance
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 data class FirebaseConnectionTestResult(
     val configurationOk: Boolean,
@@ -82,8 +82,10 @@ class FirebaseConnectionTester internal constructor(
             firebaseRoundTripOk -> ConnectionTestStatus.PARTIAL_SUCCESS
             else -> ConnectionTestStatus.FAILED
         }
-        val value = FirebaseConnectionTestResult(configurationOk, networkAvailable, firebaseRoundTripOk, analyticsQueued,
-            crashlyticsReady, performanceReady, testedAt, status, safeErrorCode)
+        val value = FirebaseConnectionTestResult(
+            configurationOk, networkAvailable, firebaseRoundTripOk, analyticsQueued,
+            crashlyticsReady, performanceReady, testedAt, status, safeErrorCode,
+        )
         runCatching { dependencies.persist(value) }
         return value
     }
@@ -122,7 +124,10 @@ private class AndroidFirebaseConnectionDependencies(private val context: Context
     override fun logCrashlytics() { FirebaseCrashlytics.getInstance().log("connection_test") }
 
     override fun runPerformanceTrace() {
-        FirebasePerformance.getInstance().newTrace("firebase_connection_test").apply { start(); stop() }
+        FirebasePerformance.getInstance().newTrace("firebase_connection_test").apply {
+            start()
+            stop()
+        }
     }
 
     override fun persist(result: FirebaseConnectionTestResult) {

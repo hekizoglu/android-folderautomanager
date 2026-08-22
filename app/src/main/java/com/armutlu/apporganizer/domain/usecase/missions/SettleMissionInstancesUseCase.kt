@@ -8,6 +8,7 @@ import com.armutlu.apporganizer.domain.models.MissionInstanceEntity
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.utils.MissionStreakPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
+import timber.log.Timber
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalTime
@@ -15,7 +16,6 @@ import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-import timber.log.Timber
 
 /**
  * Odul yazimi + instance status guncellemesini tek atomik birim olarak calistiran soyutlama.
@@ -131,7 +131,7 @@ class SettleMissionInstancesUseCase @Inject constructor(
                             completedAt = settledAt,
                             starReward = instance.starReward,
                             source = "settlement",
-                        )
+                        ),
                     )
                     // insert OnConflictStrategy.IGNORE -> -1 doner ikinci deneme/carpisma durumunda.
                     // unique index (missionId, periodType, periodStartEpoch) ikinci odulu engeller.

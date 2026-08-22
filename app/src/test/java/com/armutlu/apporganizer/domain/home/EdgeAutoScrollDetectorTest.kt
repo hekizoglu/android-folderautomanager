@@ -48,11 +48,11 @@ class EdgeAutoScrollDetectorTest {
         // %25 bant genişliği ile 500px orta nokta hâlâ NONE, ama 200px artık PREVIOUS olur
         assertEquals(
             EdgeScrollDirection.PREVIOUS,
-            detectEdgeScroll(200f, 1000f, edgeFraction = 0.25f)
+            detectEdgeScroll(200f, 1000f, edgeFraction = 0.25f),
         )
         assertEquals(
             EdgeScrollDirection.NONE,
-            detectEdgeScroll(500f, 1000f, edgeFraction = 0.25f)
+            detectEdgeScroll(500f, 1000f, edgeFraction = 0.25f),
         )
     }
 

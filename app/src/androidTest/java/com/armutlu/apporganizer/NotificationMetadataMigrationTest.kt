@@ -28,7 +28,7 @@ class NotificationMetadataMigrationTest {
                 """
                 INSERT INTO notification_events(packageName, postedAt)
                 VALUES ('com.legacy.app', 1234)
-                """.trimIndent()
+                """.trimIndent(),
             )
             close()
         }
@@ -45,7 +45,7 @@ class NotificationMetadataMigrationTest {
             SELECT packageName, postedAt, category, importanceScore, wasSuppressed, systemPriority
             FROM notification_events
             WHERE packageName = 'com.legacy.app'
-            """.trimIndent()
+            """.trimIndent(),
         ).use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("com.legacy.app", cursor.getString(cursor.getColumnIndexOrThrow("packageName")))

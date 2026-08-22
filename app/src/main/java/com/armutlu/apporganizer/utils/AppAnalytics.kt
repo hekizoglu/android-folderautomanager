@@ -51,7 +51,7 @@ object AppAnalytics {
                 searchPosition = searchPosition,
                 startMode = startMode,
                 deviceClass = deviceClass,
-            )
+            ),
         )
     }
 
@@ -92,15 +92,15 @@ object AppAnalytics {
     fun smartDashboardToggled(enabled: Boolean) {
         log(
             TelemetryEvent.SmartDashboardToggled(
-                if (enabled) TelemetryEvent.ToggleState.ENABLED else TelemetryEvent.ToggleState.DISABLED
-            )
+                if (enabled) TelemetryEvent.ToggleState.ENABLED else TelemetryEvent.ToggleState.DISABLED,
+            ),
         )
     }
 
     fun categoryReclassified(
         sourceType: TelemetryEvent.SourceType,
         resultType: TelemetryEvent.TargetType,
-        confidence: TelemetryEvent.ConfidenceBucket
+        confidence: TelemetryEvent.ConfidenceBucket,
     ) {
         log(TelemetryEvent.ClassificationCorrected(sourceType, confidence, resultType))
     }
@@ -112,12 +112,14 @@ object AppAnalytics {
     fun searchPerformed(
         resultCount: TelemetryEvent.ResultBucket,
         latency: TelemetryEvent.LatencyBucket,
-        sourceMix: TelemetryEvent.SearchSourceMix
+        sourceMix: TelemetryEvent.SearchSourceMix,
     ) {
-        log(TelemetryEvent.SearchPerformed(
-            result = resultCount,
-            latency = latency,
-            sourceMix = sourceMix
-        ))
+        log(
+            TelemetryEvent.SearchPerformed(
+                result = resultCount,
+                latency = latency,
+                sourceMix = sourceMix,
+            ),
+        )
     }
 }

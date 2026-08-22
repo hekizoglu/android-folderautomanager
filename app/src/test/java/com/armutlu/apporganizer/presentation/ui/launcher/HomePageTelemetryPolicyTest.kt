@@ -32,13 +32,25 @@ class HomePageTelemetryPolicyTest {
         assertEquals(TelemetryEvent.HomeSearchPosition.TOP, HomePageTelemetryPolicy.searchPosition(AppPrefs.SEARCH_BAR_POS_TOP))
         assertEquals(TelemetryEvent.HomeSearchPosition.BOTTOM, HomePageTelemetryPolicy.searchPosition(AppPrefs.SEARCH_BAR_POS_BOTTOM))
         assertEquals(TelemetryEvent.HomeStartMode.DASHBOARD, HomePageTelemetryPolicy.startMode(HomePagePrefs.StartPageMode.SMART_DASHBOARD))
-        assertEquals(TelemetryEvent.HomeStartMode.FIRST_FOLDER, HomePageTelemetryPolicy.startMode(HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE))
-        assertEquals(TelemetryEvent.HomeStartMode.LAST_VISITED, HomePageTelemetryPolicy.startMode(HomePagePrefs.StartPageMode.RESTORE_LAST_PAGE))
+        assertEquals(
+            TelemetryEvent.HomeStartMode.FIRST_FOLDER,
+            HomePageTelemetryPolicy.startMode(HomePagePrefs.StartPageMode.FIRST_FOLDER_PAGE),
+        )
+        assertEquals(
+            TelemetryEvent.HomeStartMode.LAST_VISITED,
+            HomePageTelemetryPolicy.startMode(HomePagePrefs.StartPageMode.RESTORE_LAST_PAGE),
+        )
     }
 
     @Test fun `device class maps to privacy safe buckets`() {
         assertEquals(TelemetryEvent.HomeTelemetryDeviceClass.PHONE, HomePageTelemetryPolicy.deviceClass(HomeDeviceClass.PHONE))
-        assertEquals(TelemetryEvent.HomeTelemetryDeviceClass.COMPACT_TABLET, HomePageTelemetryPolicy.deviceClass(HomeDeviceClass.COMPACT_TABLET))
-        assertEquals(TelemetryEvent.HomeTelemetryDeviceClass.EXPANDED_TABLET, HomePageTelemetryPolicy.deviceClass(HomeDeviceClass.EXPANDED_TABLET))
+        assertEquals(
+            TelemetryEvent.HomeTelemetryDeviceClass.COMPACT_TABLET,
+            HomePageTelemetryPolicy.deviceClass(HomeDeviceClass.COMPACT_TABLET),
+        )
+        assertEquals(
+            TelemetryEvent.HomeTelemetryDeviceClass.EXPANDED_TABLET,
+            HomePageTelemetryPolicy.deviceClass(HomeDeviceClass.EXPANDED_TABLET),
+        )
     }
 }

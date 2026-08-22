@@ -21,7 +21,14 @@ class NotificationClassifierUseCaseTest {
     @Test
     fun `critical authentication messages are sensitive high priority and visible`() {
         listOf(
-            f("Akbank OTP", "com.akbank.android.apps.akbank_direkt", "Güvenlik doğrulaması", "123456 tek kullanımlık doğrulama kodunuz", NotificationCategory.FINANCE, 1),
+            f(
+                "Akbank OTP",
+                "com.akbank.android.apps.akbank_direkt",
+                "Güvenlik doğrulaması",
+                "123456 tek kullanımlık doğrulama kodunuz",
+                NotificationCategory.FINANCE,
+                1,
+            ),
             f("Shopping verification", "com.trendyol.android", "Ödeme onayı", "Verification code: 774411", NotificationCategory.FINANCE, 1),
             f("Instagram login code", "com.instagram.android", "Login alert", "Your login code is 123456", NotificationCategory.FINANCE, 1),
         ).forEachIndexed { index, fixture ->
@@ -35,7 +42,13 @@ class NotificationClassifierUseCaseTest {
 
     @Test
     fun `low value categories are suppressible while direct communication is not`() {
-        val promotion = classifier.classify("promo", "com.trendyol.android", "Sana özel fırsat", "Siparişine özel kupon ve yüzde 50 indirim", 1L)
+        val promotion = classifier.classify(
+            "promo",
+            "com.trendyol.android",
+            "Sana özel fırsat",
+            "Siparişine özel kupon ve yüzde 50 indirim",
+            1L,
+        )
         val news = classifier.classify("news", "com.example.news", "Haber", "Bülten ve son dakika gelişmeleri", 2L)
         val media = classifier.classify("media", "com.google.android.youtube", "Recommended", "Recommended video for you", 3L)
         val message = classifier.classify("message", "com.whatsapp", "Ali", "Sana yazdı", 4L)
@@ -95,16 +108,35 @@ class NotificationClassifierUseCaseTest {
             Fixture(name, pkg, title, text, category, priority)
 
         val fixtures = listOf(
-            f("Akbank OTP", "com.akbank.android.apps.akbank_direkt", "Güvenlik doğrulaması", "123456 tek kullanımlık doğrulama kodunuz", NotificationCategory.FINANCE, 1),
+            f(
+                "Akbank OTP",
+                "com.akbank.android.apps.akbank_direkt",
+                "Güvenlik doğrulaması",
+                "123456 tek kullanımlık doğrulama kodunuz",
+                NotificationCategory.FINANCE,
+                1,
+            ),
             f("Card transaction", "com.garanti.cepsubesi", "Kart işlemi", "1.250 TL card transaction", NotificationCategory.FINANCE),
             f("Bank transfer", "com.example.wallet", "Transfer", "Bank transfer completed", NotificationCategory.FINANCE),
             f("Trendyol cargo", "com.trendyol.android", "Siparişiniz", "Kargonuz dağıtıma çıktı", NotificationCategory.DELIVERY),
             f("Amazon shipped", "com.amazon.mShop.android.shopping", "Your order", "Your order has shipped", NotificationCategory.DELIVERY),
-            f("Trendyol promotion", "com.trendyol.android", "Sana özel fırsat", "Siparişine özel kupon ve yüzde 50 indirim", NotificationCategory.PROMOTION),
+            f(
+                "Trendyol promotion",
+                "com.trendyol.android",
+                "Sana özel fırsat",
+                "Siparişine özel kupon ve yüzde 50 indirim",
+                NotificationCategory.PROMOTION,
+            ),
             f("WhatsApp meeting", "com.whatsapp", "Ali", "Sana yazdı: Toplantı tamamlandı", NotificationCategory.MESSAGING),
             f("Telegram message", "org.telegram.messenger", "Ayşe", "New message received", NotificationCategory.MESSAGING),
             f("Missed call", "com.google.android.dialer", "Call", "Missed call", NotificationCategory.MISSED_CALL),
-            f("Calendar meeting", "com.google.android.calendar", "Hatırlatıcı", "Proje toplantısı 10 dakika sonra başlıyor", NotificationCategory.CALENDAR),
+            f(
+                "Calendar meeting",
+                "com.google.android.calendar",
+                "Hatırlatıcı",
+                "Proje toplantısı 10 dakika sonra başlıyor",
+                NotificationCategory.CALENDAR,
+            ),
             f("English reminder", "com.google.android.calendar", "Reminder", "Meeting starts in 10 minutes", NotificationCategory.CALENDAR),
             f("Instagram like", "com.instagram.android", "Activity", "Ali liked your photo", NotificationCategory.SOCIAL),
             f("Market alert", "com.google.android.googlequicksearchbox", "HPE", "HPE %3,9 arttı", NotificationCategory.MARKET),

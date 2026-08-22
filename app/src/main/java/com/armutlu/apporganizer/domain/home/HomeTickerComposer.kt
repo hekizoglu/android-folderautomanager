@@ -170,7 +170,7 @@ object HomeTickerComposer {
                 createdAt = System.currentTimeMillis(),
                 action = TickerAction.OpenWeeklyReport,
                 suggestionKey = "wrapped_teaser",
-            )
+            ),
         )
     }.getOrDefault(emptyList())
 
@@ -200,7 +200,7 @@ object HomeTickerComposer {
                 createdAt = System.currentTimeMillis(),
                 action = TickerAction.OpenSearchStats,
                 suggestionKey = "search_stats_summary",
-            )
+            ),
         )
     }.getOrDefault(emptyList())
 }

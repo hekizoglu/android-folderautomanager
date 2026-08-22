@@ -1,7 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
 import androidx.activity.ComponentActivity
@@ -11,25 +10,24 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
+import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.lifecycleScope
+import com.armutlu.apporganizer.AppOrganizerApp
 import com.armutlu.apporganizer.presentation.navigation.AppNavigation
 import com.armutlu.apporganizer.presentation.ui.screens.OnboardingScreen
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
-import androidx.core.view.WindowCompat
-import androidx.core.view.doOnPreDraw
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.CrashReporter
 import com.armutlu.apporganizer.utils.PackageManagerHelper
-import com.armutlu.apporganizer.AppOrganizerApp
 import com.armutlu.apporganizer.utils.StartupHealthPrefs
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
-
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -53,7 +51,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
         )
         WindowCompat.setDecorFitsSystemWindows(window, false)
         CrashReporter.install(this)
@@ -73,13 +71,18 @@ class MainActivity : ComponentActivity() {
                     AppNavigation(
                         viewModel = viewModel,
                         externalRoute = pendingRoute.value,
-                        onExternalRouteConsumed = { pendingRoute.value = null }
+                        onExternalRouteConsumed = { pendingRoute.value = null },
                     )
                 }
             }
         }
         window.decorView.doOnPreDraw {
-            StartupHealthPrefs.markReady(this, if (coldStart) AppOrganizerApp.processStartedAtElapsed else activityStartedAt, coldStart, home = false)
+            StartupHealthPrefs.markReady(
+                this,
+                if (coldStart) AppOrganizerApp.processStartedAtElapsed else activityStartedAt,
+                coldStart,
+                home = false,
+            )
             reportFullyDrawn()
             // D234: scanApps cold start'ta ilk frame'i bloke etmesin diye pre-draw sonrasına ötelendi
             lifecycleScope.launch {
@@ -119,7 +122,7 @@ class MainActivity : ComponentActivity() {
                 Timber.d("Scanning device apps...")
                 val apps = packageManagerHelper.getInstalledApps(
                     includeSystem = true,
-                    onlyLaunchable = true
+                    onlyLaunchable = true,
                 )
                 Timber.d("Found ${apps.size} apps, syncing...")
                 viewModel.syncInstalledApps(apps)
@@ -128,5 +131,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 }

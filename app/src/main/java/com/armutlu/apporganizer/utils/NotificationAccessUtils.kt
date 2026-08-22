@@ -9,7 +9,7 @@ object NotificationAccessUtils {
     fun isNotificationListenerEnabled(context: Context): Boolean {
         val flat = Settings.Secure.getString(
             context.contentResolver,
-            "enabled_notification_listeners"
+            "enabled_notification_listeners",
         ) ?: return false
 
         return containsPackage(flat, context.packageName)

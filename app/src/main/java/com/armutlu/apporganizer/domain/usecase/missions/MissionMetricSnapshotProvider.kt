@@ -9,7 +9,6 @@ import com.armutlu.apporganizer.domain.time.PeriodBoundary
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
 import com.armutlu.apporganizer.utils.AppPrefs
-import java.time.LocalDate
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Clock

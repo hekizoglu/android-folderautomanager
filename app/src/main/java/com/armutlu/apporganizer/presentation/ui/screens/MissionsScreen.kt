@@ -1,11 +1,11 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.clickable
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,11 +33,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.advice.DigitalAdviceAction
@@ -119,91 +119,91 @@ fun MissionsScreen(
                 }
             }
 
-        // P8 — "Bugünün Tavsiyesi": yıldız alanının hemen altında, TodayCard'ın (P7b) kompakt
-        // kullanımı — ikinci bir kart deseni YAZILMADI, aynı composable/spec kullanılır.
-        advice?.let { digitalAdvice ->
-            item {
-                SettingsSectionTitle(stringResource(R.string.missions_advice_section_title))
+            // P8 — "Bugünün Tavsiyesi": yıldız alanının hemen altında, TodayCard'ın (P7b) kompakt
+            // kullanımı — ikinci bir kart deseni YAZILMADI, aynı composable/spec kullanılır.
+            advice?.let { digitalAdvice ->
+                item {
+                    SettingsSectionTitle(stringResource(R.string.missions_advice_section_title))
+                }
+                item {
+                    TodayCard(
+                        spec = TodayCardSpec(
+                            kind = TodayCardKind.ADVICE,
+                            titleRes = digitalAdvice.titleRes,
+                            subtitleRes = digitalAdvice.messageRes,
+                            advice = digitalAdvice,
+                        ),
+                        onMissionClick = {},
+                        onPulseClick = {
+                            handleDigitalAdviceAction(digitalAdvice.action, context, onNavigateToRoute)
+                        },
+                        onFolderReviewClick = {},
+                        onReportReadyClick = {},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                }
             }
+
+            item { SettingsSectionTitle(stringResource(R.string.missions_daily_section)) }
             item {
-                TodayCard(
-                    spec = TodayCardSpec(
-                        kind = TodayCardKind.ADVICE,
-                        titleRes = digitalAdvice.titleRes,
-                        subtitleRes = digitalAdvice.messageRes,
-                        advice = digitalAdvice,
-                    ),
-                    onMissionClick = {},
-                    onPulseClick = {
-                        handleDigitalAdviceAction(digitalAdvice.action, context, onNavigateToRoute)
-                    },
-                    onFolderReviewClick = {},
-                    onReportReadyClick = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
+                SettingsCard {
+                    uiState.daily.forEachIndexed { index, mission ->
+                        if (index > 0) MissionDivider()
+                        MissionRow(
+                            mission = mission,
+                            onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
+                            justCompleted = mission.justCompleted,
+                            onLongPressAction = {
+                                mission.longPressTargetPackageName?.let { pkg ->
+                                    handleMissionAction(
+                                        com.armutlu.apporganizer.domain.usecase.missions.MissionAction.OpenAppInfo(pkg),
+                                        context,
+                                        onNavigateToRoute,
+                                    )
+                                }
+                            },
+                        )
+                    }
+                    if (uiState.daily.isEmpty() && !uiState.loading) {
+                        Text(
+                            text = stringResource(R.string.missions_empty),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
+                }
+            }
+
+            item { SettingsSectionTitle(stringResource(R.string.missions_weekly_section)) }
+            item {
+                SettingsCard {
+                    uiState.weekly.forEachIndexed { index, mission ->
+                        if (index > 0) MissionDivider()
+                        MissionRow(
+                            mission = mission,
+                            onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
+                            justCompleted = mission.justCompleted,
+                            onLongPressAction = {
+                                mission.longPressTargetPackageName?.let { pkg ->
+                                    handleMissionAction(
+                                        com.armutlu.apporganizer.domain.usecase.missions.MissionAction.OpenAppInfo(pkg),
+                                        context,
+                                        onNavigateToRoute,
+                                    )
+                                }
+                            },
+                        )
+                    }
+                }
             }
         }
 
-        item { SettingsSectionTitle(stringResource(R.string.missions_daily_section)) }
-        item {
-            SettingsCard {
-                uiState.daily.forEachIndexed { index, mission ->
-                    if (index > 0) MissionDivider()
-                    MissionRow(
-                        mission = mission,
-                        onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
-                        justCompleted = mission.justCompleted,
-                        onLongPressAction = {
-                            mission.longPressTargetPackageName?.let { pkg ->
-                                handleMissionAction(
-                                    com.armutlu.apporganizer.domain.usecase.missions.MissionAction.OpenAppInfo(pkg),
-                                    context,
-                                    onNavigateToRoute,
-                                )
-                            }
-                        },
-                    )
-                }
-                if (uiState.daily.isEmpty() && !uiState.loading) {
-                    Text(
-                        text = stringResource(R.string.missions_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                }
-            }
-        }
-
-        item { SettingsSectionTitle(stringResource(R.string.missions_weekly_section)) }
-        item {
-            SettingsCard {
-                uiState.weekly.forEachIndexed { index, mission ->
-                    if (index > 0) MissionDivider()
-                    MissionRow(
-                        mission = mission,
-                        onActionClick = { handleMissionAction(mission.action, context, onNavigateToRoute) },
-                        justCompleted = mission.justCompleted,
-                        onLongPressAction = {
-                            mission.longPressTargetPackageName?.let { pkg ->
-                                handleMissionAction(
-                                    com.armutlu.apporganizer.domain.usecase.missions.MissionAction.OpenAppInfo(pkg),
-                                    context,
-                                    onNavigateToRoute,
-                                )
-                            }
-                        },
-                    )
-                }
-            }
+        if (uiState.celebrateStars != null || uiState.daily.any { it.justCompleted } || uiState.weekly.any { it.justCompleted }) {
+            ConfettiExplosion()
         }
     }
-
-    if (uiState.celebrateStars != null || uiState.daily.any { it.justCompleted } || uiState.weekly.any { it.justCompleted }) {
-        ConfettiExplosion()
-    }
-}
 }
 
 /**
@@ -439,9 +439,13 @@ private fun handleDigitalAdviceAction(
     when (action) {
         DigitalAdviceAction.OpenCategoryGoals -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.DASHBOARD)
         DigitalAdviceAction.OpenMissions -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.MISSIONS)
-        DigitalAdviceAction.OpenNotificationReport -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT)
+        DigitalAdviceAction.OpenNotificationReport -> onNavigateToRoute(
+            com.armutlu.apporganizer.presentation.navigation.Routes.NOTIFICATION_REPORT,
+        )
         DigitalAdviceAction.OpenUsageReport -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.USAGE_REPORT)
-        DigitalAdviceAction.OpenClassificationReview -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.CLASSIFICATION_REVIEW)
+        DigitalAdviceAction.OpenClassificationReview -> onNavigateToRoute(
+            com.armutlu.apporganizer.presentation.navigation.Routes.CLASSIFICATION_REVIEW,
+        )
         DigitalAdviceAction.OpenFocusSettings -> onNavigateToRoute(com.armutlu.apporganizer.presentation.navigation.Routes.SETTINGS)
         DigitalAdviceAction.OpenUsageAccessSettings -> {
             val intent = android.content.Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS)
@@ -468,9 +472,9 @@ private fun ConfettiExplosion() {
         targetValue = 0.2f,
         animationSpec = androidx.compose.animation.core.infiniteRepeatable(
             animation = androidx.compose.animation.core.tween(1500, easing = androidx.compose.animation.core.LinearEasing),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse,
         ),
-        label = "alpha"
+        label = "alpha",
     )
     val particles = remember {
         List(40) {
@@ -482,9 +486,9 @@ private fun ConfettiExplosion() {
                     androidx.compose.ui.graphics.Color(0xFFFF4500),
                     androidx.compose.ui.graphics.Color(0xFF1E90FF),
                     androidx.compose.ui.graphics.Color(0xFF32CD32),
-                    androidx.compose.ui.graphics.Color(0xFFFF69B4)
+                    androidx.compose.ui.graphics.Color(0xFFFF69B4),
                 ).random(),
-                radius = (4..10).random().toFloat()
+                radius = (4..10).random().toFloat(),
             )
         }
     }
@@ -493,7 +497,7 @@ private fun ConfettiExplosion() {
             drawCircle(
                 color = p.color.copy(alpha = alpha),
                 radius = p.radius.dp.toPx(),
-                center = androidx.compose.ui.geometry.Offset(size.width * p.x, size.height * p.y)
+                center = androidx.compose.ui.geometry.Offset(size.width * p.x, size.height * p.y),
             )
         }
     }
@@ -503,5 +507,5 @@ private data class ConfettiParticle(
     val x: Float,
     val y: Float,
     val color: androidx.compose.ui.graphics.Color,
-    val radius: Float
+    val radius: Float,
 )

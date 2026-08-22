@@ -31,10 +31,10 @@ import com.armutlu.apporganizer.domain.usecase.missions.FolderEmojiSets
 import com.armutlu.apporganizer.domain.usecase.missions.StarLevelSystem
 
 internal val EMOJI_PICKER = listOf(
-    "📁","📝","🎮","👥","🛍️","📰","❤️","💰","🎓","🔧",
-    "✈️","🎬","🍔","📸","📦","⭐","🏠","🎵","💼","🎯",
-    "🔑","📱","💻","🎁","🌟","🚀","🎪","🏆","💡","📚",
-    "🌙","☀️","🎨","🏋️","🐶","🌿","🔔","💬","🗓️","🧩"
+    "📁", "📝", "🎮", "👥", "🛍️", "📰", "❤️", "💰", "🎓", "🔧",
+    "✈️", "🎬", "🍔", "📸", "📦", "⭐", "🏠", "🎵", "💼", "🎯",
+    "🔑", "📱", "💻", "🎁", "🌟", "🚀", "🎪", "🏆", "💡", "📚",
+    "🌙", "☀️", "🎨", "🏋️", "🐶", "🌿", "🔔", "💬", "🗓️", "🧩",
 )
 
 internal val COLOR_PRESETS = listOf(
@@ -73,9 +73,9 @@ internal fun FolderRenameDialog(
     var selectedColor by remember { mutableStateOf(currentColor) }
     val trimmedName = nameField.trim()
     val showNameError = nameField.isNotEmpty() && trimmedName.isBlank()
-    val primary   = MaterialTheme.colorScheme.primary
+    val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
-    val surface   = MaterialTheme.colorScheme.surface
+    val surface = MaterialTheme.colorScheme.surface
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -98,13 +98,13 @@ internal fun FolderRenameDialog(
                         unfocusedTextColor = onSurface,
                         cursorColor = primary,
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
                 if (showNameError) {
                     Text(
                         text = "Klasör adı boş bırakılamaz",
                         color = MaterialTheme.colorScheme.error,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
                     )
                 }
                 Text(stringResource(R.string.folder_emoji_pick), color = onSurface.copy(0.6f), fontSize = 13.sp)
@@ -114,7 +114,7 @@ internal fun FolderRenameDialog(
                             modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
                                 .background(if (emoji == selectedEmoji) primary.copy(0.35f) else onSurface.copy(0.08f))
                                 .clickable { selectedEmoji = emoji },
-                            contentAlignment = Alignment.Center
+                            contentAlignment = Alignment.Center,
                         ) { Text(emoji, fontSize = 20.sp) }
                     }
                 }
@@ -138,7 +138,7 @@ internal fun FolderRenameDialog(
                                             !unlocked -> onSurface.copy(0.04f)
                                             emoji == selectedEmoji -> primary.copy(0.35f)
                                             else -> onSurface.copy(0.08f)
-                                        }
+                                        },
                                     )
                                     .clickable {
                                         if (unlocked) {
@@ -148,7 +148,7 @@ internal fun FolderRenameDialog(
                                             lockInfoMessage = level.labelTr + "|" + threshold
                                         }
                                     },
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Text(emoji, fontSize = 20.sp, color = if (unlocked) Color.Unspecified else onSurface.copy(0.35f))
                             }
@@ -173,13 +173,16 @@ internal fun FolderRenameDialog(
                     itemsIndexed(colorPresets, key = { _, preset -> preset.first }) { _, preset ->
                         val hex = preset.first
                         val isSelected = selectedColor == hex
-                        val resolvedColor = if (hex.isBlank()) onSurface.copy(0.2f)
-                            else runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(onSurface)
+                        val resolvedColor = if (hex.isBlank()) {
+                            onSurface.copy(0.2f)
+                        } else {
+                            runCatching { Color(android.graphics.Color.parseColor(hex)) }.getOrDefault(onSurface)
+                        }
                         Box(
                             modifier = Modifier.size(36.dp).clip(CircleShape).background(resolvedColor)
                                 .then(if (isSelected) Modifier.border(2.dp, Color.White, CircleShape) else Modifier)
                                 .clickable { selectedColor = hex },
-                            contentAlignment = Alignment.Center
+                            contentAlignment = Alignment.Center,
                         ) {
                             if (isSelected) Icon(Icons.Default.CheckCircle, null, tint = Color.White, modifier = Modifier.size(18.dp))
                         }
@@ -190,7 +193,7 @@ internal fun FolderRenameDialog(
         confirmButton = {
             TextButton(
                 enabled = trimmedName.isNotEmpty(),
-                onClick = { onSave(trimmedName, selectedEmoji, selectedColor) }
+                onClick = { onSave(trimmedName, selectedEmoji, selectedColor) },
             ) {
                 Text(stringResource(R.string.btn_save), color = primary, fontWeight = FontWeight.Bold)
             }
@@ -199,6 +202,6 @@ internal fun FolderRenameDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.btn_cancel), color = onSurface.copy(0.6f))
             }
-        }
+        },
     )
 }

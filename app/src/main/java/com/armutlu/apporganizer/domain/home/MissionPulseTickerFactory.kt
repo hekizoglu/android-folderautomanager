@@ -36,6 +36,7 @@ object MissionPulseTickerFactory {
     val STREAK_MILESTONES = listOf(3, 7, 30)
 
     private const val MS_PER_DAY = 24L * 3600 * 1000
+
     /** Görev/başarı öğeleri en fazla bir gün geçerli — ertesi gün yeni dönemin verisiyle yeniden üretilir. */
     private const val MISSION_ITEM_EXPIRY_MS = MS_PER_DAY
 
@@ -82,7 +83,7 @@ object MissionPulseTickerFactory {
                     expiresAt = nowMillis + MISSION_ITEM_EXPIRY_MS,
                     action = TickerAction.OpenMissions,
                     suggestionKey = "mission_all_completed",
-                )
+                ),
             )
             return items
         }
@@ -103,7 +104,7 @@ object MissionPulseTickerFactory {
                             expiresAt = nowMillis + MISSION_ITEM_EXPIRY_MS,
                             action = TickerAction.OpenMissions,
                             suggestionKey = "mission_at_risk_$primaryId",
-                        )
+                        ),
                     )
                 }
                 MissionStatus.COMPLETED -> {
@@ -118,7 +119,7 @@ object MissionPulseTickerFactory {
                             expiresAt = nowMillis + MISSION_ITEM_EXPIRY_MS,
                             action = TickerAction.OpenMissions,
                             suggestionKey = "mission_completed_$primaryId",
-                        )
+                        ),
                     )
                 }
                 else -> {
@@ -140,7 +141,7 @@ object MissionPulseTickerFactory {
                                 expiresAt = nowMillis + MISSION_ITEM_EXPIRY_MS,
                                 action = TickerAction.OpenMissions,
                                 suggestionKey = "mission_single_action_$primaryId",
-                            )
+                            ),
                         )
                     }
                 }
@@ -176,7 +177,7 @@ object MissionPulseTickerFactory {
                 expiresAt = nowMillis + STREAK_ITEM_EXPIRY_MS,
                 action = TickerAction.OpenMissions,
                 suggestionKey = "streak_milestone_$milestone",
-            )
+            ),
         )
     }
 
@@ -210,7 +211,7 @@ object MissionPulseTickerFactory {
                 expiresAt = nowMillis + LEVEL_UP_ITEM_EXPIRY_MS,
                 action = TickerAction.OpenMissions,
                 suggestionKey = "level_up_${currentLevel.name}",
-            )
+            ),
         )
     }
 
@@ -260,7 +261,7 @@ object MissionPulseTickerFactory {
                 expiresAt = nowMillis + MORNING_SUMMARY_ITEM_EXPIRY_MS,
                 action = TickerAction.OpenMissions,
                 suggestionKey = "morning_summary_$todayEpochDay",
-            )
+            ),
         )
     }
 
@@ -314,7 +315,7 @@ object MissionPulseTickerFactory {
                     expiresAt = nowMillis + PULSE_ITEM_EXPIRY_MS,
                     action = TickerAction.OpenWeeklyReport,
                     suggestionKey = "pulse_score_delta",
-                )
+                ),
             )
         }
 
@@ -337,7 +338,7 @@ object MissionPulseTickerFactory {
                         expiresAt = nowMillis + PULSE_ITEM_EXPIRY_MS,
                         action = pulseActionToTickerAction(presented.action),
                         suggestionKey = "pulse_resolvable_${topNegativeReason.id.name}",
-                    )
+                    ),
                 )
             }
         }

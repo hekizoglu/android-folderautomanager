@@ -3,8 +3,8 @@ package com.armutlu.apporganizer.data.repository
 import android.content.Context
 import com.armutlu.apporganizer.utils.NotificationReadPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 interface NotificationReadStateSource {
     val lastReadAt: StateFlow<Map<String, Long>>

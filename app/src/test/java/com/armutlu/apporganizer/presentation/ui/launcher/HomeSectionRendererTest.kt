@@ -1,7 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
-import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeLayoutConfig
+import com.armutlu.apporganizer.domain.models.HomeLayoutItem
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 import org.junit.Assert.assertEquals

@@ -9,15 +9,15 @@ import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
 import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 /**
  * MissionMetricSnapshotProvider — Dongu M02 (ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md
@@ -112,7 +112,9 @@ class MissionMetricSnapshotProviderTest {
     }
 
     /** Dongu G3a — DAILY_MORNING_CALM icin sahte kategori->paket eslesmesi. */
-    private class FakeAppDao(private val socialPackages: List<String> = emptyList()) : com.armutlu.apporganizer.data.local.AppDao by mockk(relaxed = true) {
+    private class FakeAppDao(
+        private val socialPackages: List<String> = emptyList(),
+    ) : com.armutlu.apporganizer.data.local.AppDao by mockk(relaxed = true) {
         override suspend fun getPackageNamesByCategory(categoryId: String): List<String> =
             if (categoryId == com.armutlu.apporganizer.domain.models.Category.CAT_SOCIAL) socialPackages else emptyList()
     }

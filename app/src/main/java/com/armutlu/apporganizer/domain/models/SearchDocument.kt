@@ -40,7 +40,7 @@ data class SearchDocument(
 
     /** Son değişiklik epoch millis — recency bonus için */
     @ColumnInfo(name = "last_modified")
-    val lastModified: Long
+    val lastModified: Long,
 )
 
 /** Kaynak tipi enum — sorgu sonrası gruplandırma için */
@@ -49,7 +49,8 @@ enum class SourceType(val key: String, val groupOrder: Int) {
     CATEGORY("category", 1),
     SETTING("setting", 2),
     CONTACT("contact", 3),
-    FILE("file", 4);
+    FILE("file", 4),
+    ;
 
     companion object {
         fun fromKey(key: String): SourceType = entries.first { it.key == key }

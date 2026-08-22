@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.domain.usecase.pulse
 
-import com.armutlu.apporganizer.domain.usecase.wrapped.WrappedEngine
 import kotlin.math.abs
 import kotlin.math.roundToInt
 

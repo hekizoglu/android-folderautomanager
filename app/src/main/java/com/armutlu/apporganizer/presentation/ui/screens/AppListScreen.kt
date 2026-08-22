@@ -11,7 +11,6 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,25 +24,25 @@ fun AppListScreen(
     viewModel: AppListViewModel,
     initialUncertainFilter: Boolean = false,
     onNavigateToCategories: () -> Unit = {},
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
 ) {
-    val screenState     by viewModel.screenState.collectAsState()
+    val screenState by viewModel.screenState.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
-    val searchQuery     by viewModel.searchQuery.collectAsState()
-    val sortOption      by viewModel.sortOption.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val sortOption by viewModel.sortOption.collectAsState()
     val classifyLoading by viewModel.classifyLoading.collectAsState()
-    val classifyResult  by viewModel.classifyResult.collectAsState()
-    val selectedApps    by viewModel.selectedApps.collectAsState()
+    val classifyResult by viewModel.classifyResult.collectAsState()
+    val selectedApps by viewModel.selectedApps.collectAsState()
     val showUncertainOnly by viewModel.showUncertainOnly.collectAsState()
     val suggestedSimilarApps by viewModel.suggestedSimilarApps.collectAsState()
     val suggestedSimilarCategoryId by viewModel.suggestedSimilarCategoryId.collectAsState()
-    val selectionCount  = selectedApps.size
-    val isSelecting     = selectionCount > 0
+    val selectionCount = selectedApps.size
+    val isSelecting = selectionCount > 0
     val hasUnclassifiedApps = screenState.apps.any { it.categoryId == Category.CAT_UNCATEGORIZED }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var showMenu       by remember { mutableStateOf(false) }
-    var showSortMenu   by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
     var appForCategory by remember { mutableStateOf<AppInfo?>(null) }
     var showResetCategoriesDialog by remember { mutableStateOf(false) }
 
@@ -62,10 +61,11 @@ fun AppListScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    if (isSelecting)
+                    if (isSelecting) {
                         Text("$selectionCount seçili", fontWeight = FontWeight.SemiBold)
-                    else
+                    } else {
                         Text("App Organizer", fontWeight = FontWeight.SemiBold)
+                    }
                 },
                 navigationIcon = {
                     if (isSelecting) {
@@ -82,11 +82,15 @@ fun AppListScreen(
                         SortOption.entries.forEach { opt ->
                             DropdownMenuItem(
                                 text = { Text(opt.label) },
-                                onClick = { viewModel.setSortOption(opt); showSortMenu = false },
+                                onClick = {
+                                    viewModel.setSortOption(opt)
+                                    showSortMenu = false
+                                },
                                 leadingIcon = {
-                                    if (sortOption == opt)
+                                    if (sortOption == opt) {
                                         Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
-                                }
+                                    }
+                                },
                             )
                         }
                     }
@@ -96,27 +100,37 @@ fun AppListScreen(
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
                             text = { Text("Kategoriler") },
-                            onClick = { showMenu = false; onNavigateToCategories() },
-                            leadingIcon = { Icon(Icons.Default.Category, null) }
+                            onClick = {
+                                showMenu = false
+                                onNavigateToCategories()
+                            },
+                            leadingIcon = { Icon(Icons.Default.Category, null) },
                         )
                         DropdownMenuItem(
                             text = { Text("Kategorileri Sıfırla ve Yeniden Sınıflandır") },
-                            onClick = { showMenu = false; showResetCategoriesDialog = true },
-                            leadingIcon = { Icon(Icons.Default.RestartAlt, null) }
+                            onClick = {
+                                showMenu = false
+                                showResetCategoriesDialog = true
+                            },
+                            leadingIcon = { Icon(Icons.Default.RestartAlt, null) },
                         )
                         DropdownMenuItem(
                             text = { Text("Ayarlar") },
-                            onClick = { showMenu = false; onNavigateToSettings() },
-                            leadingIcon = { Icon(Icons.Default.Settings, null) }
+                            onClick = {
+                                showMenu = false
+                                onNavigateToSettings()
+                            },
+                            leadingIcon = { Icon(Icons.Default.Settings, null) },
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (isSelecting)
+                    containerColor = if (isSelecting) {
                         MaterialTheme.colorScheme.primaryContainer
-                    else
+                    } else {
                         MaterialTheme.colorScheme.surface
-                )
+                    },
+                ),
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -126,13 +140,13 @@ fun AppListScreen(
                     onClick = {
                         if (!classifyLoading) viewModel.classifyUnclassifiedApps()
                     },
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.primary,
                 ) {
                     if (classifyLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
                         )
                     } else {
                         Icon(Icons.Default.AutoFixHigh, "Otomatik sınıflandır", tint = MaterialTheme.colorScheme.onPrimary)
@@ -140,7 +154,7 @@ fun AppListScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(
                         if (classifyLoading) "Sınıflandırılıyor" else "Sınıflandır",
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onPrimary,
                     )
                 }
             }
@@ -149,7 +163,7 @@ fun AppListScreen(
             AnimatedVisibility(
                 visible = isSelecting,
                 enter = slideInVertically { it },
-                exit = slideOutVertically { it }
+                exit = slideOutVertically { it },
             ) {
                 var showBulkCategory by remember { mutableStateOf(false) }
                 BottomAppBar(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
@@ -170,12 +184,12 @@ fun AppListScreen(
                                 viewModel.updateAppsCategory(selectedApps.toList(), catId)
                                 showBulkCategory = false
                             },
-                            onDismiss = { showBulkCategory = false }
+                            onDismiss = { showBulkCategory = false },
                         )
                     }
                 }
             }
-        }
+        },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             // Arama çubuğu
@@ -186,24 +200,25 @@ fun AppListScreen(
                 placeholder = { Text("Uygulama ara...") },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 trailingIcon = {
-                    if (searchQuery.isNotEmpty())
+                    if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { viewModel.clearSearch() }) {
                             Icon(Icons.Default.Close, null)
                         }
+                    }
                 },
                 singleLine = true,
                 shape = RoundedCornerShape(28.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary
-                )
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                ),
             )
 
             // Kategori sekmeleri
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
             ) {
                 item {
                     CategoryChip(
@@ -211,7 +226,7 @@ fun AppListScreen(
                         emoji = "📱",
                         count = screenState.apps.size,
                         selected = selectedCategory == "all",
-                        onClick = { viewModel.setSelectedCategory("all") }
+                        onClick = { viewModel.setSelectedCategory("all") },
                     )
                 }
                 items(screenState.visibleCategories, key = { it.categoryId }) { cat ->
@@ -220,7 +235,7 @@ fun AppListScreen(
                         emoji = cat.iconEmoji,
                         count = screenState.countAppsByCategory(cat.categoryId),
                         selected = selectedCategory == cat.categoryId,
-                        onClick = { viewModel.setSelectedCategory(cat.categoryId) }
+                        onClick = { viewModel.setSelectedCategory(cat.categoryId) },
                     )
                 }
             }
@@ -233,7 +248,7 @@ fun AppListScreen(
                     label = { Text("Belirsiz kategoriler (${screenState.filteredAppsCount})") },
                     leadingIcon = { Icon(Icons.Default.ReportProblem, null, modifier = Modifier.size(18.dp)) },
                     trailingIcon = { Icon(Icons.Default.Close, null, modifier = Modifier.size(16.dp)) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             }
 
@@ -243,35 +258,41 @@ fun AppListScreen(
                 screenState.error != null -> AppEmptyState(
                     icon = Icons.Default.ErrorOutline,
                     title = "Hata oluştu",
-                    subtitle = screenState.error ?: ""
+                    subtitle = screenState.error ?: "",
                 )
                 screenState.filteredApps.isEmpty() && searchQuery.isNotBlank() -> AppEmptyState(
                     icon = Icons.Default.SearchOff,
                     title = "Sonuç bulunamadı",
-                    subtitle = "\"$searchQuery\" için eşleşen uygulama yok"
+                    subtitle = "\"$searchQuery\" için eşleşen uygulama yok",
                 )
                 screenState.filteredApps.isEmpty() && showUncertainOnly -> AppEmptyState(
                     icon = Icons.Default.CheckCircle,
                     title = "Belirsiz kategori yok",
-                    subtitle = "Gözden geçirilecek düşük güvenli uygulama bulunamadı"
+                    subtitle = "Gözden geçirilecek düşük güvenli uygulama bulunamadı",
                 )
                 screenState.filteredApps.isEmpty() -> AppEmptyState(
                     icon = Icons.Default.Apps,
                     title = "Uygulama yok",
-                    subtitle = "Bu kategoride henüz uygulama bulunmuyor"
+                    subtitle = "Bu kategoride henüz uygulama bulunmuyor",
                 )
                 else -> AppListContent(
                     apps = screenState.filteredApps,
                     selectedApps = selectedApps,
                     categories = screenState.categories,
                     onAppClick = { app ->
-                        if (isSelecting) viewModel.toggleAppSelection(app.packageName)
-                        else viewModel.launchApp(app.packageName)
+                        if (isSelecting) {
+                            viewModel.toggleAppSelection(app.packageName)
+                        } else {
+                            viewModel.launchApp(app.packageName)
+                        }
                     },
                     onAppLongClick = { app ->
-                        if (isSelecting) viewModel.toggleAppSelection(app.packageName)
-                        else appForCategory = app
-                    }
+                        if (isSelecting) {
+                            viewModel.toggleAppSelection(app.packageName)
+                        } else {
+                            appForCategory = app
+                        }
+                    },
                 )
             }
         }
@@ -286,7 +307,7 @@ fun AppListScreen(
                 viewModel.updateAppCategory(app.packageName, catId)
                 appForCategory = null
             },
-            onDismiss = { appForCategory = null }
+            onDismiss = { appForCategory = null },
         )
     }
 
@@ -299,7 +320,7 @@ fun AppListScreen(
             apps = suggestedSimilarApps,
             categoryName = categoryName,
             onConfirm = { selectedPackageNames -> viewModel.acceptSimilarCategorySuggestions(selectedPackageNames) },
-            onDismiss = { viewModel.clearSimilarCategorySuggestions() }
+            onDismiss = { viewModel.clearSimilarCategorySuggestions() },
         )
     }
 
@@ -307,7 +328,11 @@ fun AppListScreen(
         AlertDialog(
             onDismissRequest = { showResetCategoriesDialog = false },
             title = { Text("Kategorileri sıfırla ve yeniden sınıflandır") },
-            text = { Text("Tüm mevcut kategori atamaları silinecek ve uygulamalar yeniden sınıflandırılacak. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?") },
+            text = {
+                Text(
+                    "Tüm mevcut kategori atamaları silinecek ve uygulamalar yeniden sınıflandırılacak. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?",
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     showResetCategoriesDialog = false
@@ -320,8 +345,7 @@ fun AppListScreen(
                 TextButton(onClick = { showResetCategoriesDialog = false }) {
                     Text("İptal")
                 }
-            }
+            },
         )
     }
 }
-

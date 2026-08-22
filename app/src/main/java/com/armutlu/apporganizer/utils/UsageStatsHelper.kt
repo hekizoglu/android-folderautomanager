@@ -102,7 +102,7 @@ object UsageStatsHelper {
     fun openPermissionSettings(context: Context) {
         context.startActivity(
             android.content.Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
         )
     }
 
@@ -260,7 +260,7 @@ object UsageStatsHelper {
             val currentSlot = timeSlot(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
 
             // Event bazlı veri — daha doğru frekans ve time-slot için
-            val slotCounts = mutableMapOf<String, IntArray>()  // pkg → [sabah, öğle, öğleden sonra, akşam]
+            val slotCounts = mutableMapOf<String, IntArray>() // pkg → [sabah, öğle, öğleden sonra, akşam]
             val launchCounts = mutableMapOf<String, Int>()
 
             try {
@@ -272,8 +272,10 @@ object UsageStatsHelper {
                     val pkg = event.packageName
                     if (pkg.isNullOrEmpty()) continue
                     launchCounts[pkg] = (launchCounts[pkg] ?: 0) + 1
-                    val slot = timeSlot(Calendar.getInstance().apply { timeInMillis = event.timeStamp }
-                        .get(Calendar.HOUR_OF_DAY))
+                    val slot = timeSlot(
+                        Calendar.getInstance().apply { timeInMillis = event.timeStamp }
+                            .get(Calendar.HOUR_OF_DAY),
+                    )
                     val arr = slotCounts.getOrPut(pkg) { IntArray(4) }
                     arr[slot]++
                 }
@@ -304,11 +306,11 @@ object UsageStatsHelper {
                 // Recency (0.4)
                 val ageMs = now - lastUsed
                 val recency = when {
-                    lastUsed <= 0L             -> 0f
-                    ageMs < 86_400_000L        -> 1.0f   // < 24 saat
-                    ageMs < 7 * 86_400_000L    -> 0.5f   // < 1 hafta
-                    ageMs < 14 * 86_400_000L   -> 0.25f  // < 2 hafta
-                    else                        -> 0.1f
+                    lastUsed <= 0L -> 0f
+                    ageMs < 86_400_000L -> 1.0f // < 24 saat
+                    ageMs < 7 * 86_400_000L -> 0.5f // < 1 hafta
+                    ageMs < 14 * 86_400_000L -> 0.25f // < 2 hafta
+                    else -> 0.1f
                 }
 
                 // Frequency (0.4) — launch count varsa onu kullan, yoksa totalMs heuristic
@@ -323,7 +325,9 @@ object UsageStatsHelper {
                 val timeSlotScore = if (slots != null) {
                     val maxSlot = slots.maxOrNull()?.toFloat() ?: 1f
                     if (maxSlot > 0f) slots[currentSlot] / maxSlot else 0f
-                } else 0f
+                } else {
+                    0f
+                }
 
                 recency * 0.4f + frequency * 0.4f + timeSlotScore * 0.2f
             }.filter { it.value > 0f }
@@ -410,7 +414,8 @@ object UsageStatsHelper {
                     UsageEvents.Event.ACTIVITY_PAUSED,
                     UsageEvents.Event.ACTIVITY_STOPPED,
                     UsageEvents.Event.SCREEN_NON_INTERACTIVE,
-                    UsageEvents.Event.DEVICE_SHUTDOWN -> {
+                    UsageEvents.Event.DEVICE_SHUTDOWN,
+                    -> {
                         if (foregroundPkg != null &&
                             (event.packageName == foregroundPkg || event.packageName.isNullOrEmpty())
                         ) {
@@ -433,10 +438,10 @@ object UsageStatsHelper {
 
     // 0=sabah(06-11), 1=öğle(11-14), 2=öğleden sonra(14-18), 3=akşam/gece(18-06)
     private fun timeSlot(hour: Int): Int = when (hour) {
-        in 6..10  -> 0
+        in 6..10 -> 0
         in 11..13 -> 1
         in 14..17 -> 2
-        else      -> 3
+        else -> 3
     }
 
     /** Saat -> dilim (0..3). Çağıranların cache'i dilim değişince yenilemesi için public. */

@@ -203,7 +203,10 @@ fun SmartTickerSettingsScreen(
                             if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.ACTION_REQUIRED))
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.EmojiEvents,
                         title = stringResource(R.string.smart_ticker_settings_missions_title),
@@ -216,7 +219,10 @@ fun SmartTickerSettingsScreen(
                             if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.MISSION_PROGRESS))
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Favorite,
                         title = stringResource(R.string.smart_ticker_settings_pulse_title),
@@ -229,7 +235,10 @@ fun SmartTickerSettingsScreen(
                             if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.PULSE_CHANGE))
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Schedule,
                         title = stringResource(R.string.smart_ticker_settings_reports_title),
@@ -242,7 +251,10 @@ fun SmartTickerSettingsScreen(
                             if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.WEEKLY_REPORT))
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Lightbulb,
                         title = stringResource(R.string.smart_ticker_settings_contextual_title),
@@ -252,10 +264,17 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             contextualVisible = it
                             AppPrefs.setSmartTickerContextualVisible(context, it)
-                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.CONTEXTUAL_SUGGESTION))
+                            if (!it) {
+                                TelemetryManager.log(
+                                    TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.CONTEXTUAL_SUGGESTION),
+                                )
+                            }
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.CleaningServices,
                         title = stringResource(R.string.smart_ticker_settings_tidiness_title),
@@ -267,7 +286,10 @@ fun SmartTickerSettingsScreen(
                             AppPrefs.setDeviceTidinessInsightsEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Lightbulb,
                         title = stringResource(R.string.smart_ticker_settings_discovery_title),
@@ -277,10 +299,17 @@ fun SmartTickerSettingsScreen(
                         onCheckedChange = {
                             discoveryVisible = it
                             AppPrefs.setSmartTickerDiscoveryVisible(context, it)
-                            if (!it) TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.FEATURE_DISCOVERY))
+                            if (!it) {
+                                TelemetryManager.log(
+                                    TelemetryEvent.TickerTypeDisabled(TelemetryEvent.TickerItemType.FEATURE_DISCOVERY),
+                                )
+                            }
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Shield,
                         title = stringResource(R.string.smart_ticker_settings_health_title),
@@ -312,10 +341,18 @@ fun SmartTickerSettingsScreen(
                         },
                     )
                     if (autoAdvance) {
-                        HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        HorizontalDivider(
+                            Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        )
                         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
                             Row {
-                                Icon(Icons.Default.Timer, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = 12.dp))
+                                Icon(
+                                    Icons.Default.Timer,
+                                    null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(end = 12.dp),
+                                )
                                 Column {
                                     Text(stringResource(R.string.smart_ticker_settings_interval_title), fontWeight = FontWeight.Medium)
                                     Text(
@@ -337,7 +374,10 @@ fun SmartTickerSettingsScreen(
                             )
                         }
                     }
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Visibility,
                         title = stringResource(R.string.smart_ticker_settings_sensitive_title),
@@ -411,7 +451,12 @@ fun SmartTickerSettingsScreen(
                                         .fillMaxWidth()
                                         .padding(horizontal = 16.dp, vertical = 10.dp),
                                 ) {
-                                    Icon(Icons.Default.VisibilityOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = 12.dp))
+                                    Icon(
+                                        Icons.Default.VisibilityOff,
+                                        null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(end = 12.dp),
+                                    )
                                     Text(
                                         stringResource(titleRes),
                                         modifier = Modifier.weight(1f),
@@ -422,7 +467,10 @@ fun SmartTickerSettingsScreen(
                                     }
                                 }
                                 if (index != hiddenTypes.size - 1) {
-                                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                                    HorizontalDivider(
+                                        Modifier.padding(horizontal = 16.dp),
+                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                    )
                                 }
                             }
                         }

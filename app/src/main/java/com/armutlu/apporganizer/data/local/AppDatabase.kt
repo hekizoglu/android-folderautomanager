@@ -25,7 +25,7 @@ import timber.log.Timber
 @Database(
     entities = [AppInfo::class, Category::class, SearchDocument::class, com.armutlu.apporganizer.domain.models.NotificationEvent::class, WeeklyGoal::class, MissionHistoryEntry::class, TaskScoreEventEntry::class, MissionInstanceEntity::class, TickerHistoryEntity::class, HomeGridItemEntity::class, com.armutlu.apporganizer.domain.models.Operation::class, UndoMergeEntity::class, com.armutlu.apporganizer.domain.models.NotificationHistoryEntity::class],
     version = 28,
-    exportSchema = true
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -104,7 +104,7 @@ abstract class AppDatabase : RoomDatabase() {
                         source_group TEXT NOT NULL DEFAULT 'app',
                         last_modified INTEGER NOT NULL DEFAULT 0
                     )
-                    """
+                    """,
                 )
                 ensureSearchTables(db)
             }
@@ -119,7 +119,7 @@ abstract class AppDatabase : RoomDatabase() {
                         query TEXT NOT NULL,
                         timestamp INTEGER NOT NULL DEFAULT 0
                     )
-                    """
+                    """,
                 )
             }
         }
@@ -147,7 +147,7 @@ abstract class AppDatabase : RoomDatabase() {
                         packageName TEXT NOT NULL,
                         postedAt INTEGER NOT NULL
                     )
-                    """
+                    """,
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_packageName ON notification_events(packageName)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_events_postedAt ON notification_events(postedAt)")
@@ -182,7 +182,7 @@ abstract class AppDatabase : RoomDatabase() {
                         achievedAt INTEGER NOT NULL,
                         PRIMARY KEY(categoryId, weekStartEpochDay)
                     )
-                    """
+                    """,
                 )
             }
         }
@@ -214,10 +214,14 @@ abstract class AppDatabase : RoomDatabase() {
                         starReward INTEGER NOT NULL,
                         source TEXT NOT NULL DEFAULT 'auto'
                     )
-                    """
+                    """,
                 )
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_mission_history_periodType_periodStartEpoch ON mission_history(periodType, periodStartEpoch)")
-                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_mission_history_missionId_periodType_periodStartEpoch ON mission_history(missionId, periodType, periodStartEpoch)")
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_mission_history_periodType_periodStartEpoch ON mission_history(periodType, periodStartEpoch)",
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_mission_history_missionId_periodType_periodStartEpoch ON mission_history(missionId, periodType, periodStartEpoch)",
+                )
                 db.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS task_score_events (
@@ -227,9 +231,11 @@ abstract class AppDatabase : RoomDatabase() {
                         delta INTEGER NOT NULL,
                         createdAt INTEGER NOT NULL
                     )
-                    """
+                    """,
                 )
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_task_score_events_eventKey_createdAt ON task_score_events(eventKey, createdAt)")
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_task_score_events_eventKey_createdAt ON task_score_events(eventKey, createdAt)",
+                )
             }
         }
 
@@ -253,10 +259,14 @@ abstract class AppDatabase : RoomDatabase() {
                         definitionVersion INTEGER NOT NULL,
                         PRIMARY KEY(instanceId)
                     )
-                    """
+                    """,
                 )
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_mission_instances_periodType_periodStartEpoch ON mission_instances(periodType, periodStartEpoch)")
-                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_mission_instances_missionId_periodType_periodStartEpoch ON mission_instances(missionId, periodType, periodStartEpoch)")
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_mission_instances_periodType_periodStartEpoch ON mission_instances(periodType, periodStartEpoch)",
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_mission_instances_missionId_periodType_periodStartEpoch ON mission_instances(missionId, periodType, periodStartEpoch)",
+                )
             }
         }
 
@@ -283,7 +293,7 @@ abstract class AppDatabase : RoomDatabase() {
                         sensitive INTEGER NOT NULL,
                         PRIMARY KEY(id)
                     )
-                    """
+                    """,
                 )
             }
         }
@@ -302,7 +312,7 @@ abstract class AppDatabase : RoomDatabase() {
                         spanY INTEGER NOT NULL,
                         PRIMARY KEY(itemId)
                     )
-                    """
+                    """,
                 )
             }
         }
@@ -314,7 +324,7 @@ abstract class AppDatabase : RoomDatabase() {
                 // canonical v22 table and provide safe defaults for missing columns.
                 val legacyTable = "operations_v21_legacy"
                 val hasOperations = db.query(
-                    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'operations' LIMIT 1"
+                    "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'operations' LIMIT 1",
                 ).use { it.moveToFirst() }
 
                 if (hasOperations) {
@@ -335,7 +345,7 @@ abstract class AppDatabase : RoomDatabase() {
                         `rolledBack` INTEGER NOT NULL DEFAULT 0,
                         `rolledBackAt` INTEGER
                     )
-                    """
+                    """,
                 )
 
                 if (hasOperations) {
@@ -364,7 +374,7 @@ abstract class AppDatabase : RoomDatabase() {
                             ${columnOrDefault("rolledBack", "0")},
                             ${columnOrDefault("rolledBackAt", "NULL")}
                         FROM `$legacyTable`
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
                     db.execSQL("DROP TABLE `$legacyTable`")
                 }
@@ -386,7 +396,7 @@ abstract class AppDatabase : RoomDatabase() {
                         `timestamp` INTEGER NOT NULL DEFAULT 0,
                         `mergedAt` INTEGER NOT NULL DEFAULT 0
                     )
-                    """
+                    """,
                 )
                 db.addColumnIfNotExists("undo_merges", "sourceCategoryId", "TEXT NOT NULL DEFAULT ''")
                 db.addColumnIfNotExists("undo_merges", "targetCategoryId", "TEXT NOT NULL DEFAULT ''")
@@ -457,7 +467,7 @@ abstract class AppDatabase : RoomDatabase() {
                         postedAt INTEGER NOT NULL,
                         isRead INTEGER NOT NULL DEFAULT 0
                     )
-                    """
+                    """,
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_history_packageName ON notification_history(packageName)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_notification_history_postedAt ON notification_history(postedAt)")
@@ -526,7 +536,7 @@ abstract class AppDatabase : RoomDatabase() {
                         content_rowid='docId',
                         tokenize='unicode61'
                     )
-                    """
+                    """,
                 )
                 db.execSQL(
                     """
@@ -534,7 +544,7 @@ abstract class AppDatabase : RoomDatabase() {
                         INSERT INTO search_fts(rowid, search_text, keywords)
                         VALUES (new.docId, new.title || ' ' || new.subtitle, '');
                     END
-                    """
+                    """,
                 )
                 db.execSQL(
                     """
@@ -542,7 +552,7 @@ abstract class AppDatabase : RoomDatabase() {
                         INSERT INTO search_fts(search_fts, rowid, search_text, keywords)
                         VALUES ('delete', old.docId, old.title || ' ' || old.subtitle, '');
                     END
-                    """
+                    """,
                 )
                 db.execSQL(
                     """
@@ -552,7 +562,7 @@ abstract class AppDatabase : RoomDatabase() {
                         INSERT INTO search_fts(rowid, search_text, keywords)
                         VALUES (new.docId, new.title || ' ' || new.subtitle, '');
                     END
-                    """
+                    """,
                 )
                 Timber.d("FTS5 sanal tablosu ve trigger'lar oluşturuldu")
             } catch (e: Exception) {
@@ -574,7 +584,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "app_organizer_db"
+                    "app_organizer_db",
                 )
                     .addCallback(DatabaseCallback())
                     .addMigrations(
@@ -640,7 +650,7 @@ abstract class AppDatabase : RoomDatabase() {
                             if (category.isSystemCategory) 1 else 0,
                             category.displayOrder,
                             category.createdAt,
-                        )
+                        ),
                     )
                 }
 

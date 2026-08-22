@@ -186,7 +186,7 @@ class AppDatabaseTest {
                     categoryName = "Custom",
                     isSystemCategory = false,
                 ),
-            )
+            ),
         )
         appDao.insertApp(AppInfo(packageName = "com.custom.app", appName = "Custom App", categoryId = "custom_cat"))
 
@@ -203,7 +203,7 @@ class AppDatabaseTest {
                 categoryId = Category.CAT_SOCIAL,
                 categoryName = "Social",
                 isSystemCategory = true,
-            )
+            ),
         )
         appDao.insertApp(AppInfo(packageName = "com.social.app", appName = "Social App", categoryId = Category.CAT_SOCIAL))
 
@@ -279,8 +279,12 @@ class AppDatabaseTest {
                 sampleInstance(missionId = "daily_screen_under_3h", periodStartEpoch = 20_650L),
                 sampleInstance(missionId = "daily_no_late_night", periodStartEpoch = 20_650L),
                 sampleInstance(missionId = "daily_unlock_under_30", periodStartEpoch = 20_651L),
-                sampleInstance(missionId = "weekly_positive_actions", periodType = MissionInstanceEntity.PERIOD_WEEKLY, periodStartEpoch = 20_650L),
-            )
+                sampleInstance(
+                    missionId = "weekly_positive_actions",
+                    periodType = MissionInstanceEntity.PERIOD_WEEKLY,
+                    periodStartEpoch = 20_650L,
+                ),
+            ),
         )
 
         val dayResult = missionInstanceDao.getInstancesForPeriod(MissionInstanceEntity.PERIOD_DAILY, 20_650L)

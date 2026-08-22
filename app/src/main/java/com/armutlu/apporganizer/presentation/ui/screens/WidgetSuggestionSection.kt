@@ -29,7 +29,7 @@ fun WidgetSuggestionSection(viewModel: AppListViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(Icons.Default.Widgets, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(12.dp))
@@ -37,18 +37,18 @@ fun WidgetSuggestionSection(viewModel: AppListViewModel) {
                 Text(
                     "${suggestions.size} uygulamanın widget'ı var",
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
                 Text(
                     "Sık kullandığın uygulamalar için widget ekleyebilirsin",
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(
                     if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (expanded) "Gizle" else "Göster"
+                    contentDescription = if (expanded) "Gizle" else "Göster",
                 )
             }
         }
@@ -57,21 +57,21 @@ fun WidgetSuggestionSection(viewModel: AppListViewModel) {
             Column {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                 )
                 suggestions.forEach { suggestion ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.weight(1f)) {
                             Text(suggestion.appName, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                             Text(
                                 "${suggestion.widgetCount} widget • ${suggestion.launchCount} kez açıldı",
                                 fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                         TextButton(
@@ -82,7 +82,7 @@ fun WidgetSuggestionSection(viewModel: AppListViewModel) {
                                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     context.startActivity(intent)
                                 }
-                            }
+                            },
                         ) {
                             Text("Detay", fontSize = 12.sp)
                         }

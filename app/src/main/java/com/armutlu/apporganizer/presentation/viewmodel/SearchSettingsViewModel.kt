@@ -5,16 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.domain.models.FileIndexState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @HiltViewModel
 class SearchSettingsViewModel @Inject constructor(
-    private val searchRepository: SearchRepository
+    private val searchRepository: SearchRepository,
 ) : ViewModel() {
 
     private val _sourceOpInFlight = MutableStateFlow(false)

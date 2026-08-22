@@ -56,8 +56,10 @@ interface MissionUsageStatsSource {
 /** Uretimde kullanilan varsayilan implementasyon — dogrudan [UsageStatsHelper]'a delege eder. */
 class DefaultMissionUsageStatsSource : MissionUsageStatsSource {
     override fun getDailySessionUsage(context: Context, days: Int, nowMillis: Long): List<DailyPackageUsage>? =
-        (UsageStatsHelper.getDailySessionUsage(context, days = days, nowMillis = nowMillis)
-            as? UsageStatsHelper.DailySessionResult.Available)?.days
+        (
+            UsageStatsHelper.getDailySessionUsage(context, days = days, nowMillis = nowMillis)
+                as? UsageStatsHelper.DailySessionResult.Available
+            )?.days
 
     override fun getUnlockCount(context: Context, days: Int, nowMillis: Long): Int? =
         UsageStatsHelper.getUnlockCount(context, days = days, nowMillis = nowMillis)

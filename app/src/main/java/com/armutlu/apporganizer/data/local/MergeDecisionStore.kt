@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.armutlu.apporganizer.utils.AppPrefs
 
 /**
  * R4.2: Başarılı merge sonrası aynı öneriyi tekrar göstermeyen + ertelenmiş önerileri 7 gün boyunca gizleyen store.
@@ -11,7 +10,7 @@ import com.armutlu.apporganizer.utils.AppPrefs
 class MergeDecisionStore(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(
         "merge_decisions",
-        Context.MODE_PRIVATE
+        Context.MODE_PRIVATE,
     )
 
     companion object {
@@ -25,7 +24,7 @@ class MergeDecisionStore(context: Context) {
      * Aynı source→target önerisi tekrar gösterilmeyecek.
      */
     fun recordApprovedMerge(sourceCategoryId: String, targetCategoryId: String) {
-        val key = "merge_decision_${sourceCategoryId}_${targetCategoryId}"
+        val key = "merge_decision_${sourceCategoryId}_$targetCategoryId"
         prefs.edit().putLong("${key}_timestamp", System.currentTimeMillis()).apply()
         prefs.edit().putString("${key}_decision", DECISION_APPROVED).apply()
     }
@@ -34,7 +33,7 @@ class MergeDecisionStore(context: Context) {
      * Önerinin sonraki gösterilmesi için 7 gün ertele.
      */
     fun snoozeForSevenDays(sourceCategoryId: String, targetCategoryId: String) {
-        val key = "merge_decision_${sourceCategoryId}_${targetCategoryId}"
+        val key = "merge_decision_${sourceCategoryId}_$targetCategoryId"
         prefs.edit().putLong("${key}_timestamp", System.currentTimeMillis()).apply()
         prefs.edit().putString("${key}_decision", DECISION_SNOOZED).apply()
     }
@@ -47,7 +46,7 @@ class MergeDecisionStore(context: Context) {
      * - Kaydı yoksa true (göster)
      */
     fun shouldShowSuggestion(sourceCategoryId: String, targetCategoryId: String): Boolean {
-        val key = "merge_decision_${sourceCategoryId}_${targetCategoryId}"
+        val key = "merge_decision_${sourceCategoryId}_$targetCategoryId"
         val decision = prefs.getString("${key}_decision", null) ?: return true
         val timestamp = prefs.getLong("${key}_timestamp", 0)
 

@@ -81,16 +81,18 @@ object CrashReporter {
         val sw = StringWriter()
         throwable.printStackTrace(PrintWriter(sw))
 
-        file.writeText(buildString {
-            appendLine("=== AppOrganizer Crash Report ===")
-            appendLine("Tarih: ${Date()}")
-            appendLine("Cihaz: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
-            appendLine("Android: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})")
-            appendLine("App Version: ${context.packageManager.getPackageInfo(context.packageName, 0).versionName}")
-            appendLine("")
-            appendLine("=== Stack Trace ===")
-            appendLine(sw.toString())
-        })
+        file.writeText(
+            buildString {
+                appendLine("=== AppOrganizer Crash Report ===")
+                appendLine("Tarih: ${Date()}")
+                appendLine("Cihaz: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
+                appendLine("Android: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})")
+                appendLine("App Version: ${context.packageManager.getPackageInfo(context.packageName, 0).versionName}")
+                appendLine("")
+                appendLine("=== Stack Trace ===")
+                appendLine(sw.toString())
+            },
+        )
 
         Timber.e("Crash kaydedildi: ${file.absolutePath}")
     }

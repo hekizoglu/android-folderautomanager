@@ -2,10 +2,10 @@ package com.armutlu.apporganizer.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreen
 import com.armutlu.apporganizer.presentation.ui.screens.AppOrganizerDashboardScreen
 import com.armutlu.apporganizer.presentation.ui.screens.CategoryEditorScreen
@@ -19,14 +19,14 @@ import com.armutlu.apporganizer.presentation.ui.screens.SearchSettingsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsAboutScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsAppearanceScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsAppsScreen
-import com.armutlu.apporganizer.presentation.ui.screens.SettingsLauncherScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsDrawerScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SettingsLauncherScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsNotificationsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsScreen
-import com.armutlu.apporganizer.presentation.ui.screens.SmartTickerSettingsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsSecurityScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsStatsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.SettingsUsageDataScreen
+import com.armutlu.apporganizer.presentation.ui.screens.SmartTickerSettingsScreen
 import com.armutlu.apporganizer.presentation.ui.screens.UsageReportScreen
 import com.armutlu.apporganizer.presentation.ui.security.SettingsLockGate
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
@@ -64,6 +64,7 @@ object Routes {
     const val CLASSIFICATION_REVIEW = "classification_review"
     const val FOLDER_SUGGESTIONS = "folder_suggestions"
     const val FOLDER_MERGE = "folder_merge"
+
     // T05 — Akıllı Nabız Şeridi ayarları (ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md
     // satır 1848-1905): "Ana Ekran Ayarları" içindeki tek satırdan dedike alt ekrana taşındı,
     // ticker uzun-basma menüsündeki "Akıllı Nabız ayarları" de doğrudan bu ekrana açılır.
@@ -76,7 +77,7 @@ object Routes {
         REPORTS_CENTER, SEARCH_SETTINGS, NOTIFICATION_REPORT, WRAPPED_REPORT, PRIVACY_REPORT, MISSIONS,
         SETTINGS_APPEARANCE, SETTINGS_LAUNCHER, SETTINGS_DRAWER, SETTINGS_NOTIFICATIONS, SETTINGS_APPS,
         SETTINGS_STATS, SETTINGS_USAGE_DATA, SETTINGS_SECURITY, SETTINGS_ABOUT, PERMISSIONS_GUIDE,
-        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, FOLDER_MERGE, SETTINGS_SMART_TICKER, TICKER_HISTORY
+        CLASSIFICATION_REVIEW, FOLDER_SUGGESTIONS, FOLDER_MERGE, SETTINGS_SMART_TICKER, TICKER_HISTORY,
     )
 
     fun isValid(route: String?): Boolean = route != null && route in ALL
@@ -140,26 +141,26 @@ fun AppNavigation(
                 viewModel = viewModel,
                 initialUncertainFilter = false,
                 onNavigateToCategories = { navController.navigate(Routes.CATEGORIES) },
-                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
             )
         }
         composable(
             route = Routes.APP_LIST_FILTER_ROUTE,
-            arguments = listOf(navArgument(Routes.APP_LIST_FILTER_ARG) { defaultValue = "" })
+            arguments = listOf(navArgument(Routes.APP_LIST_FILTER_ARG) { defaultValue = "" }),
         ) { backStackEntry ->
             AppListScreen(
                 viewModel = viewModel,
                 initialUncertainFilter =
-                    backStackEntry.arguments?.getString(Routes.APP_LIST_FILTER_ARG) ==
-                        Routes.APP_LIST_FILTER_UNCERTAIN_VALUE,
+                backStackEntry.arguments?.getString(Routes.APP_LIST_FILTER_ARG) ==
+                    Routes.APP_LIST_FILTER_UNCERTAIN_VALUE,
                 onNavigateToCategories = { navController.navigate(Routes.CATEGORIES) },
-                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
             )
         }
         composable(Routes.CATEGORIES) {
             CategoryEditorScreen(
                 viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(Routes.SETTINGS) {
@@ -178,7 +179,7 @@ fun AppNavigation(
                     onNavigateToUsageData = { navController.navigate(Routes.SETTINGS_USAGE_DATA) },
                     onNavigateToSecurity = { navController.navigate(Routes.SETTINGS_SECURITY) },
                     onNavigateToAbout = { navController.navigate(Routes.SETTINGS_ABOUT) },
-                    onNavigateToPermissionsGuide = { navController.navigate(Routes.PERMISSIONS_GUIDE) }
+                    onNavigateToPermissionsGuide = { navController.navigate(Routes.PERMISSIONS_GUIDE) },
                 )
             }
         }
@@ -194,7 +195,7 @@ fun AppNavigation(
                     viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToSearchSettings = { navController.navigate(Routes.SEARCH_SETTINGS) },
-                    onNavigateToSmartTickerSettings = { navController.navigate(Routes.SETTINGS_SMART_TICKER) }
+                    onNavigateToSmartTickerSettings = { navController.navigate(Routes.SETTINGS_SMART_TICKER) },
                 )
             }
         }
@@ -216,25 +217,25 @@ fun AppNavigation(
                     viewModel = viewModel,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) },
-                    onNavigateToFolderSuggestions = { navController.navigate(Routes.FOLDER_SUGGESTIONS) }
+                    onNavigateToFolderSuggestions = { navController.navigate(Routes.FOLDER_SUGGESTIONS) },
                 )
             }
         }
         composable(Routes.CLASSIFICATION_REVIEW) {
             ClassificationReviewScreen(
                 viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(Routes.FOLDER_SUGGESTIONS) {
             FolderSuggestionsScreen(
                 viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(Routes.FOLDER_MERGE) {
             FolderMergeScreen(
-                onClose = { navController.popBackStack() }
+                onClose = { navController.popBackStack() },
             )
         }
         composable(Routes.SETTINGS_STATS) {
@@ -245,7 +246,7 @@ fun AppNavigation(
                     onNavigateToReportsCenter = { navController.navigate(Routes.REPORTS_CENTER) },
                     onNavigateToNotificationReport = { navController.navigate(Routes.NOTIFICATION_REPORT) },
                     onNavigateToMissions = { navController.navigate(Routes.MISSIONS) },
-                    onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) }
+                    onNavigateToClassificationReview = { navController.navigate(Routes.CLASSIFICATION_REVIEW) },
                 )
             }
         }
@@ -269,7 +270,7 @@ fun AppNavigation(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToPrivacyPolicy = { navController.navigate(Routes.PRIVACY_POLICY) },
                     onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
-                    onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) }
+                    onNavigateToDashboard = { navController.navigate(Routes.DASHBOARD) },
                 )
             }
         }
@@ -279,7 +280,7 @@ fun AppNavigation(
         composable(Routes.USAGE_REPORT) {
             UsageReportScreen(
                 viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(Routes.DASHBOARD) {
@@ -287,7 +288,7 @@ fun AppNavigation(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
                 // Dashboard → detay raporu ("Detaylı Rapor →" linki, spec Risk 6)
-                onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) }
+                onNavigateToUsageReport = { navController.navigate(Routes.USAGE_REPORT) },
             )
         }
         composable(Routes.REPORTS_CENTER) {
@@ -319,20 +320,20 @@ fun AppNavigation(
         }
         composable(Routes.NOTIFICATION_REPORT) {
             com.armutlu.apporganizer.presentation.ui.screens.NotificationReportScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
             )
         }
         composable(Routes.PRIVACY_REPORT) {
             SettingsLockGate {
                 com.armutlu.apporganizer.presentation.ui.screens.PrivacyReportScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
                 )
             }
         }
         composable(Routes.MISSIONS) {
             com.armutlu.apporganizer.presentation.ui.screens.MissionsScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToRoute = { route -> navController.navigate(route) }
+                onNavigateToRoute = { route -> navController.navigate(route) },
             )
         }
         // Ticker arşivi ("Tüm haberler") — haberler hassas veri değil, SettingsLockGate'e
@@ -340,7 +341,7 @@ fun AppNavigation(
         composable(Routes.TICKER_HISTORY) {
             com.armutlu.apporganizer.presentation.ui.screens.TickerHistoryScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToRoute = { route -> navController.navigate(route) }
+                onNavigateToRoute = { route -> navController.navigate(route) },
             )
         }
     }

@@ -1,11 +1,11 @@
 package com.armutlu.apporganizer.domain.home
 
 import com.armutlu.apporganizer.domain.usecase.missions.MissionSummaryUseCase
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Dongu M07 — Ana ekran "Görevler" kartinin gercek veri kaynagi. [MissionSummaryUseCase]

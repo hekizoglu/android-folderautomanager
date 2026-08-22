@@ -4,17 +4,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -27,8 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -91,7 +89,7 @@ internal fun SmartAccessCard(
                                 onOpenNotificationSettings
                             } else {
                                 onOpenUsageSettings
-                            }
+                            },
                         )
                         .padding(13.dp),
                 )
@@ -121,7 +119,7 @@ internal fun SmartAccessCard(
                                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(horizontal = 2.dp)
+                                modifier = Modifier.padding(horizontal = 2.dp),
                             )
                         }
                     }
@@ -171,8 +169,11 @@ private fun SmartAccessContent(
             modifier = Modifier
                 .testTag("hero_smart_access_empty_action")
                 .then(
-                    if (permissionAction == null) Modifier
-                    else Modifier.clickable(onClick = permissionAction)
+                    if (permissionAction == null) {
+                        Modifier
+                    } else {
+                        Modifier.clickable(onClick = permissionAction)
+                    },
                 )
                 .fillMaxWidth()
                 .heightIn(min = 48.dp)
@@ -184,19 +185,19 @@ private fun SmartAccessContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         apps.chunked(4).forEach { rowApps ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.Top,
             ) {
                 rowApps.forEach { (app, count) ->
                     key(selectedTab, app.packageName) {
                         Box(
                             modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
+                            contentAlignment = Alignment.Center,
                         ) {
                             SmartAccessAppItem(
                                 app = app,

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -22,9 +21,9 @@ import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.doOnPreDraw
 import com.armutlu.apporganizer.AppOrganizerApp
-import com.armutlu.apporganizer.utils.StartupHealthPrefs
 import com.armutlu.apporganizer.presentation.ui.theme.AppOrganizerTheme
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.StartupHealthPrefs
 import com.armutlu.apporganizer.utils.WidgetHostManager
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -227,7 +226,12 @@ class LauncherActivity : ComponentActivity() {
             }
         }
         window.decorView.doOnPreDraw {
-            StartupHealthPrefs.markReady(this, if (coldStart) AppOrganizerApp.processStartedAtElapsed else activityStartedAt, coldStart, home = true)
+            StartupHealthPrefs.markReady(
+                this,
+                if (coldStart) AppOrganizerApp.processStartedAtElapsed else activityStartedAt,
+                coldStart,
+                home = true,
+            )
             reportFullyDrawn()
         }
     }

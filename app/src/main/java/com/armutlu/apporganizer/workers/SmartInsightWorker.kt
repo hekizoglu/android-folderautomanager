@@ -99,7 +99,13 @@ class SmartInsightWorker(
                     }
                     val sessionCount = todayLaunchCountByPackage.values.sum().coerceAtMost(99L)
                     if (sessionCount > 10L) {
-                        add(Triple("high_session_count", "Gunluk Kullanim", "Bugun toplam $sessionCount uygulama acilisi yaptin. Verimliligini takip et!"))
+                        add(
+                            Triple(
+                                "high_session_count",
+                                "Gunluk Kullanim",
+                                "Bugun toplam $sessionCount uygulama acilisi yaptin. Verimliligini takip et!",
+                            ),
+                        )
                     }
                 }
 
@@ -109,11 +115,23 @@ class SmartInsightWorker(
                     }
                     if (unused3weeks.isNotEmpty()) {
                         val app = unused3weeks.random()
-                        add(Triple("long_unused_${app.packageName}", "Temizlik Onerisi", "${app.appName} uygulamasini 3 haftadir acmadin. Silmeyi dusunur musun?"))
+                        add(
+                            Triple(
+                                "long_unused_${app.packageName}",
+                                "Temizlik Onerisi",
+                                "${app.appName} uygulamasini 3 haftadir acmadin. Silmeyi dusunur musun?",
+                            ),
+                        )
                     }
                     val neverOpened = apps.filter { it.lastUsedTimestamp == 0L && (now - it.installTime) >= 14 * dayMs }
                     if (neverOpened.size >= 3) {
-                        add(Triple("never_opened_batch", "Temizlik Onerisi", "${neverOpened.size} uygulama kuruldugundan beri hic acilmamis. Bir goz at!"))
+                        add(
+                            Triple(
+                                "never_opened_batch",
+                                "Temizlik Onerisi",
+                                "${neverOpened.size} uygulama kuruldugundan beri hic acilmamis. Bir goz at!",
+                            ),
+                        )
                     }
                 }
 
@@ -125,12 +143,24 @@ class SmartInsightWorker(
                     if (fullestCat != null) {
                         val count = apps.count { it.categoryId == fullestCat.categoryId }
                         if (count >= 5) {
-                            add(Triple("cat_summary_${fullestCat.categoryId}", "Klasor Istatistikleri", "'${fullestCat.categoryName}' klasorun en kalabalik. $count uygulama var."))
+                            add(
+                                Triple(
+                                    "cat_summary_${fullestCat.categoryId}",
+                                    "Klasor Istatistikleri",
+                                    "'${fullestCat.categoryName}' klasorun en kalabalik. $count uygulama var.",
+                                ),
+                            )
                         }
                     }
                     val uncategorized = apps.count { it.categoryId == "uncategorized" || it.categoryId.isBlank() }
                     if (uncategorized >= 5) {
-                        add(Triple("low_confidence_review", "Klasor Istatistikleri", "$uncategorized uygulamanin henuz bir klasoru yok. Organize etmeye ne dersin?"))
+                        add(
+                            Triple(
+                                "low_confidence_review",
+                                "Klasor Istatistikleri",
+                                "$uncategorized uygulamanin henuz bir klasoru yok. Organize etmeye ne dersin?",
+                            ),
+                        )
                     }
                 }
 
@@ -138,7 +168,13 @@ class SmartInsightWorker(
                     val newApps = apps.filter { (now - it.installTime) <= 3 * dayMs && it.installTime > 0L }
                     if (newApps.isNotEmpty()) {
                         val app = requireNotNull(newApps.maxByOrNull { maxOf(it.firstInstalledTime, it.installTime) })
-                        add(Triple("new_install_${app.packageName}", "Yeni Uygulama", "${app.appName} yeni kuruldu. Uygulamayi bir klasore eklemek ister misin?"))
+                        add(
+                            Triple(
+                                "new_install_${app.packageName}",
+                                "Yeni Uygulama",
+                                "${app.appName} yeni kuruldu. Uygulamayi bir klasore eklemek ister misin?",
+                            ),
+                        )
                     }
                 }
 

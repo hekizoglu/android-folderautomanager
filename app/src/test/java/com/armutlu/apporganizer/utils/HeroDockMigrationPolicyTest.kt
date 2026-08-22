@@ -35,7 +35,7 @@ class HeroDockMigrationPolicyTest {
 
     @Test fun `persist siniri klasor bosluk ve tekrarlari kabul etmez`() {
         val result = DockPrefs.sanitizeHeroDockItems(
-            listOf("phone", "", "folder:social", "phone", "camera", "browser", "messages", "maps", "extra")
+            listOf("phone", "", "folder:social", "phone", "camera", "browser", "messages", "maps", "extra"),
         )
         assertEquals(listOf("phone", "camera", "browser", "messages", "maps"), result)
     }

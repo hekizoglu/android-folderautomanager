@@ -12,21 +12,31 @@ class HomeLayoutPrefsTest {
     private fun legacy(
         searchPosition: String = AppPrefs.SEARCH_BAR_POS_TOP,
         visible: Boolean = true,
-    ) = HomeLayoutPrefs.LegacySettings(searchPosition, visible, visible, visible, visible,
-        visible, visible, visible, visible, visible, visible)
+    ) = HomeLayoutPrefs.LegacySettings(
+        searchPosition, visible, visible, visible, visible,
+        visible, visible, visible, visible, visible, visible,
+    )
 
     @Test fun `missing storage returns canonical default`() {
-        assertEquals(HomeLayoutPrefs.State(HomeLayoutConfig.DEFAULT, false),
-            HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(null, null, null, null, null)))
+        assertEquals(
+            HomeLayoutPrefs.State(HomeLayoutConfig.DEFAULT, false),
+            HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(null, null, null, null, null)),
+        )
     }
 
     @Test fun `corrupt duplicate unknown and wrong-zone ids are sanitized`() {
         // version=-9 (< 2, no contentOrder) triggers the v1->v2 legacy path: RECENT_APPS and CLOCK
         // (today's CONTENT-default sections) are pulled out of the legacy HEADER_ORDER string into
         // CONTENT, preserving their relative order.
-        val state = HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(
-            "RECENT_APPS,UNKNOWN,RECENT_APPS,DOCK,CLOCK", "CLOCK,DOCK,BOGUS",
-            "CLOCK,FOLDER_GRID,DOCK,UNKNOWN", -9, true))
+        val state = HomeLayoutPrefs.sanitize(
+            HomeLayoutPrefs.StoredLayout(
+                "RECENT_APPS,UNKNOWN,RECENT_APPS,DOCK,CLOCK",
+                "CLOCK,DOCK,BOGUS",
+                "CLOCK,FOLDER_GRID,DOCK,UNKNOWN",
+                -9,
+                true,
+            ),
+        )
         val content = state.config.items.filter { it.zone == HomeLayoutZone.CONTENT }.sortedBy { it.order }
         assertEquals(HomeSectionId.RECENT_APPS, content[0].sectionId)
         assertEquals(HomeSectionId.CLOCK, content[1].sectionId)
@@ -51,13 +61,15 @@ class HomeLayoutPrefsTest {
     }
 
     @Test fun `v1 header dashboard sections migrate to content preserving order`() {
-        val state = HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(
-            headerOrder = "MAIN_SEARCH,SUGGESTIONS,CLOCK,FAVORITES",
-            footerOrder = "DOCK",
-            hiddenSections = "",
-            version = 1,
-            customized = true,
-        ))
+        val state = HomeLayoutPrefs.sanitize(
+            HomeLayoutPrefs.StoredLayout(
+                headerOrder = "MAIN_SEARCH,SUGGESTIONS,CLOCK,FAVORITES",
+                footerOrder = "DOCK",
+                hiddenSections = "",
+                version = 1,
+                customized = true,
+            ),
+        )
         assertEquals(HomeLayoutConfig.CURRENT_VERSION, state.config.version)
         val content = state.config.items.filter { it.zone == HomeLayoutZone.CONTENT }.sortedBy { it.order }.map { it.sectionId }
         assertEquals(listOf(HomeSectionId.SUGGESTIONS, HomeSectionId.CLOCK, HomeSectionId.FAVORITES), content.take(3))
@@ -67,14 +79,21 @@ class HomeLayoutPrefsTest {
     }
 
     @Test fun `v2 content order is idempotent across repeated sanitize passes`() {
-        val once = HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(
-            headerOrder = "MAIN_SEARCH", footerOrder = "DOCK",
-            hiddenSections = "", version = 2, customized = true,
-            contentOrder = "FAVORITES,CLOCK,SUGGESTIONS,FOLDER_GRID",
-        ))
+        val once = HomeLayoutPrefs.sanitize(
+            HomeLayoutPrefs.StoredLayout(
+                headerOrder = "MAIN_SEARCH",
+                footerOrder = "DOCK",
+                hiddenSections = "",
+                version = 2,
+                customized = true,
+                contentOrder = "FAVORITES,CLOCK,SUGGESTIONS,FOLDER_GRID",
+            ),
+        )
         val twice = HomeLayoutPrefs.sanitize(once)
-        assertEquals(once.config.items.map { it.sectionId to it.zone to it.order }.toSet(),
-            twice.config.items.map { it.sectionId to it.zone to it.order }.toSet())
+        assertEquals(
+            once.config.items.map { it.sectionId to it.zone to it.order }.toSet(),
+            twice.config.items.map { it.sectionId to it.zone to it.order }.toSet(),
+        )
         val content = once.config.items.filter { it.zone == HomeLayoutZone.CONTENT }.sortedBy { it.order }.map { it.sectionId }
         assertEquals(listOf(HomeSectionId.FAVORITES, HomeSectionId.CLOCK, HomeSectionId.SUGGESTIONS), content.take(3))
     }
@@ -82,11 +101,16 @@ class HomeLayoutPrefsTest {
     @Test fun `v2 stored layout with content order is not re-migrated from header`() {
         // version=2 with an explicit (even empty-ish) contentOrder should NOT re-trigger the v1
         // legacy header-partition path — header entries stay in HEADER only if allowed there.
-        val state = HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(
-            headerOrder = "MAIN_SEARCH,CLOCK", footerOrder = "DOCK",
-            hiddenSections = "", version = 2, customized = false,
-            contentOrder = "CLOCK,FAVORITES",
-        ))
+        val state = HomeLayoutPrefs.sanitize(
+            HomeLayoutPrefs.StoredLayout(
+                headerOrder = "MAIN_SEARCH,CLOCK",
+                footerOrder = "DOCK",
+                hiddenSections = "",
+                version = 2,
+                customized = false,
+                contentOrder = "CLOCK,FAVORITES",
+            ),
+        )
         // CLOCK is not allowedIn(HEADER) anymore, so it is dropped from the header candidate list
         // (not moved) — sanitizeOrder falls back to defaults, and CLOCK's position is governed by
         // suppliedContent instead.
@@ -95,24 +119,32 @@ class HomeLayoutPrefsTest {
     }
 
     @Test fun `corrupt v2 backup with malformed content order falls back to safe default order`() {
-        val restored = HomeLayoutPrefs.fromBackupFields(HomeLayoutPrefs.BackupFields(
-            version = 2,
-            headerOrder = "MAIN_SEARCH",
-            footerOrder = "DOCK",
-            contentOrder = "UNKNOWN,CLOCK,CLOCK,,BOGUS",
-            hiddenSections = null,
-            customized = true,
-        ))
+        val restored = HomeLayoutPrefs.fromBackupFields(
+            HomeLayoutPrefs.BackupFields(
+                version = 2,
+                headerOrder = "MAIN_SEARCH",
+                footerOrder = "DOCK",
+                contentOrder = "UNKNOWN,CLOCK,CLOCK,,BOGUS",
+                hiddenSections = null,
+                customized = true,
+            ),
+        )
         assertEquals(HomeLayoutConfig.DEFAULT.items.map { it.sectionId }.toSet(), restored.config.items.map { it.sectionId }.toSet())
-        assertEquals(HomeSectionId.CLOCK, restored.config.items.filter { it.zone == HomeLayoutZone.CONTENT }
-            .sortedBy { it.order }.first().sectionId)
+        assertEquals(
+            HomeSectionId.CLOCK,
+            restored.config.items.filter { it.zone == HomeLayoutZone.CONTENT }
+                .sortedBy { it.order }.first().sectionId,
+        )
         assertEquals(HomeLayoutConfig.CURRENT_VERSION, restored.config.version)
     }
 
     @Test fun `write boundary repairs conflicting zone and version`() {
-        val malformed = HomeLayoutConfig.DEFAULT.copy(version = 99, items = HomeLayoutConfig.DEFAULT.items.map {
-            if (it.sectionId == HomeSectionId.CLOCK) it.copy(zone = HomeLayoutZone.FOOTER, order = 99) else it
-        })
+        val malformed = HomeLayoutConfig.DEFAULT.copy(
+            version = 99,
+            items = HomeLayoutConfig.DEFAULT.items.map {
+                if (it.sectionId == HomeSectionId.CLOCK) it.copy(zone = HomeLayoutZone.FOOTER, order = 99) else it
+            },
+        )
         val state = HomeLayoutPrefs.sanitize(HomeLayoutPrefs.State(malformed, true))
         // CLOCK is not allowedIn(FOOTER) (its defaultZone is CONTENT) so the bogus zone is dropped
         // and it falls back to its canonical default zone.
@@ -147,19 +179,23 @@ class HomeLayoutPrefsTest {
 
     @Test fun `old stored layout appends newly introduced section`() {
         val state = HomeLayoutPrefs.initialState(
-            HomeLayoutPrefs.StoredLayout("CLOCK,MAIN_SEARCH", "DOCK", "", 1, false), legacy())
+            HomeLayoutPrefs.StoredLayout("CLOCK,MAIN_SEARCH", "DOCK", "", 1, false),
+            legacy(),
+        )
         assertTrue(HomeSectionId.GOOGLE_SEARCH in state.config.items.map { it.sectionId })
         assertEquals(HomeLayoutConfig.DEFAULT.items.size, state.config.items.size)
     }
 
     @Test fun `corrupt backup fields are sanitized at restore boundary`() {
-        val restored = HomeLayoutPrefs.fromBackupFields(HomeLayoutPrefs.BackupFields(
-            version = -7,
-            headerOrder = "UNKNOWN,CLOCK,CLOCK,DOCK",
-            footerOrder = "MAIN_SEARCH,BOGUS",
-            hiddenSections = "CLOCK,FOLDER_GRID,UNKNOWN",
-            customized = true,
-        ))
+        val restored = HomeLayoutPrefs.fromBackupFields(
+            HomeLayoutPrefs.BackupFields(
+                version = -7,
+                headerOrder = "UNKNOWN,CLOCK,CLOCK,DOCK",
+                footerOrder = "MAIN_SEARCH,BOGUS",
+                hiddenSections = "CLOCK,FOLDER_GRID,UNKNOWN",
+                customized = true,
+            ),
+        )
 
         assertEquals(HomeLayoutConfig.CURRENT_VERSION, restored.config.version)
         assertEquals(HomeLayoutConfig.DEFAULT.items.map { it.sectionId }.toSet(), restored.config.items.map { it.sectionId }.toSet())
@@ -171,40 +207,51 @@ class HomeLayoutPrefsTest {
     @Test fun `v2 backup round-trip preserves customized content order exactly`() {
         // P15 kabul kriteri: BackupManager uyumu (P02 pattern) — toBackupFields/fromBackupFields
         // export/import round-trip'i, CONTENT sırasını da dahil ederek kaybetmemeli.
-        val customized = HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(
-            headerOrder = "MAIN_SEARCH", footerOrder = "DOCK",
-            hiddenSections = "GOOGLE_SEARCH", version = 2, customized = true,
-            contentOrder = "SUGGESTIONS,FAVORITES,CLOCK,RECENT_APPS,RECENT_NOTIFICATIONS,MISSIONS_AND_SCORE,FOLDER_GRID",
-        ))
+        val customized = HomeLayoutPrefs.sanitize(
+            HomeLayoutPrefs.StoredLayout(
+                headerOrder = "MAIN_SEARCH",
+                footerOrder = "DOCK",
+                hiddenSections = "GOOGLE_SEARCH",
+                version = 2,
+                customized = true,
+                contentOrder = "SUGGESTIONS,FAVORITES,CLOCK,RECENT_APPS,RECENT_NOTIFICATIONS,MISSIONS_AND_SCORE,FOLDER_GRID",
+            ),
+        )
         val fields = HomeLayoutPrefs.toBackupFields(customized)
         val restored = HomeLayoutPrefs.fromBackupFields(fields)
 
-        assertEquals(customized.config.items.map { it.sectionId to it.zone to it.order to it.visible }.toSet(),
-            restored.config.items.map { it.sectionId to it.zone to it.order to it.visible }.toSet())
+        assertEquals(
+            customized.config.items.map { it.sectionId to it.zone to it.order to it.visible }.toSet(),
+            restored.config.items.map { it.sectionId to it.zone to it.order to it.visible }.toSet(),
+        )
         assertEquals(customized.customized, restored.customized)
         val restoredContent = restored.config.items.filter { it.zone == HomeLayoutZone.CONTENT }
             .sortedBy { it.order }.map { it.sectionId }
         // Supplied order is honored first; the three legacy Hero sections collapse into one
         // DAILY_CONTROL_CENTER entry and remaining sections append in default order.
         assertEquals(
-            listOf(HomeSectionId.SUGGESTIONS, HomeSectionId.FAVORITES, HomeSectionId.CLOCK,
+            listOf(
+                HomeSectionId.SUGGESTIONS, HomeSectionId.FAVORITES, HomeSectionId.CLOCK,
                 HomeSectionId.RECENT_APPS, HomeSectionId.RECENT_NOTIFICATIONS,
                 HomeSectionId.DAILY_CONTROL_CENTER, HomeSectionId.FOLDER_GRID,
                 HomeSectionId.GOOGLE_SEARCH,
-                HomeSectionId.ANDROID_WIDGETS, HomeSectionId.ASSISTANT_INSIGHTS, HomeSectionId.TICKER_OR_STATS),
+                HomeSectionId.ANDROID_WIDGETS, HomeSectionId.ASSISTANT_INSIGHTS, HomeSectionId.TICKER_OR_STATS,
+            ),
             restoredContent,
         )
     }
 
     @Test fun `legacy hero sections migrate to one visible daily control center`() {
-        val state = HomeLayoutPrefs.sanitize(HomeLayoutPrefs.StoredLayout(
-            headerOrder = "MAIN_SEARCH",
-            footerOrder = "DOCK",
-            hiddenSections = "",
-            version = 2,
-            customized = true,
-            contentOrder = "CLOCK,MISSIONS_AND_SCORE,MISSIONS,TODAY_CARD,FAVORITES,FOLDER_GRID",
-        ))
+        val state = HomeLayoutPrefs.sanitize(
+            HomeLayoutPrefs.StoredLayout(
+                headerOrder = "MAIN_SEARCH",
+                footerOrder = "DOCK",
+                hiddenSections = "",
+                version = 2,
+                customized = true,
+                contentOrder = "CLOCK,MISSIONS_AND_SCORE,MISSIONS,TODAY_CARD,FAVORITES,FOLDER_GRID",
+            ),
+        )
         val content = state.config.items.filter { it.zone == HomeLayoutZone.CONTENT }
             .sortedBy { it.order }.map { it.sectionId }
         assertEquals(HomeSectionId.DAILY_CONTROL_CENTER, content[1])
@@ -217,16 +264,21 @@ class HomeLayoutPrefsTest {
     @Test fun `new default contains exactly one daily control center`() {
         assertEquals(1, HomeLayoutConfig.DEFAULT.items.count { it.sectionId == HomeSectionId.DAILY_CONTROL_CENTER })
         assertTrue(HomeLayoutConfig.DEFAULT.items.single { it.sectionId == HomeSectionId.DAILY_CONTROL_CENTER }.visible)
-        assertTrue(HomeLayoutConfig.DEFAULT.items.none {
-            it.sectionId == HomeSectionId.MISSIONS_AND_SCORE ||
-                it.sectionId == HomeSectionId.MISSIONS ||
-                it.sectionId == HomeSectionId.TODAY_CARD
-        })
+        assertTrue(
+            HomeLayoutConfig.DEFAULT.items.none {
+                it.sectionId == HomeSectionId.MISSIONS_AND_SCORE ||
+                    it.sectionId == HomeSectionId.MISSIONS ||
+                    it.sectionId == HomeSectionId.TODAY_CARD
+            },
+        )
     }
 
     @Test fun `diagnostics summary contains only typed safe layout values`() {
         val summary = HomeLayoutPrefs.diagnosticsSummary(
-            HomeLayoutPrefs.migrateLegacy(legacy()), widgetCount = -3, dockItemCount = 5)
+            HomeLayoutPrefs.migrateLegacy(legacy()),
+            widgetCount = -3,
+            dockItemCount = 5,
+        )
 
         assertEquals(HomeLayoutConfig.CURRENT_VERSION, summary.version)
         assertTrue(summary.headerOrder.all { it in HomeSectionId.entries })

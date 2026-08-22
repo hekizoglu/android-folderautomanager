@@ -1,7 +1,6 @@
 package com.armutlu.apporganizer.domain.usecase.privacy
 
 import com.armutlu.apporganizer.domain.usecase.privacy.PrivacyAnalyzer.AppPermissionSnapshot
-import com.armutlu.apporganizer.domain.usecase.privacy.PrivacyAnalyzer.PermissionGroup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

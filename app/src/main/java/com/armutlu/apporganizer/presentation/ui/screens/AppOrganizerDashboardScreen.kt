@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,9 +28,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import com.armutlu.apporganizer.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.WeeklyGoalMode
@@ -40,12 +42,9 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.presentation.viewmodel.DashboardViewModel
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.UsageStatsHelper
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,7 +100,7 @@ fun AppOrganizerDashboardScreen(
             .map { app ->
                 val value = when (usageMetric) {
                     UsageMetric.DURATION -> usageTimes[app.packageName] ?: app.usageCount
-                    UsageMetric.COUNT -> app.launchCount     // kaç kez açıldı
+                    UsageMetric.COUNT -> app.launchCount // kaç kez açıldı
                 }
                 app to value
             }
@@ -120,17 +119,17 @@ fun AppOrganizerDashboardScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
             )
-        }
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item { HeroStatsRow(stats) }
             item { DashSectionHeader("Bu Hafta En Cok Kullanilanlar") }
@@ -158,13 +157,13 @@ fun AppOrganizerDashboardScreen(
             item {
                 TextButton(
                     onClick = onNavigateToUsageReport,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         "Detaylı Rapor →",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
@@ -188,7 +187,7 @@ private data class DashboardStats(
     // P0.2: ClassificationAttentionPolicy ile tek kaynaktan hesaplanan dikkat
     // gerektiren uygulama sayisi — ClassificationReviewScreen ve SettingsAppsSection
     // ile ayni deger (sayac/liste tutarliligi).
-    val attentionCount: Int
+    val attentionCount: Int,
 ) {
     companion object {
         fun compute(
@@ -197,7 +196,7 @@ private data class DashboardStats(
             usageTimes: Map<String, Long>,
             now: Long,
             sevenDaysMs: Long,
-            thirtyDaysMs: Long
+            thirtyDaysMs: Long,
         ): DashboardStats {
             val visible = apps.filter { !it.isHidden && !it.isSystemApp }
 
@@ -218,18 +217,21 @@ private data class DashboardStats(
 
             val unusedCount = visible.count { app ->
                 app.lastUsedTimestamp > 0L &&
-                (now - app.lastUsedTimestamp) > thirtyDaysMs
+                    (now - app.lastUsedTimestamp) > thirtyDaysMs
             }
             val neverUsedCount = visible.count { it.lastUsedTimestamp == 0L }
 
             val totalMs = usageTimes.values.sumOf { it }
             val totalMinutes = totalMs / 60_000
 
-            val organizedPercent = if (visible.isEmpty()) 0
-            else (
-                visible.count { it.categoryId.isNotBlank() && it.categoryId != Category.CAT_UNCATEGORIZED } *
-                    100 / visible.size
-                )
+            val organizedPercent = if (visible.isEmpty()) {
+                0
+            } else {
+                (
+                    visible.count { it.categoryId.isNotBlank() && it.categoryId != Category.CAT_UNCATEGORIZED } *
+                        100 / visible.size
+                    )
+            }
 
             return DashboardStats(
                 totalApps = visible.size,
@@ -242,7 +244,7 @@ private data class DashboardStats(
                 totalUsageMinutesThisWeek = totalMinutes,
                 organizedPercent = organizedPercent,
                 attentionCount = com.armutlu.apporganizer.domain.usecase.classify.ClassificationAttentionPolicy
-                    .attentionCount(apps, now)
+                    .attentionCount(apps, now),
             )
         }
     }
@@ -441,35 +443,35 @@ private fun StatusBadge(status: WeeklyGoalStatus, isExceeded: Boolean) {
 private fun formatMinutes(minutes: Long): String {
     val hours = minutes / 60
     val mins = minutes % 60
-    return if (hours > 0) "${hours} sa. ${mins} dk." else "${mins} dk."
+    return if (hours > 0) "$hours sa. $mins dk." else "$mins dk."
 }
 
 @Composable
 private fun HeroStatsRow(stats: DashboardStats) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         HeroChip(
             modifier = Modifier.weight(1f),
             icon = Icons.Default.PhoneAndroid,
             value = "${stats.totalApps}",
             label = "Yonetilen\nUygulama",
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
         )
         HeroChip(
             modifier = Modifier.weight(1f),
             icon = Icons.Default.FolderOpen,
             value = "${stats.totalCategories}",
             label = "Aktif\nKlasor",
-            color = Color(0xFF26C6DA)
+            color = Color(0xFF26C6DA),
         )
         HeroChip(
             modifier = Modifier.weight(1f),
             icon = Icons.Default.VisibilityOff,
             value = "${stats.hiddenApps}",
             label = "Gizlenen\nUygulama",
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
     }
 }
@@ -480,31 +482,34 @@ private fun HeroChip(
     icon: ImageVector,
     value: String,
     label: String,
-    color: Color
+    color: Color,
 ) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Box(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(color.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
             }
             Spacer(Modifier.height(6.dp))
             Text(value, fontWeight = FontWeight.Bold, fontSize = 22.sp, color = color)
-            Text(label, fontSize = 10.sp,
+            Text(
+                label,
+                fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 13.sp)
+                lineHeight = 13.sp,
+            )
         }
     }
 }
@@ -516,7 +521,7 @@ private fun DashSectionHeader(title: String) {
         fontWeight = FontWeight.SemiBold,
         fontSize = 13.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(start = 2.dp, top = 4.dp)
+        modifier = Modifier.padding(start = 2.dp, top = 4.dp),
     )
 }
 
@@ -526,12 +531,12 @@ private fun UsageMetricToggleRow(selected: UsageMetric, onSelect: (UsageMetric) 
         FilterChip(
             selected = selected == UsageMetric.DURATION,
             onClick = { onSelect(UsageMetric.DURATION) },
-            label = { Text("Süre") }
+            label = { Text("Süre") },
         )
         FilterChip(
             selected = selected == UsageMetric.COUNT,
             onClick = { onSelect(UsageMetric.COUNT) },
-            label = { Text("Adet") }
+            label = { Text("Adet") },
         )
     }
 }
@@ -544,13 +549,16 @@ private fun TopAppsCard(topApps: List<Pair<AppInfo, Long>>, hasPermission: Boole
                 Text(
                     "Kullanim istatistigi icin Ayarlar > Ozel Erisim > Kullanim Verileri iznini etkinlestir.",
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 return@Column
             }
             if (topApps.isEmpty()) {
-                Text("Bu hafta kullanim verisi bulunamadi.", fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "Bu hafta kullanim verisi bulunamadi.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 return@Column
             }
             val maxValue = topApps.first().second.coerceAtLeast(1)
@@ -572,13 +580,13 @@ private fun TopAppRow(rank: Int, app: AppInfo, value: Long, maxValue: Long, metr
         modifier = Modifier
             .fillMaxWidth()
             .clickable { openAppInfoSettings(context, app.packageName) },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             "$rank",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(20.dp)
+            modifier = Modifier.width(20.dp),
         )
         Column(Modifier.weight(1f)) {
             Text(app.appName, fontSize = 13.sp, fontWeight = FontWeight.Medium)
@@ -588,7 +596,7 @@ private fun TopAppRow(rank: Int, app: AppInfo, value: Long, maxValue: Long, metr
                     .fillMaxWidth()
                     .height(5.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
             ) {
                 Box(
                     modifier = Modifier
@@ -599,10 +607,10 @@ private fun TopAppRow(rank: Int, app: AppInfo, value: Long, maxValue: Long, metr
                             Brush.horizontalGradient(
                                 listOf(
                                     MaterialTheme.colorScheme.primary,
-                                    Color(0xFF26C6DA)
-                                )
-                            )
-                        )
+                                    Color(0xFF26C6DA),
+                                ),
+                            ),
+                        ),
                 )
             }
         }
@@ -611,7 +619,7 @@ private fun TopAppRow(rank: Int, app: AppInfo, value: Long, maxValue: Long, metr
             formatUsageMetric(value, metric),
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.width(56.dp)
+            modifier = Modifier.width(56.dp),
         )
     }
 }
@@ -622,12 +630,15 @@ private fun CategoryBreakdownCard(breakdown: List<Pair<String, Int>>, onClick: (
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (breakdown.isEmpty()) {
-                Text("Kategori verisi yok.", fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "Kategori verisi yok.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 return@Column
             }
             val maxCount = breakdown.first().second.coerceAtLeast(1)
@@ -644,26 +655,34 @@ private fun CategoryBar(name: String, count: Int, max: Int) {
     val animFraction by animateFloatAsState(targetValue = fraction, animationSpec = tween(700))
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(name, fontSize = 12.sp, modifier = Modifier.width(90.dp),
-            color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            name,
+            fontSize = 12.sp,
+            modifier = Modifier.width(90.dp),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
         Box(
             modifier = Modifier
                 .weight(1f)
                 .height(6.dp)
                 .clip(RoundedCornerShape(3.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(animFraction)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(3.dp))
-                    .background(Color(0xFF00897B))
+                    .background(Color(0xFF00897B)),
             )
         }
         Spacer(Modifier.width(8.dp))
-        Text("$count", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.width(28.dp))
+        Text(
+            "$count",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.width(28.dp),
+        )
     }
 }
 
@@ -673,23 +692,23 @@ private fun UnusedAppsCard(unusedCount: Int, neverUsedCount: Int, onClick: () ->
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             UnusedChip(
                 modifier = Modifier.weight(1f),
                 value = "$unusedCount",
                 label = "30 gundur\nacilmadi",
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
             )
             UnusedChip(
                 modifier = Modifier.weight(1f),
                 value = "$neverUsedCount",
                 label = "Hic\nacilamadi",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -699,8 +718,12 @@ private fun UnusedAppsCard(unusedCount: Int, neverUsedCount: Int, onClick: () ->
 private fun UnusedChip(modifier: Modifier, value: String, label: String, color: Color) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, fontWeight = FontWeight.Bold, fontSize = 28.sp, color = color)
-        Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            lineHeight = 14.sp)
+        Text(
+            label,
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = 14.sp,
+        )
     }
 }
 
@@ -710,37 +733,40 @@ private fun EfficiencyCard(stats: DashboardStats, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             EfficiencyRow(
                 icon = Icons.Default.Category,
                 label = "Kategori Organizasyonu",
                 value = "%${stats.organizedPercent}",
-                color = Color(0xFF00897B)
+                color = Color(0xFF00897B),
             )
             EfficiencyRow(
                 icon = Icons.AutoMirrored.Filled.TrendingUp,
                 label = "Bu Hafta Toplam Kullanim",
-                value = if (stats.totalUsageMinutesThisWeek >= 60)
+                value = if (stats.totalUsageMinutesThisWeek >= 60) {
                     "${stats.totalUsageMinutesThisWeek / 60}s ${stats.totalUsageMinutesThisWeek % 60}d"
-                else
-                    "${stats.totalUsageMinutesThisWeek}d",
-                color = Color(0xFF26C6DA)
+                } else {
+                    "${stats.totalUsageMinutesThisWeek}d"
+                },
+                color = Color(0xFF26C6DA),
             )
             EfficiencyRow(
                 icon = Icons.Default.AutoAwesome,
                 label = "Aktif Klasor Basina Uygulama",
-                value = if (stats.totalCategories > 0)
+                value = if (stats.totalCategories > 0) {
                     "%.1f".format(stats.totalApps.toFloat() / stats.totalCategories)
-                else "-",
-                color = MaterialTheme.colorScheme.primary
+                } else {
+                    "-"
+                },
+                color = MaterialTheme.colorScheme.primary,
             )
             EfficiencyRow(
                 icon = Icons.Default.PhoneAndroid,
                 label = "Kontrol Bekleyenler",
                 value = stats.attentionCount.toString(),
-                color = if (stats.attentionCount > 0) Color(0xFFEF6C00) else MaterialTheme.colorScheme.primary
+                color = if (stats.attentionCount > 0) Color(0xFFEF6C00) else MaterialTheme.colorScheme.primary,
             )
         }
     }

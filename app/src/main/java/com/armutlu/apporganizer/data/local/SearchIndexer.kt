@@ -43,7 +43,7 @@ class SearchIndexer @Inject constructor() {
             subtitle = appAliases,
             iconKey = app.packageName,
             sourceGroup = GROUP_APP,
-            lastModified = app.lastUpdated
+            lastModified = app.lastUpdated,
         )
     }
 
@@ -58,7 +58,7 @@ class SearchIndexer @Inject constructor() {
             subtitle = "",
             iconKey = "category:${cat.categoryId}",
             sourceGroup = GROUP_CATEGORY,
-            lastModified = cat.createdAt
+            lastModified = cat.createdAt,
         )
     }
 

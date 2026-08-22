@@ -31,29 +31,29 @@ class AppClassifierTest {
 
     // Test icin kullanilan minimal exact match haritasi (gercek JSON'un kucuk orn.)
     private val fakeExactMap = mapOf(
-        "com.instagram.android"           to Category.CAT_SOCIAL,
-        "com.facebook.katana"             to Category.CAT_SOCIAL,
-        "com.whatsapp"                    to Category.CAT_COMMUNICATION,
-        "org.telegram.messenger"          to Category.CAT_COMMUNICATION,
-        "com.discord"                     to Category.CAT_COMMUNICATION,
-        "com.openai.chatgpt"              to Category.CAT_PRODUCTIVITY,
-        "com.anthropic.claude"            to Category.CAT_PRODUCTIVITY,
-        "com.perplexity.app"              to Category.CAT_PRODUCTIVITY,
-        "com.google.android.apps.gemini"  to Category.CAT_PRODUCTIVITY,
-        "com.nubank.nubank"               to Category.CAT_FINANCE,
-        "br.com.brainweb.ifoodpartner"    to Category.CAT_FOOD,
-        "br.com.bb.android"               to Category.CAT_FINANCE,
-        "com.talabat.android"             to Category.CAT_FOOD,
-        "com.noon.buyerapp"               to Category.CAT_SHOPPING,
-        "com.stc.pay"                     to Category.CAT_FINANCE,
-        "com.safaricom.mpesa"             to Category.CAT_FINANCE,
-        "com.safeboda.android"            to Category.CAT_TRAVEL,
-        "com.konga.android"               to Category.CAT_SHOPPING,
-        "com.binance.dev"                 to Category.CAT_FINANCE,
-        "com.paribu.android"              to Category.CAT_FINANCE,
-        "com.papara.android"              to Category.CAT_FINANCE,
-        "io.metamask.android"             to Category.CAT_FINANCE,
-        "com.trendyol.android"            to Category.CAT_SHOPPING
+        "com.instagram.android" to Category.CAT_SOCIAL,
+        "com.facebook.katana" to Category.CAT_SOCIAL,
+        "com.whatsapp" to Category.CAT_COMMUNICATION,
+        "org.telegram.messenger" to Category.CAT_COMMUNICATION,
+        "com.discord" to Category.CAT_COMMUNICATION,
+        "com.openai.chatgpt" to Category.CAT_PRODUCTIVITY,
+        "com.anthropic.claude" to Category.CAT_PRODUCTIVITY,
+        "com.perplexity.app" to Category.CAT_PRODUCTIVITY,
+        "com.google.android.apps.gemini" to Category.CAT_PRODUCTIVITY,
+        "com.nubank.nubank" to Category.CAT_FINANCE,
+        "br.com.brainweb.ifoodpartner" to Category.CAT_FOOD,
+        "br.com.bb.android" to Category.CAT_FINANCE,
+        "com.talabat.android" to Category.CAT_FOOD,
+        "com.noon.buyerapp" to Category.CAT_SHOPPING,
+        "com.stc.pay" to Category.CAT_FINANCE,
+        "com.safaricom.mpesa" to Category.CAT_FINANCE,
+        "com.safeboda.android" to Category.CAT_TRAVEL,
+        "com.konga.android" to Category.CAT_SHOPPING,
+        "com.binance.dev" to Category.CAT_FINANCE,
+        "com.paribu.android" to Category.CAT_FINANCE,
+        "com.papara.android" to Category.CAT_FINANCE,
+        "io.metamask.android" to Category.CAT_FINANCE,
+        "com.trendyol.android" to Category.CAT_SHOPPING,
     )
 
     @Before
@@ -147,7 +147,7 @@ class AppClassifierTest {
     fun `classifyApps returns correct map`() {
         val apps = listOf(
             appInfo("com.instagram.android", "Instagram"),
-            appInfo("com.unknown.abc", "Unknown")
+            appInfo("com.unknown.abc", "Unknown"),
         )
         val result = classifier.classifyApps(apps)
         assertEquals(Category.CAT_SOCIAL, result["com.instagram.android"])
@@ -284,8 +284,8 @@ class AppClassifierTest {
             Category.CAT_SAMSUNG,
             classifier.classifyApp(
                 appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-                manufacturerClassifyEnabled = true
-            )
+                manufacturerClassifyEnabled = true,
+            ),
         )
     }
 
@@ -293,7 +293,7 @@ class AppClassifierTest {
     fun `manufacturerClassify_disabled_samsung_prefix_atlanir`() {
         val result = classifier.classifyApp(
             appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-            manufacturerClassifyEnabled = false
+            manufacturerClassifyEnabled = false,
         )
         assertNotEquals(Category.CAT_SAMSUNG, result)
     }
@@ -302,7 +302,7 @@ class AppClassifierTest {
     fun `manufacturer prefix requires package segment boundary`() {
         val result = classifier.classifyApp(
             appInfo("com.samsungfake.unknownfeature", "Unknown Feature"),
-            manufacturerClassifyEnabled = true
+            manufacturerClassifyEnabled = true,
         )
         assertNotEquals(Category.CAT_SAMSUNG, result)
     }
@@ -311,7 +311,7 @@ class AppClassifierTest {
     fun `manufacturer prefix matches exact package segment`() {
         val result = classifier.classifyApp(
             appInfo("com.samsung.unknownfeature", "Unknown Feature"),
-            manufacturerClassifyEnabled = true
+            manufacturerClassifyEnabled = true,
         )
         assertEquals(Category.CAT_SAMSUNG, result)
     }
@@ -319,27 +319,65 @@ class AppClassifierTest {
     // --- Bolgesel Paketler ---
 
     @Test fun `Nubank CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.nubank.nubank", "Nubank")))
-    @Test fun `iFood Partner CAT_FOOD`() = assertEquals(Category.CAT_FOOD, classifier.classifyApp(appInfo("br.com.brainweb.ifoodpartner", "iFood")))
-    @Test fun `Banco do Brasil CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("br.com.bb.android", "Banco do Brasil")))
+
+    @Test fun `iFood Partner CAT_FOOD`() = assertEquals(
+        Category.CAT_FOOD,
+        classifier.classifyApp(appInfo("br.com.brainweb.ifoodpartner", "iFood")),
+    )
+
+    @Test fun `Banco do Brasil CAT_FINANCE`() = assertEquals(
+        Category.CAT_FINANCE,
+        classifier.classifyApp(appInfo("br.com.bb.android", "Banco do Brasil")),
+    )
+
     @Test fun `Talabat CAT_FOOD`() = assertEquals(Category.CAT_FOOD, classifier.classifyApp(appInfo("com.talabat.android", "Talabat")))
+
     @Test fun `Noon CAT_SHOPPING`() = assertEquals(Category.CAT_SHOPPING, classifier.classifyApp(appInfo("com.noon.buyerapp", "Noon")))
+
     @Test fun `STC Pay CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.stc.pay", "STC Pay")))
+
     @Test fun `MPesa CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.safaricom.mpesa", "M-Pesa")))
-    @Test fun `SafeBoda CAT_TRAVEL`() = assertEquals(Category.CAT_TRAVEL, classifier.classifyApp(appInfo("com.safeboda.android", "SafeBoda")))
+
+    @Test fun `SafeBoda CAT_TRAVEL`() = assertEquals(
+        Category.CAT_TRAVEL,
+        classifier.classifyApp(appInfo("com.safeboda.android", "SafeBoda")),
+    )
+
     @Test fun `Konga CAT_SHOPPING`() = assertEquals(Category.CAT_SHOPPING, classifier.classifyApp(appInfo("com.konga.android", "Konga")))
+
     @Test fun `Binance CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.binance.dev", "Binance")))
-    @Test fun `Paribu TR kripto CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.paribu.android", "Paribu")))
-    @Test fun `Papara TR fintech CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("com.papara.android", "Papara")))
-    @Test fun `MetaMask CAT_FINANCE`() = assertEquals(Category.CAT_FINANCE, classifier.classifyApp(appInfo("io.metamask.android", "MetaMask")))
-    @Test fun `Perplexity CAT_PRODUCTIVITY`() = assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.perplexity.app", "Perplexity")))
-    @Test fun `Gemini CAT_PRODUCTIVITY`() = assertEquals(Category.CAT_PRODUCTIVITY, classifier.classifyApp(appInfo("com.google.android.apps.gemini", "Gemini")))
+
+    @Test fun `Paribu TR kripto CAT_FINANCE`() = assertEquals(
+        Category.CAT_FINANCE,
+        classifier.classifyApp(appInfo("com.paribu.android", "Paribu")),
+    )
+
+    @Test fun `Papara TR fintech CAT_FINANCE`() = assertEquals(
+        Category.CAT_FINANCE,
+        classifier.classifyApp(appInfo("com.papara.android", "Papara")),
+    )
+
+    @Test fun `MetaMask CAT_FINANCE`() = assertEquals(
+        Category.CAT_FINANCE,
+        classifier.classifyApp(appInfo("io.metamask.android", "MetaMask")),
+    )
+
+    @Test fun `Perplexity CAT_PRODUCTIVITY`() = assertEquals(
+        Category.CAT_PRODUCTIVITY,
+        classifier.classifyApp(appInfo("com.perplexity.app", "Perplexity")),
+    )
+
+    @Test fun `Gemini CAT_PRODUCTIVITY`() = assertEquals(
+        Category.CAT_PRODUCTIVITY,
+        classifier.classifyApp(appInfo("com.google.android.apps.gemini", "Gemini")),
+    )
 
     @Test
     fun `dosya adindaki keyword kategori sinyali olarak kullanilir`() {
         val app = AppInfo(
             packageName = "x.y",
             appName = "Yerel Ad",
-            appFileName = "remote-desktop"
+            appFileName = "remote-desktop",
         )
 
         assertEquals(Category.CAT_UTILITIES, classifier.classifyApp(app))
@@ -348,13 +386,13 @@ class AppClassifierTest {
 
     private fun appInfo(packageName: String, appName: String) = AppInfo(
         packageName = packageName,
-        appName = appName
+        appName = appName,
     )
 
     private fun appInfo(packageName: String, appName: String, categoryId: String) = AppInfo(
         packageName = packageName,
         appName = appName,
-        categoryId = categoryId
+        categoryId = categoryId,
     )
 
     // --- findSimilarUnclassifiedApps (K2 kismi — tek tek secilebilir oneri) ---
@@ -369,7 +407,7 @@ class AppClassifierTest {
             oldCategoryId = Category.CAT_OTHER,
             newCategoryId = Category.CAT_SAMSUNG,
             allApps = allApps,
-            manualOverrides = emptyMap()
+            manualOverrides = emptyMap(),
         )
         assertTrue(result.any { it.packageName == "com.samsung.gallery" })
     }
@@ -384,7 +422,7 @@ class AppClassifierTest {
             oldCategoryId = Category.CAT_OTHER,
             newCategoryId = Category.CAT_SAMSUNG,
             allApps = allApps,
-            manualOverrides = mapOf("com.samsung.gallery" to Category.CAT_OTHER)
+            manualOverrides = mapOf("com.samsung.gallery" to Category.CAT_OTHER),
         )
         assertTrue(result.none { it.packageName == "com.samsung.gallery" })
     }
@@ -400,7 +438,7 @@ class AppClassifierTest {
             oldCategoryId = Category.CAT_OTHER,
             newCategoryId = Category.CAT_SAMSUNG,
             allApps = allApps,
-            manualOverrides = emptyMap()
+            manualOverrides = emptyMap(),
         )
         assertTrue(result.none { it.packageName == "com.samsung.gallery" })
     }
@@ -417,7 +455,7 @@ class AppClassifierTest {
             oldCategoryId = Category.CAT_OTHER,
             newCategoryId = Category.CAT_SAMSUNG,
             allApps = allApps,
-            manualOverrides = emptyMap()
+            manualOverrides = emptyMap(),
         )
         assertTrue(result.size <= 10)
     }
@@ -431,7 +469,7 @@ class AppClassifierTest {
             oldCategoryId = Category.CAT_OTHER,
             newCategoryId = Category.CAT_SAMSUNG,
             allApps = allApps,
-            manualOverrides = emptyMap()
+            manualOverrides = emptyMap(),
         )
         assertTrue(result.isEmpty())
     }
@@ -446,7 +484,7 @@ class AppClassifierTest {
             oldCategoryId = Category.CAT_SAMSUNG,
             newCategoryId = Category.CAT_SAMSUNG,
             allApps = allApps,
-            manualOverrides = emptyMap()
+            manualOverrides = emptyMap(),
         )
         assertTrue(result.isEmpty())
     }
@@ -457,7 +495,7 @@ class AppClassifierTest {
     fun `MANUAL_REVIEW_ONLY modunda otomatik siniflandirma yapilmaz, REVIEW_PENDING doner`() {
         val decision = classifier.classifyAppDecision(
             appInfo("com.instagram.android", "Instagram"),
-            AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY
+            AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY,
         )
 
         assertEquals(Category.CAT_UNCATEGORIZED, decision.categoryId)
@@ -472,7 +510,7 @@ class AppClassifierTest {
         // otomatik motor calismamali.
         val decision = classifier.classifyAppDecision(
             appInfo("com.whatsapp", "WhatsApp"),
-            AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY
+            AppPrefs.ClassificationMode.MANUAL_REVIEW_ONLY,
         )
         assertEquals(Category.CAT_UNCATEGORIZED, decision.categoryId)
     }
@@ -495,7 +533,7 @@ class AppClassifierTest {
     fun `LOCAL_ONLY modunda uretici kurali atlanir`() {
         val decision = classifier.classifyAppDecision(
             appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-            AppPrefs.ClassificationMode.LOCAL_ONLY
+            AppPrefs.ClassificationMode.LOCAL_ONLY,
         )
         assertNotEquals(Category.CAT_SAMSUNG, decision.categoryId)
     }
@@ -504,7 +542,7 @@ class AppClassifierTest {
     fun `LOCAL_WITH_MANUFACTURER modunda uretici kurali calisir`() {
         val decision = classifier.classifyAppDecision(
             appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER,
         )
         assertEquals(Category.CAT_SAMSUNG, decision.categoryId)
     }
@@ -515,7 +553,7 @@ class AppClassifierTest {
         // girer; LOCAL_WITH_MANUFACTURER modunda bu adim atlanmali ve sonuc CAT_OTHER olmali.
         val decision = classifier.classifyAppDecision(
             appInfo("com.bilinmeyen.uygulama.xyz123", "Bilinmeyen"),
-            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER,
         )
         assertEquals(Category.CAT_OTHER, decision.categoryId)
         assertEquals(ClassificationSource.FALLBACK_OTHER, decision.source)
@@ -525,11 +563,11 @@ class AppClassifierTest {
     fun `eski Boolean imza LOCAL_WITH_MANUFACTURER moduna esdegerdir`() {
         val viaBoolean = classifier.classifyAppDecision(
             appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-            manufacturerClassifyEnabled = true
+            manufacturerClassifyEnabled = true,
         )
         val viaMode = classifier.classifyAppDecision(
             appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER
+            AppPrefs.ClassificationMode.LOCAL_WITH_MANUFACTURER,
         )
         assertEquals(viaMode.categoryId, viaBoolean.categoryId)
         assertEquals(viaMode.source, viaBoolean.source)

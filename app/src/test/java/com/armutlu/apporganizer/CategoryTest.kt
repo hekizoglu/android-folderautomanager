@@ -2,7 +2,6 @@
 
 import com.armutlu.apporganizer.domain.models.Category
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -21,7 +20,7 @@ class CategoryTest {
             Category.CAT_SHOPPING, Category.CAT_NEWS, Category.CAT_HEALTH,
             Category.CAT_FINANCE, Category.CAT_EDUCATION, Category.CAT_UTILITIES,
             Category.CAT_TRAVEL, Category.CAT_ENTERTAINMENT, Category.CAT_FOOD,
-            Category.CAT_PHOTOGRAPHY, Category.CAT_OTHER, Category.CAT_UNCATEGORIZED
+            Category.CAT_PHOTOGRAPHY, Category.CAT_OTHER, Category.CAT_UNCATEGORIZED,
         ).forEach { id ->
             assertTrue("$id eksik", ids.contains(id))
         }
@@ -40,7 +39,7 @@ class CategoryTest {
         Category.getDefaultCategories().forEach { cat ->
             assertTrue(
                 "${cat.categoryId} iÃ§in geÃ§ersiz renk: ${cat.colorHex}",
-                hexPattern.matches(cat.colorHex)
+                hexPattern.matches(cat.colorHex),
             )
         }
     }
@@ -57,4 +56,3 @@ class CategoryTest {
         assertEquals("👥", social.iconEmoji)
     }
 }
-

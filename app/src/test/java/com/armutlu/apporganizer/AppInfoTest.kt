@@ -4,7 +4,6 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -13,7 +12,7 @@ class AppInfoTest {
     private val sampleApp = AppInfo(
         packageName = "com.example.app",
         appName = "Example App",
-        categoryId = Category.CAT_SOCIAL
+        categoryId = Category.CAT_SOCIAL,
     )
 
     @Test

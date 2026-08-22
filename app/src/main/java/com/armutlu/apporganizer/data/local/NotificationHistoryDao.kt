@@ -46,7 +46,7 @@ interface NotificationHistoryDao {
             SELECT id FROM notification_history ORDER BY postedAt DESC
             LIMIT -1 OFFSET :keepLatest
         )
-        """
+        """,
     )
     suspend fun trimToLatest(keepLatest: Int = 500)
 

@@ -165,7 +165,8 @@ class UsageSessionAggregator(private val zoneId: ZoneId) {
     private companion object {
         fun eventOrder(type: UsageEventType): Int = when (type) {
             UsageEventType.PAUSED, UsageEventType.STOPPED, UsageEventType.DEVICE_SHUTDOWN,
-            UsageEventType.KEYGUARD_SHOWN, UsageEventType.SCREEN_NON_INTERACTIVE -> 0
+            UsageEventType.KEYGUARD_SHOWN, UsageEventType.SCREEN_NON_INTERACTIVE,
+            -> 0
             UsageEventType.KEYGUARD_HIDDEN, UsageEventType.SCREEN_INTERACTIVE -> 1
             UsageEventType.RESUMED -> 2
         }

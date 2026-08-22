@@ -9,11 +9,11 @@ data class EditingCenterState(
     val appCorrectionsCount: Int = 0,
     val missingPermissionsCount: Int = 0,
     val staleAppsCount: Int = 0,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
 ) {
     val totalAlerts: Int
         get() = pendingClassificationCount + folderMergeCandidates +
-                appCorrectionsCount + missingPermissionsCount + staleAppsCount
+            appCorrectionsCount + missingPermissionsCount + staleAppsCount
 
     val hasAnyAlert: Boolean
         get() = totalAlerts > 0

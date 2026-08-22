@@ -17,29 +17,29 @@ import java.io.Serializable
         Index(value = ["appName"]),
         Index(value = ["categoryId"]),
         Index(value = ["appName", "categoryId"]),
-        Index(value = ["appFileName"])
-    ]
+        Index(value = ["appFileName"]),
+    ],
 )
 data class AppInfo(
     @PrimaryKey
     val packageName: String,
-    
+
     val appName: String,
 
     val appFileName: String = "",
-    
+
     val categoryId: String = "uncategorized",
-    
+
     val iconUrl: String = "",
-    
+
     val isSystemApp: Boolean = false,
-    
+
     val isInstalled: Boolean = true,
-    
+
     val installTime: Long = System.currentTimeMillis(),
-    
+
     val lastUpdated: Long = System.currentTimeMillis(),
-    
+
     val customNotes: String = "",
 
     // Sure (ms): sistem UsageStats'ten gelen toplam on plan suresi. syncUsageStats yazar.
@@ -90,9 +90,9 @@ data class AppInfo(
 
     val lastReviewedAt: Long = 0L,
 
-    val reviewSnoozedUntil: Long = 0L
+    val reviewSnoozedUntil: Long = 0L,
 ) : Serializable {
-    
+
     companion object {
         /**
          * Create a sample AppInfo for testing
@@ -102,10 +102,10 @@ data class AppInfo(
                 packageName = "com.example.app",
                 appName = "Example App",
                 categoryId = "uncategorized",
-                isSystemApp = false
+                isSystemApp = false,
             )
         }
-        
+
         /**
          * Create multiple sample apps for testing
          */
@@ -119,26 +119,26 @@ data class AppInfo(
                         i % 3 == 1 -> "games"
                         else -> "productivity"
                     },
-                    isSystemApp = i % 5 == 0
+                    isSystemApp = i % 5 == 0,
                 )
             }
         }
     }
-    
+
     /**
      * Check if this app belongs to a specific category
      */
     fun belongsToCategory(categoryId: String): Boolean {
         return this.categoryId == categoryId
     }
-    
+
     /**
      * Update the category of this app
      */
     fun updateCategory(newCategoryId: String): AppInfo {
         return this.copy(
             categoryId = newCategoryId,
-            lastUpdated = System.currentTimeMillis()
+            lastUpdated = System.currentTimeMillis(),
         )
     }
 }

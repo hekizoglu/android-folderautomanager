@@ -50,8 +50,8 @@ class NotificationPreviewStoreTest {
                     title = "",
                     text = "",
                     bigText = "",
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -64,7 +64,7 @@ class NotificationPreviewStoreTest {
                 title = "Ali",
                 text = "Toplanti tamamlandi",
                 bigText = "",
-            )
+            ),
         )
 
         requireNotNull(preview)

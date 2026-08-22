@@ -13,16 +13,16 @@ import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.BackupManager
 import com.armutlu.apporganizer.utils.WorkerTelemetryPrefs
+import dagger.hilt.EntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.EntryPoint
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 class BackupWorker(
     appContext: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
 
     @EntryPoint
@@ -36,7 +36,7 @@ class BackupWorker(
         return runCatching {
             val repo = EntryPointAccessors.fromApplication(
                 applicationContext,
-                BackupWorkerEntryPoint::class.java
+                BackupWorkerEntryPoint::class.java,
             ).appRepository()
             val json = BackupManager.exportToJson(applicationContext, repo)
             val file = File(applicationContext.filesDir, "auto_backup.json")
@@ -101,7 +101,7 @@ class BackupWorker(
             wm.enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.UPDATE,
-                request
+                request,
             )
         }
 

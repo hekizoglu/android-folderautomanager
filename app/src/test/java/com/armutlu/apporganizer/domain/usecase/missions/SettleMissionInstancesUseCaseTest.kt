@@ -10,8 +10,6 @@ import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
 import com.armutlu.apporganizer.utils.MissionStreakPrefs
 import io.mockk.every
 import io.mockk.mockk
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
@@ -19,6 +17,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
 
 /**
  * SettleMissionInstancesUseCase — Dongu M04 (ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md
@@ -50,7 +50,8 @@ class SettleMissionInstancesUseCaseTest {
         override fun getAll(): MutableMap<String, *> = values
         override fun getString(key: String?, defValue: String?): String? = values[key] as? String ?: defValue
         override fun getStringSet(key: String?, defValues: MutableSet<String>?): MutableSet<String>? =
-            @Suppress("UNCHECKED_CAST") (values[key] as? MutableSet<String> ?: defValues)
+            @Suppress("UNCHECKED_CAST")
+            (values[key] as? MutableSet<String> ?: defValues)
         override fun getInt(key: String?, defValue: Int): Int = values[key] as? Int ?: defValue
         override fun getLong(key: String?, defValue: Long): Long = values[key] as? Long ?: defValue
         override fun getFloat(key: String?, defValue: Float): Float = values[key] as? Float ?: defValue

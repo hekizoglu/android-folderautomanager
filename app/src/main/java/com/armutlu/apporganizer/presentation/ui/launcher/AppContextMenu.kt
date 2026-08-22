@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -11,12 +12,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.AddToHomeScreen
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.automirrored.filled.AddToHomeScreen
-import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,35 +25,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import com.armutlu.apporganizer.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.drawable.toBitmap
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.utils.ShortcutHelper
-import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val SheetBg      = Color(0xFF1A1A2A)
+private val SheetBg = Color(0xFF1A1A2A)
+
 // MaterialTheme.colorScheme.primary kaldırıldı — MaterialTheme.colorScheme.primary kullanılıyor
-private val DangerColor  = Color(0xFFE53935)
-private val TextPrimary  = Color.White
+private val DangerColor = Color(0xFFE53935)
+private val TextPrimary = Color.White
 private val TextSecondary = Color.White.copy(alpha = 0.55f)
 private val DividerColor = Color.White.copy(alpha = 0.08f)
-private val RowHover     = Color.White.copy(alpha = 0.08f)
+private val RowHover = Color.White.copy(alpha = 0.08f)
 
 private val dateFmt = SimpleDateFormat("d MMM yyyy", Locale("tr"))
 
@@ -78,7 +79,7 @@ fun AppContextMenu(
     onRemoveFromNow: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
-    val haptic  = LocalHapticFeedback.current
+    val haptic = LocalHapticFeedback.current
     var showNoteDialog by remember { mutableStateOf(false) }
 
     val icon by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, app.packageName) {
@@ -112,25 +113,27 @@ fun AppContextMenu(
             Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
                 Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(0.2f)))
             }
-        }
+        },
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp),
         ) {
             // ── Uygulama başlığı ──────────────────────────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 icon?.let { bmp ->
                     Image(
                         bitmap = bmp,
                         contentDescription = null,
-                        modifier = Modifier.size(52.dp).clip(RoundedCornerShape(12.dp))
+                        modifier = Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)),
                     )
                 } ?: run {
-                    Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primary.copy(0.3f)),
-                        contentAlignment = Alignment.Center) {
+                    Box(
+                        Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primary.copy(0.3f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
                         Text(app.appName.take(1), fontSize = 22.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
                     }
                 }
@@ -144,22 +147,22 @@ fun AppContextMenu(
             // ── Bilgi satırları ───────────────────────────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 InfoChip(
                     label = "Boyut",
                     value = if (app.appSizeBytes > 0) formatBytes(app.appSizeBytes) else "—",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 InfoChip(
                     label = "Yükleme",
                     value = if (app.installTime > 0) dateFmt.format(Date(app.installTime)) else "—",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 InfoChip(
                     label = "Kullanım",
                     value = formatUsageTime(app.usageCount),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
             }
 
@@ -170,7 +173,7 @@ fun AppContextMenu(
                     "Kısayollar",
                     fontSize = 11.sp,
                     color = TextSecondary,
-                    modifier = Modifier.padding(horizontal = 20.dp)
+                    modifier = Modifier.padding(horizontal = 20.dp),
                 )
                 Spacer(Modifier.height(8.dp))
                 Row(
@@ -178,7 +181,7 @@ fun AppContextMenu(
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     shortcuts.forEach { shortcut ->
                         ShortcutItem(
@@ -187,7 +190,7 @@ fun AppContextMenu(
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 ShortcutHelper.launchShortcut(context, shortcut)
                                 onDismiss()
-                            }
+                            },
                         )
                     }
                 }
@@ -205,7 +208,7 @@ fun AppContextMenu(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     onLaunch()
                     onDismiss()
-                }
+                },
             )
 
             HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
@@ -214,20 +217,29 @@ fun AppContextMenu(
                 ContextAction(
                     icon = Icons.Default.DesktopAccessDisabled,
                     label = "Dock'tan Kaldır",
-                    onClick = { onRemoveFromDock(); onDismiss() }
+                    onClick = {
+                        onRemoveFromDock()
+                        onDismiss()
+                    },
                 )
             } else {
                 ContextAction(
                     icon = Icons.AutoMirrored.Filled.AddToHomeScreen,
                     label = "Dock'a Ekle",
-                    onClick = { onAddToDock(); onDismiss() }
+                    onClick = {
+                        onAddToDock()
+                        onDismiss()
+                    },
                 )
             }
 
             ContextAction(
                 icon = Icons.Default.Category,
                 label = "Kategori Değiştir",
-                onClick = { onChangeCategory(app); onDismiss() }
+                onClick = {
+                    onChangeCategory(app)
+                    onDismiss()
+                },
             )
 
             HorizontalDivider(color = DividerColor, modifier = Modifier.padding(horizontal = 16.dp))
@@ -242,7 +254,7 @@ fun AppContextMenu(
                     }
                     runCatching { context.startActivity(intent) }
                     onDismiss()
-                }
+                },
             )
 
             ContextAction(
@@ -251,14 +263,17 @@ fun AppContextMenu(
                 onClick = {
                     onToggleFavorite?.invoke(!isFavorite)
                     onDismiss()
-                }
+                },
             )
 
             onHideApp?.let { hideCallback ->
                 ContextAction(
                     icon = if (app.isHidden) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                     label = if (app.isHidden) "Gizlemeyi Kaldır" else "Gizle",
-                    onClick = { hideCallback(!app.isHidden); onDismiss() }
+                    onClick = {
+                        hideCallback(!app.isHidden)
+                        onDismiss()
+                    },
                 )
             }
 
@@ -266,7 +281,10 @@ fun AppContextMenu(
                 ContextAction(
                     icon = Icons.Default.NotificationsOff,
                     label = stringResource(R.string.context_menu_remove_from_notifications),
-                    onClick = { onRemoveFromNotifications?.invoke(); onDismiss() }
+                    onClick = {
+                        onRemoveFromNotifications?.invoke()
+                        onDismiss()
+                    },
                 )
             }
 
@@ -274,7 +292,10 @@ fun AppContextMenu(
                 ContextAction(
                     icon = Icons.Default.History,
                     label = stringResource(R.string.context_menu_remove_from_recents),
-                    onClick = { onRemoveFromRecents?.invoke(); onDismiss() }
+                    onClick = {
+                        onRemoveFromRecents?.invoke()
+                        onDismiss()
+                    },
                 )
             }
 
@@ -282,7 +303,10 @@ fun AppContextMenu(
                 ContextAction(
                     icon = Icons.Default.Block,
                     label = stringResource(R.string.context_menu_remove_from_now),
-                    onClick = { onRemoveFromNow?.invoke(); onDismiss() }
+                    onClick = {
+                        onRemoveFromNow?.invoke()
+                        onDismiss()
+                    },
                 )
             }
 
@@ -295,20 +319,20 @@ fun AppContextMenu(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 20.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.Top
+                        verticalAlignment = Alignment.Top,
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.StickyNote2,
                             null,
                             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                            modifier = Modifier.size(16.dp).padding(top = 2.dp)
+                            modifier = Modifier.size(16.dp).padding(top = 2.dp),
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = app.customNotes,
                             fontSize = 12.sp,
                             color = TextSecondary,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
@@ -317,7 +341,7 @@ fun AppContextMenu(
                     icon = Icons.Default.EditNote,
                     label = if (app.customNotes.isBlank()) "Not Ekle" else "Notu Düzenle",
                     color = MaterialTheme.colorScheme.primary,
-                    onClick = { showNoteDialog = true }
+                    onClick = { showNoteDialog = true },
                 )
             }
 
@@ -340,7 +364,7 @@ fun AppContextMenu(
                                     android.widget.Toast.LENGTH_LONG,
                                 ).show()
                             }
-                    }
+                    },
                 )
             }
         }
@@ -354,7 +378,7 @@ fun AppContextMenu(
             onSave = { note ->
                 onSaveNote?.invoke(note)
                 showNoteDialog = false
-            }
+            },
         )
     }
 }
@@ -363,7 +387,7 @@ fun AppContextMenu(
 private fun AppNoteDialog(
     initialNote: String,
     onDismiss: () -> Unit,
-    onSave: (String) -> Unit
+    onSave: (String) -> Unit,
 ) {
     var noteText by remember { mutableStateOf(initialNote) }
 
@@ -383,11 +407,11 @@ private fun AppNoteDialog(
                     unfocusedTextColor = Color.White,
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = Color.White.copy(0.3f),
-                    cursorColor = MaterialTheme.colorScheme.primary
+                    cursorColor = MaterialTheme.colorScheme.primary,
                 ),
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 4,
-                singleLine = false
+                singleLine = false,
             )
         },
         confirmButton = {
@@ -399,17 +423,17 @@ private fun AppNoteDialog(
             TextButton(onClick = onDismiss) {
                 Text("İptal", color = Color.White.copy(0.6f))
             }
-        }
+        },
     )
 }
 
 // usageCount = toplam ön plan süresi (ms) — 30 günlük
 private fun formatUsageTime(ms: Long): String = when {
-    ms <= 0L          -> "—"
-    ms < 60_000L      -> "${ms / 1000} sn"
-    ms < 3_600_000L   -> "${ms / 60_000} dk"
-    ms < 86_400_000L  -> "${"%.1f".format(ms / 3_600_000.0)} sa"
-    else              -> "${ms / 86_400_000} gün"
+    ms <= 0L -> "—"
+    ms < 60_000L -> "${ms / 1000} sn"
+    ms < 3_600_000L -> "${ms / 60_000} dk"
+    ms < 86_400_000L -> "${"%.1f".format(ms / 3_600_000.0)} sa"
+    else -> "${ms / 86_400_000} gün"
 }
 
 // ── Yardımcı composable'lar ───────────────────────────────────────────────────
@@ -421,7 +445,7 @@ private fun InfoChip(label: String, value: String, modifier: Modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
             .background(Color.White.copy(0.07f))
             .padding(horizontal = 10.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(value, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary, maxLines = 1)
         Text(label, fontSize = 10.sp, color = TextSecondary, maxLines = 1)
@@ -433,14 +457,14 @@ private fun ContextAction(
     icon: ImageVector,
     label: String,
     color: Color = TextPrimary,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(16.dp))
@@ -463,14 +487,14 @@ private fun ShortcutItem(shortcut: ShortcutInfo, onClick: () -> Unit) {
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp, horizontal = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Box(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color.White.copy(alpha = 0.10f)),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             iconBmp?.let { bmp ->
                 Image(bitmap = bmp, contentDescription = null, modifier = Modifier.size(32.dp))
@@ -478,7 +502,7 @@ private fun ShortcutItem(shortcut: ShortcutInfo, onClick: () -> Unit) {
                 Icons.AutoMirrored.Filled.OpenInNew,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         }
         Text(
@@ -487,7 +511,7 @@ private fun ShortcutItem(shortcut: ShortcutInfo, onClick: () -> Unit) {
             color = TextSecondary,
             maxLines = 2,
             textAlign = TextAlign.Center,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

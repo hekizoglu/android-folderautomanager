@@ -11,7 +11,6 @@ import com.armutlu.apporganizer.domain.usecase.missions.MissionEngine
 import com.armutlu.apporganizer.utils.MissionPrefs
 import com.armutlu.apporganizer.utils.TaskScoreManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,7 +39,7 @@ class MissionsRepository @Inject constructor(
                     completedAt = now,
                     starReward = MissionEngine.starRewardForMission(missionId),
                     source = "legacy_pref",
-                )
+                ),
             )
         }
         MissionPrefs.getCompletedWeeklyIds(context, epochWeek).forEach { missionId ->
@@ -52,7 +51,7 @@ class MissionsRepository @Inject constructor(
                     completedAt = now,
                     starReward = MissionEngine.starRewardForMission(missionId),
                     source = "legacy_pref",
-                )
+                ),
             )
         }
 
@@ -66,7 +65,7 @@ class MissionsRepository @Inject constructor(
                     completedAt = now,
                     starReward = legacyStars,
                     source = "legacy_total",
-                )
+                ),
             )
         }
 
@@ -78,7 +77,7 @@ class MissionsRepository @Inject constructor(
                     label = if (legacyScore.lastEventLabel.isNotBlank()) legacyScore.lastEventLabel else "Legacy task score import",
                     delta = legacyScore.totalScore,
                     createdAt = legacyScore.lastEventAt.takeIf { it > 0L } ?: now,
-                )
+                ),
             )
         }
 
@@ -129,7 +128,7 @@ class MissionsRepository @Inject constructor(
                 periodStartEpoch = epochDay,
                 completedAt = completedAt,
                 starReward = MissionEngine.starRewardForMission(missionId),
-            )
+            ),
         )
     }
 
@@ -141,7 +140,7 @@ class MissionsRepository @Inject constructor(
                 periodStartEpoch = epochWeek,
                 completedAt = completedAt,
                 starReward = MissionEngine.starRewardForMission(missionId),
-            )
+            ),
         )
     }
 

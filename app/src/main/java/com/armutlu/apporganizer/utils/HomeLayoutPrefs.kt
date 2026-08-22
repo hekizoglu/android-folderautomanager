@@ -10,6 +10,7 @@ object HomeLayoutPrefs {
     internal const val PREFS_NAME = "home_layout_prefs"
     internal const val KEY_HEADER_ORDER = "header_order"
     internal const val KEY_FOOTER_ORDER = "footer_order"
+
     // P15: Dashboard section sırasını saklar (v2 şeması — HomeLayoutConfig.CURRENT_VERSION = 2).
     // v1 kayıtlarında bu anahtar yok; read() sırasında HEADER_ORDER'daki Dashboard section'ları
     // buraya taşınır (bkz. migrateV1ToV2).
@@ -54,28 +55,38 @@ object HomeLayoutPrefs {
     )
 
     internal data class StoredLayout(
-        val headerOrder: String?, val footerOrder: String?, val hiddenSections: String?,
-        val version: Int?, val customized: Boolean?,
+        val headerOrder: String?,
+        val footerOrder: String?,
+        val hiddenSections: String?,
+        val version: Int?,
+        val customized: Boolean?,
         val contentOrder: String? = null,
     )
 
     fun read(context: Context): State {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val hasLayout = listOf(KEY_HEADER_ORDER, KEY_FOOTER_ORDER, KEY_HIDDEN_SECTIONS,
-            KEY_LAYOUT_VERSION, KEY_CUSTOMIZED).any(prefs::contains)
+        val hasLayout = listOf(
+            KEY_HEADER_ORDER,
+            KEY_FOOTER_ORDER,
+            KEY_HIDDEN_SECTIONS,
+            KEY_LAYOUT_VERSION,
+            KEY_CUSTOMIZED,
+        ).any(prefs::contains)
         if (!hasLayout) {
             val migrated = migrateLegacy(readLegacy(context))
             write(context, migrated)
             return migrated
         }
-        return sanitize(StoredLayout(
-            runCatching { prefs.getString(KEY_HEADER_ORDER, null) }.getOrNull(),
-            runCatching { prefs.getString(KEY_FOOTER_ORDER, null) }.getOrNull(),
-            runCatching { prefs.getString(KEY_HIDDEN_SECTIONS, null) }.getOrNull(),
-            runCatching { prefs.getInt(KEY_LAYOUT_VERSION, 0) }.getOrNull(),
-            runCatching { prefs.getBoolean(KEY_CUSTOMIZED, false) }.getOrNull(),
-            runCatching { prefs.getString(KEY_CONTENT_ORDER, null) }.getOrNull(),
-        ))
+        return sanitize(
+            StoredLayout(
+                runCatching { prefs.getString(KEY_HEADER_ORDER, null) }.getOrNull(),
+                runCatching { prefs.getString(KEY_FOOTER_ORDER, null) }.getOrNull(),
+                runCatching { prefs.getString(KEY_HIDDEN_SECTIONS, null) }.getOrNull(),
+                runCatching { prefs.getInt(KEY_LAYOUT_VERSION, 0) }.getOrNull(),
+                runCatching { prefs.getBoolean(KEY_CUSTOMIZED, false) }.getOrNull(),
+                runCatching { prefs.getString(KEY_CONTENT_ORDER, null) }.getOrNull(),
+            ),
+        )
     }
 
     fun write(context: Context, state: State) {
@@ -103,8 +114,14 @@ object HomeLayoutPrefs {
     }
 
     internal fun fromBackupFields(fields: BackupFields): State = sanitize(
-        StoredLayout(fields.headerOrder, fields.footerOrder, fields.hiddenSections, fields.version, fields.customized,
-            fields.contentOrder)
+        StoredLayout(
+            fields.headerOrder,
+            fields.footerOrder,
+            fields.hiddenSections,
+            fields.version,
+            fields.customized,
+            fields.contentOrder,
+        ),
     )
 
     internal fun diagnosticsSummary(state: State, widgetCount: Int, dockItemCount: Int): DiagnosticsSummary {
@@ -141,7 +158,12 @@ object HomeLayoutPrefs {
         val suppliedContent = collapseDailyControlCenter(contentFromHeader + parseIds(stored.contentOrder))
             .filter { it.allowedIn(HomeLayoutZone.CONTENT) }.distinct()
         val searchZone = if (HomeSectionId.MAIN_SEARCH in suppliedFooter &&
-            HomeSectionId.MAIN_SEARCH !in suppliedHeader) HomeLayoutZone.FOOTER else HomeLayoutZone.HEADER
+            HomeSectionId.MAIN_SEARCH !in suppliedHeader
+        ) {
+            HomeLayoutZone.FOOTER
+        } else {
+            HomeLayoutZone.HEADER
+        }
         val orders = mapOf(
             HomeLayoutZone.HEADER to sanitizeOrder(suppliedHeader, HomeLayoutZone.HEADER, searchZone),
             HomeLayoutZone.FOOTER to sanitizeOrder(suppliedFooter, HomeLayoutZone.FOOTER, searchZone),
@@ -153,7 +175,8 @@ object HomeLayoutPrefs {
             .apply {
                 val legacyPresent = parseIds(stored.headerOrder) + parseIds(stored.contentOrder) + parseIds(stored.footerOrder)
                 if (legacyPresent.any { it in LEGACY_DAILY_CONTROL_SECTIONS } &&
-                    LEGACY_DAILY_CONTROL_SECTIONS.all { it in parseIds(stored.hiddenSections) }) {
+                    LEGACY_DAILY_CONTROL_SECTIONS.all { it in parseIds(stored.hiddenSections) }
+                ) {
                     add(HomeSectionId.DAILY_CONTROL_CENTER)
                 }
             }
@@ -205,8 +228,11 @@ object HomeLayoutPrefs {
         )
         val items = HomeLayoutConfig.DEFAULT.items.map { item ->
             when (item.sectionId) {
-                HomeSectionId.MAIN_SEARCH -> item.copy(zone = searchZone, order = if (searchZone == HomeLayoutZone.FOOTER) 0 else item.order,
-                    visible = visibility.getValue(item.sectionId))
+                HomeSectionId.MAIN_SEARCH -> item.copy(
+                    zone = searchZone,
+                    order = if (searchZone == HomeLayoutZone.FOOTER) 0 else item.order,
+                    visible = visibility.getValue(item.sectionId),
+                )
                 HomeSectionId.DOCK -> item.copy(order = if (searchZone == HomeLayoutZone.FOOTER) 1 else 0)
                 else -> item.copy(visible = visibility[item.sectionId] ?: item.visible)
             }
@@ -227,8 +253,11 @@ object HomeLayoutPrefs {
         mainSearchVisible = AppPrefs.isHomeAppSearchEnabled(context) || AppPrefs.isHomeSearchEnabled(context),
     )
 
-    private fun sanitizeOrder(supplied: List<HomeSectionId>, zone: HomeLayoutZone,
-        searchZone: HomeLayoutZone): List<HomeSectionId> {
+    private fun sanitizeOrder(
+        supplied: List<HomeSectionId>,
+        zone: HomeLayoutZone,
+        searchZone: HomeLayoutZone,
+    ): List<HomeSectionId> {
         val defaults = HomeLayoutConfig.DEFAULT.items.filter {
             (if (it.sectionId == HomeSectionId.MAIN_SEARCH) searchZone else it.zone) == zone
         }.map { it.sectionId }

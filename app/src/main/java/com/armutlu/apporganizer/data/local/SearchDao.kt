@@ -5,8 +5,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
-import com.armutlu.apporganizer.domain.models.SearchDocument
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.armutlu.apporganizer.domain.models.SearchDocument
 
 /**
  * FTS5 arama DAO'su.
@@ -54,11 +54,13 @@ interface SearchDao {
      * Kategori adı değiştiğinde, o kategoriye ait tüm app dökümanlarının
      * subtitle alanını günceller ve FTS indeksini tazeler.
      */
-    @Query("""
+    @Query(
+        """
         UPDATE search_documents
         SET subtitle = :newCategoryName, last_modified = :ts
         WHERE source_type = 'app' AND subtitle = :oldCategoryName
-    """)
+    """,
+    )
     suspend fun updateCategoryRefs(oldCategoryName: String, newCategoryName: String, ts: Long): Int
 
     /**

@@ -11,7 +11,7 @@ object SmartAccessRanker {
         excludedPackages: Set<String> = emptySet(),
         favoritesFallback: List<AppInfo> = emptyList(),
         recentFallback: List<AppInfo> = emptyList(),
-        limit: Int = MAX_ITEMS
+        limit: Int = MAX_ITEMS,
     ): List<AppInfo> {
         val ranked = candidates
             .filter { it.app.isInstalled && !it.app.isHidden }
@@ -20,7 +20,7 @@ object SmartAccessRanker {
             .sortedWith(
                 compareByDescending<SmartAccessCandidate> { score(it) }
                     .thenByDescending { it.app.lastUsedTimestamp }
-                    .thenBy { it.app.packageName }
+                    .thenBy { it.app.packageName },
             )
             .map { it.app }
 
@@ -35,7 +35,7 @@ object SmartAccessRanker {
         apps: List<AppInfo>,
         ownPackageName: String,
         excludedPackages: Set<String> = emptySet(),
-        limit: Int = MAX_ITEMS
+        limit: Int = MAX_ITEMS,
     ): List<AppInfo> = SmartAccessDedupePolicy.visibleUnique(
         apps = apps.filter { it.lastUsedTimestamp > 0L }.sortedByDescending { it.lastUsedTimestamp },
         ownPackageName = ownPackageName,

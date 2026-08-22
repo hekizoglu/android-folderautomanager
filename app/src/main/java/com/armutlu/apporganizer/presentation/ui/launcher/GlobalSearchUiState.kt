@@ -1,10 +1,9 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import com.armutlu.apporganizer.data.repository.SearchRepository
 import com.armutlu.apporganizer.domain.models.FileIndexState
 import com.armutlu.apporganizer.domain.models.SearchDocument
-import com.armutlu.apporganizer.domain.models.SearchScore
 import com.armutlu.apporganizer.domain.models.SourceType
-import com.armutlu.apporganizer.data.repository.SearchRepository
 
 /**
  * Döngü P08 — `GlobalSearchHost` state sözleşmesi (roadmap satır 805-866).
@@ -27,7 +26,7 @@ data class GlobalSearchUiState(
     val fullscreenVisible: Boolean,
     val resultGroups: Map<SourceType, List<SearchDocument>>,
     val filesIndexState: FileIndexState,
-    val bestScore: Int = 0,  // P1.5: En yüksek skor -- < 85 ise "Google'da ara" goster
+    val bestScore: Int = 0, // P1.5: En yüksek skor -- < 85 ise "Google'da ara" goster
 ) {
     companion object {
         /** Hiçbir arama etkileşimi olmadığı başlangıç durumu. */

@@ -38,11 +38,11 @@ import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.models.NotificationHistoryEntity
 import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunchContract
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationHistoryUiState
-import timber.log.Timber
+import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportRange
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportUiState
 import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportViewModel
-import com.armutlu.apporganizer.presentation.viewmodel.NotificationReportRange
 import com.armutlu.apporganizer.utils.NotificationAnalyzer
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -56,7 +56,7 @@ import java.util.Locale
 @Composable
 fun NotificationReportScreen(
     viewModel: NotificationReportViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsState()
@@ -95,12 +95,12 @@ fun NotificationReportScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.notif_report_back)
+                            contentDescription = stringResource(R.string.notif_report_back),
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             TabRow(selectedTabIndex = selectedTab) {
@@ -119,7 +119,7 @@ fun NotificationReportScreen(
                 when (val s = state) {
                     is NotificationReportUiState.Loading -> Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) { CircularProgressIndicator() }
 
                     is NotificationReportUiState.PermissionMissing -> ReportStatusPane(
@@ -128,7 +128,7 @@ fun NotificationReportScreen(
                         title = stringResource(R.string.notif_report_perm_title),
                         description = stringResource(R.string.notif_report_perm_desc),
                         buttonText = stringResource(R.string.notif_report_perm_btn),
-                        onButtonClick = { openNotificationListenerSettings(context) }
+                        onButtonClick = { openNotificationListenerSettings(context) },
                     )
 
                     is NotificationReportUiState.AnalyticsDisabled -> ReportStatusPane(
@@ -137,7 +137,7 @@ fun NotificationReportScreen(
                         title = stringResource(R.string.notif_report_disabled_title),
                         description = stringResource(R.string.notif_report_disabled_desc),
                         buttonText = stringResource(R.string.notif_report_disabled_btn),
-                        onButtonClick = { viewModel.enableAnalytics() }
+                        onButtonClick = { viewModel.enableAnalytics() },
                     )
 
                     is NotificationReportUiState.CollectingData -> ReportStatusPane(
@@ -146,7 +146,7 @@ fun NotificationReportScreen(
                         title = stringResource(R.string.notif_report_collecting_title),
                         description = stringResource(R.string.notif_report_collecting_desc),
                         buttonText = null,
-                        onButtonClick = null
+                        onButtonClick = null,
                     )
 
                     is NotificationReportUiState.Error -> ReportStatusPane(
@@ -155,7 +155,7 @@ fun NotificationReportScreen(
                         title = "Rapor yuklenemedi",
                         description = s.message,
                         buttonText = "Tekrar dene",
-                        onButtonClick = { viewModel.refresh() }
+                        onButtonClick = { viewModel.refresh() },
                     )
 
                     is NotificationReportUiState.Ready -> ReportContent(
@@ -331,7 +331,7 @@ private fun NotificationHistoryTab(viewModel: NotificationReportViewModel) {
                     onClick = {
                         viewModel.deleteHistory(entry.id)
                         pendingDelete = null
-                    }
+                    },
                 ) {
                     Text(
                         stringResource(R.string.notif_history_delete_confirm),
@@ -418,7 +418,7 @@ private fun openNotificationListenerSettings(context: Context) {
     runCatching {
         context.startActivity(
             Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
         )
     }
 }
@@ -431,7 +431,7 @@ private fun ReportStatusPane(
     title: String,
     description: String,
     buttonText: String?,
-    onButtonClick: (() -> Unit)?
+    onButtonClick: (() -> Unit)?,
 ) {
     Column(
         modifier = Modifier
@@ -439,19 +439,20 @@ private fun ReportStatusPane(
             .padding(padding)
             .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            icon, null,
+            icon,
+            null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(48.dp),
         )
         Spacer(Modifier.height(16.dp))
         Text(
             title,
             fontWeight = FontWeight.SemiBold,
             fontSize = 17.sp,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
@@ -459,7 +460,7 @@ private fun ReportStatusPane(
             fontSize = 13.sp,
             lineHeight = 19.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         if (buttonText != null && onButtonClick != null) {
             Spacer(Modifier.height(20.dp))
@@ -483,7 +484,7 @@ private fun ReportContent(
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
             NotificationReportRangeSelector(
@@ -496,7 +497,7 @@ private fun ReportContent(
                 WarningBanner(
                     text = stringResource(R.string.notif_report_perm_banner),
                     buttonText = stringResource(R.string.notif_report_perm_banner_btn),
-                    onClick = onGrantPermission
+                    onClick = onGrantPermission,
                 )
             }
         }
@@ -505,7 +506,7 @@ private fun ReportContent(
                 WarningBanner(
                     text = stringResource(R.string.notif_report_paused_banner),
                     buttonText = stringResource(R.string.notif_report_disabled_btn),
-                    onClick = onEnableAnalytics
+                    onClick = onEnableAnalytics,
                 )
             }
         }
@@ -545,7 +546,7 @@ private fun ReportContent(
                     stringResource(R.string.notif_report_distracting_hint),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 4.dp)
+                    modifier = Modifier.padding(top = 2.dp, bottom = 4.dp),
                 )
             }
         }
@@ -565,14 +566,15 @@ private fun WarningBanner(text: String, buttonText: String, onClick: () -> Unit)
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Default.Warning, null,
+                    Icons.Default.Warning,
+                    null,
                     tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(text, fontSize = 13.sp, fontWeight = FontWeight.Medium)
@@ -675,32 +677,32 @@ private fun SummaryCard(report: NotificationAnalyzer.Report, periodLabel: String
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 periodLabel,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp
+                fontSize = 15.sp,
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 "${report.totalNotifications}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
             Text(
                 stringResource(R.string.notif_report_summary_total),
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (topApp != null) {
                 Spacer(Modifier.height(8.dp))
                 Text(
                     stringResource(R.string.notif_report_summary_top, topApp.appName, topApp.total),
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -713,7 +715,7 @@ private fun SectionTitle(title: String) {
         title,
         fontWeight = FontWeight.SemiBold,
         fontSize = 15.sp,
-        modifier = Modifier.padding(top = 4.dp)
+        modifier = Modifier.padding(top = 4.dp),
     )
 }
 
@@ -723,7 +725,7 @@ private fun EmptyStateText(text: String) {
         text,
         fontSize = 13.sp,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(vertical = 4.dp)
+        modifier = Modifier.padding(vertical = 4.dp),
     )
 }
 
@@ -746,20 +748,20 @@ private fun TalkativeRow(stat: NotificationAnalyzer.AppNotifStats) {
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { launchAppOrSettings(context, stat.packageName) }
+            .clickable { launchAppOrSettings(context, stat.packageName) },
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(stat.appName, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                 Text(
                     "${stat.total}",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -767,27 +769,27 @@ private fun TalkativeRow(stat: NotificationAnalyzer.AppNotifStats) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.Bottom,
             ) {
                 stat.dailyCounts.forEachIndexed { index, count ->
                     val fraction = count.toFloat() / maxCount
                     val height = (24.dp * fraction).coerceAtLeast(2.dp)
                     Column(
                         modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(height)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(MaterialTheme.colorScheme.primary)
+                                .background(MaterialTheme.colorScheme.primary),
                         )
                         Spacer(Modifier.height(2.dp))
                         Text(
                             text = dayInitials.getOrElse(index % 7) { "" },
                             fontSize = 9.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -804,24 +806,24 @@ private fun DisturbingRow(stat: NotificationAnalyzer.AppNotifStats) {
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { launchAppOrSettings(context, stat.packageName) }
+            .clickable { launchAppOrSettings(context, stat.packageName) },
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(stat.appName, fontSize = 13.sp, fontWeight = FontWeight.Medium)
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     stringResource(R.string.notif_report_night_ratio, (stat.nightRatio * 100).toInt()),
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.error,
                 )
                 Text(
                     stringResource(R.string.notif_report_burst, stat.maxBurstPerHour),
                     fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -836,31 +838,31 @@ private fun DistractingRow(stat: NotificationAnalyzer.AppNotifStats) {
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { launchAppOrSettings(context, stat.packageName) }
+            .clickable { launchAppOrSettings(context, stat.packageName) },
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
                 Text(stat.appName, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                 Text(
                     stringResource(R.string.notif_report_count_usage, stat.total, stat.usageMinutes),
                     fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.errorContainer
+                color = MaterialTheme.colorScheme.errorContainer,
             ) {
                 Text(
                     "%.1f".format(stat.distractionScore),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             }
         }

@@ -37,7 +37,9 @@ internal data class NotificationReportV2Metrics(
     companion object {
         fun from(report: NotificationAnalyzer.Report): NotificationReportV2Metrics {
             val total = report.totalReceived.coerceAtLeast(0)
-            fun percent(value: Int): Int = if (total == 0) 0 else {
+            fun percent(value: Int): Int = if (total == 0) {
+                0
+            } else {
                 ((value.coerceAtLeast(0).toDouble() / total) * 100).toInt().coerceIn(0, 100)
             }
             return NotificationReportV2Metrics(
@@ -113,7 +115,9 @@ internal fun NotificationReportV2Overview(report: NotificationAnalyzer.Report) {
                 )
                 Spacer(Modifier.height(8.dp))
                 categoryRows.forEach { (category, count) ->
-                    val fraction = if (metrics.totalReceived == 0) 0f else {
+                    val fraction = if (metrics.totalReceived == 0) {
+                        0f
+                    } else {
                         (count.toFloat() / metrics.totalReceived).coerceIn(0f, 1f)
                     }
                     Row(Modifier.fillMaxWidth()) {
@@ -193,7 +197,7 @@ private fun PromotionSourceRow(stat: NotificationAnalyzer.AppNotifStats) {
                             putExtra(Settings.EXTRA_APP_PACKAGE, stat.packageName)
                             data = Uri.parse("package:${stat.packageName}")
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
+                        },
                     )
                 }
             }

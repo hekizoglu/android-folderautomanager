@@ -24,12 +24,19 @@ class TurkishSearchTest {
     // ── Türkçe özel karakterler ──────────────────────────────────────────────
 
     @Test fun `cedilla c search`() = assertTrue(likeMatch("çarşı", "Çarşı Takip"))
+
     @Test fun `cedilla c lowercase`() = assertTrue(likeMatch("carsi", "Çarşı Takip").not() || likeMatch("çarşı", "Çarşı Takip"))
+
     @Test fun `dotless i`() = assertTrue(likeMatch("ışık", "Işık Yöneticisi"))
+
     @Test fun `dotted I uppercase`() = assertTrue(likeMatch("işaret", "İşaret Uygulaması"))
+
     @Test fun `g breve`() = assertTrue(likeMatch("öğrenci", "Öğrenci Takip"))
+
     @Test fun `u umlaut`() = assertTrue(likeMatch("üretim", "Üretim Planlama"))
+
     @Test fun `o umlaut`() = assertTrue(likeMatch("özet", "Özet Uygulaması"))
+
     @Test fun `s cedilla`() = assertTrue(likeMatch("şarj", "Şarj Durumu"))
 
     // ── I/İ ve ı/i dönüşümleri ──────────────────────────────────────────────
@@ -49,18 +56,23 @@ class TurkishSearchTest {
     // ── Kelime ortasında Türkçe karakter ────────────────────────────────────
 
     @Test fun `mid-word cedilla`() = assertTrue(likeMatch("araç", "Araç Takip"))
+
     @Test fun `mid-word g-breve`() = assertTrue(likeMatch("öğretm", "Öğretmen Asistanı"))
+
     @Test fun `mid-word s-cedilla`() = assertTrue(likeMatch("taşım", "Taşıma Rehberi"))
 
     // ── Kısmi sorgu ─────────────────────────────────────────────────────────
 
     @Test fun `partial turkish query`() = assertTrue(likeMatch("türk", "Türkçe Klavye"))
+
     @Test fun `partial mixed`() = assertTrue(likeMatch("müzik", "Müzik Çalar"))
+
     @Test fun `partial dotless-i prefix`() = assertTrue(likeMatch("ışın", "Işın Sürücüsü"))
 
     // ── Yanlış eşleşme olmamalı ─────────────────────────────────────────────
 
     @Test fun `no false positive - different word`() = assertFalse(likeMatch("çarşı", "Uygulama Yöneticisi"))
+
     @Test fun `no false positive - ascii typo`() = assertFalse(likeMatch("ozet", "Özet Uygulaması"))
 
     // ── LIKE pattern güvenlik (% ve _ escape) ───────────────────────────────

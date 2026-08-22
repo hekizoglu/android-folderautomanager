@@ -51,7 +51,7 @@ class HomePageTelemetryEventValidatorTest {
                     "device_class" to "phone",
                     "category_name" to "Finance",
                 ),
-            )
+            ),
         )
         assertFalse(
             TelemetryEventValidator.isValidPayload(
@@ -61,7 +61,7 @@ class HomePageTelemetryEventValidatorTest {
                     "page_position_bucket" to "3",
                     "device_class" to "phone",
                 ),
-            )
+            ),
         )
     }
 }

@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,7 +48,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunchContract
 import com.armutlu.apporganizer.utils.BadgeColorEngine
@@ -87,9 +85,11 @@ internal suspend fun preWarmIconCache(
                     if (iconPackPkg.isNotEmpty()) append('_').append(iconPackPkg)
                 }
                 if (iconCache[cacheKey] != null) return@runCatching
-                val packBitmap = if (iconPackPkg.isNotEmpty())
+                val packBitmap = if (iconPackPkg.isNotEmpty()) {
                     com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, pkg, px)
-                else null
+                } else {
+                    null
+                }
                 val bitmap = packBitmap?.asImageBitmap()
                     ?: com.armutlu.apporganizer.utils.loadAppIcon(context, pkg, px)?.asImageBitmap()
                 if (bitmap != null) iconCache.put(cacheKey, bitmap)
@@ -100,7 +100,7 @@ internal suspend fun preWarmIconCache(
 
 // Label altına scrim gradient — her türlü duvar kağıdında okunabilirlik
 private val LabelScrim = Brush.verticalGradient(
-    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)),
 )
 
 // Text shadow modifier — beyaz yazı + koyu gölge
@@ -108,7 +108,7 @@ private fun Modifier.textShadow(
     color: Color = Color.Black.copy(alpha = 0.6f),
     offsetX: Float = 0f,
     offsetY: Float = 1.5f,
-    blurRadius: Float = 4f
+    blurRadius: Float = 4f,
 ): Modifier = this.drawBehind {
     drawIntoCanvas { canvas ->
         val paint = Paint().apply {
@@ -119,9 +119,11 @@ private fun Modifier.textShadow(
             }
         }
         canvas.drawRect(
-            left = 0f, top = 0f,
-            right = size.width, bottom = size.height,
-            paint = paint
+            left = 0f,
+            top = 0f,
+            right = size.width,
+            bottom = size.height,
+            paint = paint,
         )
     }
 }
@@ -158,9 +160,11 @@ fun AppIconView(
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
                 runCatching {
-                    val packBitmap = if (iconPackPkg.isNotEmpty())
+                    val packBitmap = if (iconPackPkg.isNotEmpty()) {
                         com.armutlu.apporganizer.utils.IconPackManager.loadIcon(context, iconPackPkg, app.packageName, px)
-                    else null
+                    } else {
+                        null
+                    }
                     packBitmap?.asImageBitmap()
                         ?: com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, px)?.asImageBitmap()
                 }.getOrNull()
@@ -176,9 +180,9 @@ fun AppIconView(
         targetValue = if (isPressed) 0.85f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessHigh
+            stiffness = Spring.StiffnessHigh,
         ),
-        label = "iconScale"
+        label = "iconScale",
     )
 
     Column(
@@ -188,25 +192,29 @@ fun AppIconView(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick,
-                onLongClick = onLongClick
+                onLongClick = onLongClick,
             )
             .padding(horizontal = 4.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Kullanım bazlı greyscale — unusedGreyDays > 0 ise son kullanım tarihine göre gri
         // remember olmadan oku: ayarlar değişince hemen yansısın
         val unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
-        val isUnused = if (unusedGreyDays <= 0) false
-            else if (app.lastUsedTimestamp == 0L) false  // hiç kullanılmamış = gri değil
-            else {
-                val daysSinceUse = (System.currentTimeMillis() - app.lastUsedTimestamp) / (1000L * 60 * 60 * 24)
-                daysSinceUse >= unusedGreyDays
-            }
+        val isUnused = if (unusedGreyDays <= 0) {
+            false
+        } else if (app.lastUsedTimestamp == 0L) {
+            false // hiç kullanılmamış = gri değil
+        } else {
+            val daysSinceUse = (System.currentTimeMillis() - app.lastUsedTimestamp) / (1000L * 60 * 60 * 24)
+            daysSinceUse >= unusedGreyDays
+        }
         val isUninstalled = !app.isInstalled
         val iconAlpha = if (isUnused || isUninstalled) 0.45f else 1f
-        val greyFilter = if (isUnused || isUninstalled)
+        val greyFilter = if (isUnused || isUninstalled) {
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
-        else null
+        } else {
+            null
+        }
 
         // 7 gün içinde kurulduysa "YENİ" badge — Ayarlar'dan kapatılabilir
         // newBadgeEnabled — çağıran composable'dan reaktif parametre olarak gelir
@@ -224,7 +232,7 @@ fun AppIconView(
                     alpha = iconAlpha,
                     modifier = Modifier
                         .size(effectiveIconSize)
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(14.dp)),
                 )
             } ?: run {
                 Box(
@@ -232,12 +240,12 @@ fun AppIconView(
                         .size(effectiveIconSize)
                         .clip(RoundedCornerShape(14.dp))
                         .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = app.appName.take(1).uppercase(),
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 22.sp
+                        fontSize = 22.sp,
                     )
                 }
             }
@@ -249,13 +257,13 @@ fun AppIconView(
                         .clip(RoundedCornerShape(7.dp))
                         .background(Color.Gray)
                         .padding(horizontal = 4.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "Silindi",
                         color = Color.White,
                         fontSize = 7.sp,
-                        style = TextStyle(textAlign = TextAlign.Center)
+                        style = TextStyle(textAlign = TextAlign.Center),
                     )
                 }
             } else if (isNew && app.notificationCount == 0) {
@@ -266,13 +274,13 @@ fun AppIconView(
                         .clip(RoundedCornerShape(7.dp))
                         .background(androidx.compose.material3.MaterialTheme.colorScheme.primary)
                         .padding(horizontal = 4.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "YENİ",
                         color = Color.White,
                         fontSize = 7.sp,
-                        style = TextStyle(textAlign = TextAlign.Center)
+                        style = TextStyle(textAlign = TextAlign.Center),
                     )
                 }
             }
@@ -282,10 +290,11 @@ fun AppIconView(
                 val badgeText = if (app.notificationCount > 99) "99+" else app.notificationCount.toString()
                 val badgeWidth = if (app.notificationCount > 9) 20.dp else 16.dp
                 val badgeIntelligence = com.armutlu.apporganizer.utils.AppPrefs.isBadgeIntelligenceEnabled(context)
-                val badgeColor = if (badgeIntelligence)
+                val badgeColor = if (badgeIntelligence) {
                     BadgeColorEngine.badgeColor(app.categoryId, app.packageName)
-                else
+                } else {
                     BadgeColorEngine.Red
+                }
                 Box(
                     modifier = Modifier
                         .testTag("app_notification_badge_${app.packageName}")
@@ -297,7 +306,7 @@ fun AppIconView(
                         .clickable {
                             NotificationReportLaunchContract.openHistory(context)
                         },
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = badgeText,
@@ -306,8 +315,8 @@ fun AppIconView(
                         lineHeight = 9.sp,
                         style = TextStyle(
                             textAlign = TextAlign.Center,
-                            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
-                        )
+                            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
+                        ),
                     )
                 }
             }
@@ -324,13 +333,13 @@ fun AppIconView(
                     shadow = androidx.compose.ui.graphics.Shadow(
                         color = Color.Black.copy(alpha = 0.8f),
                         offset = Offset(0f, 1f),
-                        blurRadius = 4f
-                    )
+                        blurRadius = 4f,
+                    ),
                 ),
                 softWrap = false,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.width(effectiveIconSize + 16.dp)
+                modifier = Modifier.width(effectiveIconSize + 16.dp),
             )
         }
     }

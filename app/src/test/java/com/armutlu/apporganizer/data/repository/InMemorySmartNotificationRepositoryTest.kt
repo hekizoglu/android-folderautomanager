@@ -28,7 +28,7 @@ class InMemorySmartNotificationRepositoryTest {
                 smart("promo-1", "com.shop", NotificationCategory.PROMOTION, 15, 30L, suppressed = true),
                 smart("finance-1", "com.bank", NotificationCategory.FINANCE, 90, 20L),
                 smart("msg-2", "com.whatsapp", NotificationCategory.MESSAGING, 65, 40L),
-            )
+            ),
         )
 
         assertEquals(
@@ -52,7 +52,7 @@ class InMemorySmartNotificationRepositoryTest {
             listOf(
                 smart("msg", "com.whatsapp", NotificationCategory.MESSAGING, 60, 10L),
                 smart("promo", "com.shop", NotificationCategory.PROMOTION, 15, 20L, suppressed = true),
-            )
+            ),
         )
 
         assertEquals(mapOf("com.whatsapp" to 1, "com.shop" to 1), repository.actionablePackageCounts.value)
@@ -66,7 +66,7 @@ class InMemorySmartNotificationRepositoryTest {
             listOf(
                 smart("msg", "com.whatsapp", NotificationCategory.MESSAGING, 60, 10L),
                 smart("promo", "com.shop", NotificationCategory.PROMOTION, 15, 20L, suppressed = true),
-            )
+            ),
         )
 
         settingsSource.state.value = settings(engineEnabled = true)
@@ -78,11 +78,11 @@ class InMemorySmartNotificationRepositoryTest {
     @Test
     fun `promotion filter can be disabled while engine remains enabled`() = runTest {
         val settingsSource = FakeSettingsSource(
-            settings(engineEnabled = true, filterPromotions = false)
+            settings(engineEnabled = true, filterPromotions = false),
         )
         val repository = repository(settingsSource = settingsSource)
         repository.replaceActive(
-            listOf(smart("promo", "com.shop", NotificationCategory.PROMOTION, 15, 20L, suppressed = true))
+            listOf(smart("promo", "com.shop", NotificationCategory.PROMOTION, 15, 20L, suppressed = true)),
         )
 
         assertEquals(mapOf("com.shop" to 1), repository.actionablePackageCounts.value)
@@ -94,14 +94,14 @@ class InMemorySmartNotificationRepositoryTest {
             settings(
                 engineEnabled = true,
                 visibleCategories = setOf(NotificationCategory.FINANCE),
-            )
+            ),
         )
         val repository = repository(settingsSource = settingsSource)
         repository.replaceActive(
             listOf(
                 smart("msg", "com.whatsapp", NotificationCategory.MESSAGING, 60, 10L),
                 smart("finance", "com.bank", NotificationCategory.FINANCE, 90, 20L),
-            )
+            ),
         )
 
         assertEquals(mapOf("com.bank" to 1), repository.actionablePackageCounts.value)
@@ -116,7 +116,7 @@ class InMemorySmartNotificationRepositoryTest {
             listOf(
                 smart("old", "com.whatsapp", NotificationCategory.MESSAGING, 60, 100L),
                 smart("new", "com.whatsapp", NotificationCategory.MESSAGING, 65, 300L),
-            )
+            ),
         )
 
         readSource.state.value = mapOf("com.whatsapp" to 200L)
@@ -141,7 +141,7 @@ class InMemorySmartNotificationRepositoryTest {
         val repository = repository(readSource = readSource)
 
         repository.replaceActive(
-            listOf(smart("new", "com.whatsapp", NotificationCategory.MESSAGING, 65, 201L))
+            listOf(smart("new", "com.whatsapp", NotificationCategory.MESSAGING, 65, 201L)),
         )
 
         assertEquals(mapOf("com.whatsapp" to 1), repository.actionablePackageCounts.value)
@@ -156,7 +156,7 @@ class InMemorySmartNotificationRepositoryTest {
                 smart("msg-1", "com.whatsapp", NotificationCategory.MESSAGING, 60, 10L),
                 smart("msg-2", "com.whatsapp", NotificationCategory.MESSAGING, 65, 20L),
                 smart("promo-1", "com.shop", NotificationCategory.PROMOTION, 10, 30L, suppressed = true),
-            )
+            ),
         )
 
         repository.remove("msg-2")
@@ -172,7 +172,7 @@ class InMemorySmartNotificationRepositoryTest {
     fun `clearActive clears content and every derived flow`() = runTest {
         val repository = repository()
         repository.replaceActive(
-            listOf(smart("finance-1", "com.bank", NotificationCategory.FINANCE, 90, 1L))
+            listOf(smart("finance-1", "com.bank", NotificationCategory.FINANCE, 90, 1L)),
         )
 
         repository.clearActive()
@@ -191,7 +191,7 @@ class InMemorySmartNotificationRepositoryTest {
             listOf(
                 smart("same-key", "com.first", NotificationCategory.OTHER, 30, 1L),
                 smart("same-key", "com.second", NotificationCategory.FINANCE, 90, 2L),
-            )
+            ),
         )
 
         assertEquals(1, repository.activeNotifications.value.size)

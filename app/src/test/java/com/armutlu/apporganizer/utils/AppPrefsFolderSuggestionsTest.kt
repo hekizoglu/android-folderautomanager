@@ -10,7 +10,7 @@ class AppPrefsFolderSuggestionsTest {
     fun `yeni kurulumda klasor onerileri varsayilan olarak acik doner`() {
         val result = AppPrefs.resolveFolderSuggestionsEnabled(
             hasStoredValue = false,
-            storedValue = false
+            storedValue = false,
         )
 
         assertTrue(result)
@@ -20,7 +20,7 @@ class AppPrefsFolderSuggestionsTest {
     fun `kayitli klasor onerisi tercihi varsa korunur`() {
         val result = AppPrefs.resolveFolderSuggestionsEnabled(
             hasStoredValue = true,
-            storedValue = false
+            storedValue = false,
         )
 
         assertFalse(result)

@@ -30,7 +30,7 @@ import javax.inject.Singleton
 @Singleton
 class ContactsIndexer @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val searchDao: SearchDao
+    private val searchDao: SearchDao,
 ) {
 
     companion object {
@@ -78,7 +78,7 @@ class ContactsIndexer @Inject constructor(
             }
         }.also {
             context.contentResolver.registerContentObserver(
-                ContactsContract.Contacts.CONTENT_URI, true, it
+                ContactsContract.Contacts.CONTENT_URI, true, it,
             )
         }
         Timber.d("ContactsIndexer: ContentObserver kaydedildi")
@@ -102,14 +102,14 @@ class ContactsIndexer @Inject constructor(
             ContactsContract.Contacts._ID,
             ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
             ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
-            ContactsContract.Contacts.STARRED
+            ContactsContract.Contacts.STARRED,
         )
         val cursor = context.contentResolver.query(
             ContactsContract.Contacts.CONTENT_URI,
             projection,
             "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} IS NOT NULL",
             null,
-            "${ContactsContract.Contacts.STARRED} DESC, ${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} ASC"
+            "${ContactsContract.Contacts.STARRED} DESC, ${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} ASC",
         ) ?: return docs
 
         cursor.use { c ->
@@ -130,8 +130,8 @@ class ContactsIndexer @Inject constructor(
                         subtitle = loadPrimaryPhone(id),
                         iconKey = if (photoUri.isNotEmpty()) "photo:$photoUri" else "contact:$id",
                         sourceGroup = GROUP_CONTACT,
-                        lastModified = System.currentTimeMillis()
-                    )
+                        lastModified = System.currentTimeMillis(),
+                    ),
                 )
                 count++
             }
@@ -146,7 +146,7 @@ class ContactsIndexer @Inject constructor(
             "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ? AND " +
                 "${ContactsContract.CommonDataKinds.Phone.IS_PRIMARY} = 1",
             arrayOf(contactId),
-            null
+            null,
         ) ?: return ""
         return cursor.use { c ->
             if (c.moveToFirst()) c.getString(0) ?: "" else ""

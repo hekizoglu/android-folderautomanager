@@ -107,13 +107,13 @@ class HomeLayoutMathTest {
             availableHeightDp = 600,
             folderSizeDp = 72,
             columns = 4,
-            infoPanelVisible = true
+            infoPanelVisible = true,
         )
         val withoutStrip = HomeLayoutMath.folderCapacity(
             availableHeightDp = 600,
             folderSizeDp = 72,
             columns = 4,
-            infoPanelVisible = false
+            infoPanelVisible = false,
         )
 
         assertTrue(withoutStrip > withStrip)

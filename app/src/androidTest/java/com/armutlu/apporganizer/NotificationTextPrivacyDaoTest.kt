@@ -38,7 +38,7 @@ class NotificationTextPrivacyDaoTest {
             AppInfo(
                 packageName = "com.test.private",
                 appName = "Private Test",
-            )
+            ),
         )
 
         dao.updateNotificationText(
@@ -56,14 +56,14 @@ class NotificationTextPrivacyDaoTest {
             listOf(
                 AppInfo(packageName = "com.test.one", appName = "One"),
                 AppInfo(packageName = "com.test.two", appName = "Two"),
-            )
+            ),
         )
 
         dao.updateNotificationTexts(
             mapOf(
                 "com.test.one" to "Bakiye 5.000 TL",
                 "com.test.two" to "Doğrulama kodu 654321",
-            )
+            ),
         )
 
         assertEquals("", dao.getAppByPackageName("com.test.one")?.notificationText)
@@ -78,7 +78,7 @@ class NotificationTextPrivacyDaoTest {
                 packageName = "com.test.legacy",
                 appName = "Legacy",
                 notificationText = "Eski kalıcı bildirim içeriği",
-            )
+            ),
         )
 
         dao.clearAllNotificationTexts()

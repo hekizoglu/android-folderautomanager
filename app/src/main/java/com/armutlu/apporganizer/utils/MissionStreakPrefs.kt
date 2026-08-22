@@ -2,8 +2,6 @@ package com.armutlu.apporganizer.utils
 
 import android.content.Context
 import com.armutlu.apporganizer.domain.time.PeriodBoundaryResolver
-import java.time.Clock
-import java.time.ZoneId
 import timber.log.Timber
 
 /**

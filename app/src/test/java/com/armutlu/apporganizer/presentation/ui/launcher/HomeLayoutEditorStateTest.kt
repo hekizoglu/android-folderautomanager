@@ -4,9 +4,9 @@ import com.armutlu.apporganizer.domain.models.HomeLayoutConfig
 import com.armutlu.apporganizer.domain.models.HomeLayoutZone
 import com.armutlu.apporganizer.domain.models.HomeSectionId
 import com.armutlu.apporganizer.domain.models.withSearchZone
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HomeLayoutEditorStateTest {
@@ -17,9 +17,11 @@ class HomeLayoutEditorStateTest {
 
     @Test
     fun changedDraftRequiresDiscardProtection() {
-        val changed = HomeLayoutConfig.DEFAULT.copy(items = HomeLayoutConfig.DEFAULT.items.map {
-            if (it.sectionId == HomeSectionId.FAVORITES) it.copy(visible = false) else it
-        })
+        val changed = HomeLayoutConfig.DEFAULT.copy(
+            items = HomeLayoutConfig.DEFAULT.items.map {
+                if (it.sectionId == HomeSectionId.FAVORITES) it.copy(visible = false) else it
+            },
+        )
 
         assertTrue(HomeLayoutEditorState(HomeLayoutConfig.DEFAULT, changed).hasUnsavedChanges)
     }
@@ -28,9 +30,11 @@ class HomeLayoutEditorStateTest {
     fun optionalSectionCanBeHiddenAndShown() {
         val hidden = HomeLayoutConfig.DEFAULT.withSectionVisibility(HomeSectionId.FAVORITES, false)
         assertFalse(hidden.items.single { it.sectionId == HomeSectionId.FAVORITES }.visible)
-        assertTrue(hidden.withSectionVisibility(HomeSectionId.FAVORITES, true).items.single {
-            it.sectionId == HomeSectionId.FAVORITES
-        }.visible)
+        assertTrue(
+            hidden.withSectionVisibility(HomeSectionId.FAVORITES, true).items.single {
+                it.sectionId == HomeSectionId.FAVORITES
+            }.visible,
+        )
     }
 
     @Test

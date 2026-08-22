@@ -16,22 +16,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.armutlu.apporganizer.R
 
 /**
  * Modern, pastel tonlu, erişilebilir Onboarding Kategori Kartı.
@@ -39,7 +35,7 @@ import com.armutlu.apporganizer.R
 @Composable
 fun OnboardingCategoryCard(
     model: OnboardingCategoryCardUiModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val categoryColor = parseCategoryColor(model.colorHex)
     // Açık ve koyu temalarda okunabilir yumuşak pastel arka plan tonu (%12 alfa)
@@ -57,22 +53,22 @@ fun OnboardingCategoryCard(
             .padding(14.dp)
             .semantics(mergeDescendants = true) {
                 contentDescription = accessibilityLabel
-            }
+            },
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             // Başlık & İkon & Badge Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     Text(text = model.iconEmoji, fontSize = 18.sp)
                     Text(
@@ -81,7 +77,7 @@ fun OnboardingCategoryCard(
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
 
@@ -91,13 +87,13 @@ fun OnboardingCategoryCard(
                         .clip(CircleShape)
                         .background(categoryColor.copy(alpha = 0.25f))
                         .padding(horizontal = 8.dp, vertical = 2.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "${model.appCount}",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White,
                     )
                 }
             }
@@ -111,7 +107,7 @@ fun OnboardingCategoryCard(
                 color = Color.White.copy(alpha = 0.70f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -120,12 +116,12 @@ fun OnboardingCategoryCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.Bottom,
             ) {
                 AppIconPreviewGrid(
                     apps = model.previewApps,
                     fallbackEmoji = model.iconEmoji,
-                    iconSizeDp = 24.dp
+                    iconSizeDp = 24.dp,
                 )
 
                 if (model.pendingCount > 0) {
@@ -134,23 +130,23 @@ fun OnboardingCategoryCard(
                             .clip(RoundedCornerShape(8.dp))
                             .background(Color(0xFFFF9800).copy(alpha = 0.20f))
                             .padding(horizontal = 6.dp, vertical = 4.dp),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                            horizontalArrangement = Arrangement.spacedBy(3.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
                                 tint = Color(0xFFFFB74D),
-                                modifier = Modifier.size(12.dp)
+                                modifier = Modifier.size(12.dp),
                             )
                             Text(
                                 text = "${model.pendingCount}",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFB74D)
+                                color = Color(0xFFFFB74D),
                             )
                         }
                     }

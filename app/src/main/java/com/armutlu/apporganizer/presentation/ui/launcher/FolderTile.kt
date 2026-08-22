@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,12 +22,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import com.armutlu.apporganizer.utils.AppPrefs
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -35,7 +34,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -43,24 +41,26 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import com.armutlu.apporganizer.utils.BadgeColorEngine
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import com.armutlu.apporganizer.R
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import com.armutlu.apporganizer.R
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.BadgeColorEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -103,15 +103,15 @@ fun FolderTile(
         targetValue = if (isPressed) 0.90f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMedium
+            stiffness = Spring.StiffnessMedium,
         ),
-        label = "folderTileScale"
+        label = "folderTileScale",
     )
 
     val previewApps = remember(folder.apps, folderSortMode) {
         folder.apps.sortedByMode(folderSortMode).take(4)
     }
-    val totalBadge  = folder.apps.sumOf { it.notificationCount }
+    val totalBadge = folder.apps.sumOf { it.notificationCount }
     val topApp = remember(folder.apps) { folder.apps.maxByOrNull { it.usageCount } }
     val folderLabel = remember(folder, customName, topApp, totalBadge) {
         buildString {
@@ -123,8 +123,8 @@ fun FolderTile(
     }
 
     val tileWidth = folderSizeDp.dp
-    val circleSize = (folderSizeDp * 5 / 6).dp  // 60/72 oranı korunuyor
-    val miniIconSize = (folderSizeDp / 3).dp     // 22/72 yaklaşık
+    val circleSize = (folderSizeDp * 5 / 6).dp // 60/72 oranı korunuyor
+    val miniIconSize = (folderSizeDp / 3).dp // 22/72 yaklaşık
 
     var swipeTriggered by remember { mutableStateOf(false) }
     Column(
@@ -137,9 +137,18 @@ fun FolderTile(
             }
             .pointerInput(folder) {
                 detectVerticalDragGestures(
-                    onDragStart = { swipeDy = 0f; swipeTriggered = false },
-                    onDragEnd = { swipeDy = 0f; swipeTriggered = false },
-                    onDragCancel = { swipeDy = 0f; swipeTriggered = false },
+                    onDragStart = {
+                        swipeDy = 0f
+                        swipeTriggered = false
+                    },
+                    onDragEnd = {
+                        swipeDy = 0f
+                        swipeTriggered = false
+                    },
+                    onDragCancel = {
+                        swipeDy = 0f
+                        swipeTriggered = false
+                    },
                     onVerticalDrag = { change, delta ->
                         if (delta >= 0f) return@detectVerticalDragGestures
                         if (swipeTriggered) return@detectVerticalDragGestures
@@ -153,7 +162,7 @@ fun FolderTile(
                             }
                             swipeDy = 0f
                         }
-                    }
+                    },
                 )
             }
             .combinedClickable(
@@ -163,9 +172,9 @@ fun FolderTile(
                 onLongClick = {
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     onLongClick?.invoke()
-                }
+                },
             ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // 60dp circle — kategori renginde frosted glass + badge
         val catColor = remember(folder.category.colorHex, customColor) {
@@ -180,10 +189,10 @@ fun FolderTile(
         val tileShape = when {
             // Pixel modu: emoji/özel renk yok sayılır, yumuşak yuvarlatılmış kare (squircle benzeri)
             pixelLookEnabled -> RoundedCornerShape(
-                percent = (com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_CORNER_RADIUS_PERCENT * 100).toInt()
+                percent = (com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_CORNER_RADIUS_PERCENT * 100).toInt(),
             )
-            folderShape == "square"   -> RoundedCornerShape(0.dp)
-            folderShape == "rounded"  -> RoundedCornerShape(16.dp)
+            folderShape == "square" -> RoundedCornerShape(0.dp)
+            folderShape == "rounded" -> RoundedCornerShape(16.dp)
             folderShape == "triangle" -> GenericShape { size, _ ->
                 moveTo(size.width / 2f, 0f)
                 lineTo(size.width, size.height)
@@ -194,77 +203,85 @@ fun FolderTile(
         }
         val pixelSurface = androidx.compose.material3.MaterialTheme.colorScheme.surface
         Box {
-        Box(
-            modifier = Modifier
-                .size(circleSize)
-                .clip(tileShape)
-                .background(
-                    if (pixelLookEnabled) {
-                        pixelSurface.copy(alpha = com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_SURFACE_ALPHA)
-                    } else {
-                        catColor.copy(alpha = 0.30f)
-                    }
-                )
-                .then(
-                    // Arama çubuğuyla aynı glassmorphism dili (FolderSearchBar dinlenme hali,
-                    // HomeScreenComponents.kt): 1dp, Color.White alpha 0.18f. Pixel modunda
-                    // uygulanmaz — stok Android klasör görünümü kendi kimliğini korur.
-                    if (folderGlassBorderEnabled && !pixelLookEnabled) {
-                        Modifier.border(1.dp, Color.White.copy(alpha = 0.18f), tileShape)
-                    } else Modifier
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (folder.apps.isEmpty()) {
-                // Pixel modunda özel emoji yok sayılır — jenerik klasör görünümü boş kalır
-                // (stok Android boş klasör önizlemesi gibi), sadece kendi emoji'miz olmayan kimlikte gösterilir.
-                if (!pixelLookEnabled) {
-                    Text(
-                        text = customEmoji?.takeIf { it.isNotEmpty() } ?: folder.category.iconEmoji,
-                        fontSize = 24.sp
-                    )
-                }
-            } else {
-                // 2x2 mini icon grid — pixel modunda da aynı (stok Android klasör önizlemesi zaten budur)
-                MiniIconGrid(
-                    apps = previewApps,
-                    iconSize = miniIconSize
-                )
-            }
-        }
-        // Klasör badge — renk: en yüksek bildirimli uygulamanın kategorisine göre
-        // folderBadgeEnabled — HomeScreen'den reaktif parametre, varsayılan kapalı (D226):
-        // klasör içindeki uygulama bazlı bildirim rozetleri (FolderScreen) etkilenmez.
-        if (folderBadgeEnabled && totalBadge > 0) {
-            val badgeText = if (totalBadge > 99) "99+" else totalBadge.toString()
-            val badgeW = if (totalBadge > 9) 20.dp else 16.dp
-            val topNotifApp = folder.apps.maxByOrNull { it.notificationCount }
-            val badgeIntelligence = com.armutlu.apporganizer.utils.AppPrefs.isBadgeIntelligenceEnabled(context)
-            val folderBadgeColor = if (badgeIntelligence && topNotifApp != null)
-                BadgeColorEngine.badgeColor(topNotifApp.categoryId, topNotifApp.packageName)
-            else
-                BadgeColorEngine.Red
             Box(
                 modifier = Modifier
-                    .size(badgeW, 16.dp)
-                    .align(Alignment.TopEnd)
-                    .shadow(3.dp, androidx.compose.foundation.shape.RoundedCornerShape(8.dp), ambientColor = folderBadgeColor, spotColor = folderBadgeColor)
-                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                    .background(folderBadgeColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    badgeText,
-                    color = Color.White,
-                    fontSize = 9.sp,
-                    lineHeight = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    style = androidx.compose.ui.text.TextStyle(
-                        platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false)
+                    .size(circleSize)
+                    .clip(tileShape)
+                    .background(
+                        if (pixelLookEnabled) {
+                            pixelSurface.copy(alpha = com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.FOLDER_SURFACE_ALPHA)
+                        } else {
+                            catColor.copy(alpha = 0.30f)
+                        },
                     )
-                )
+                    .then(
+                        // Arama çubuğuyla aynı glassmorphism dili (FolderSearchBar dinlenme hali,
+                        // HomeScreenComponents.kt): 1dp, Color.White alpha 0.18f. Pixel modunda
+                        // uygulanmaz — stok Android klasör görünümü kendi kimliğini korur.
+                        if (folderGlassBorderEnabled && !pixelLookEnabled) {
+                            Modifier.border(1.dp, Color.White.copy(alpha = 0.18f), tileShape)
+                        } else {
+                            Modifier
+                        },
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (folder.apps.isEmpty()) {
+                    // Pixel modunda özel emoji yok sayılır — jenerik klasör görünümü boş kalır
+                    // (stok Android boş klasör önizlemesi gibi), sadece kendi emoji'miz olmayan kimlikte gösterilir.
+                    if (!pixelLookEnabled) {
+                        Text(
+                            text = customEmoji?.takeIf { it.isNotEmpty() } ?: folder.category.iconEmoji,
+                            fontSize = 24.sp,
+                        )
+                    }
+                } else {
+                    // 2x2 mini icon grid — pixel modunda da aynı (stok Android klasör önizlemesi zaten budur)
+                    MiniIconGrid(
+                        apps = previewApps,
+                        iconSize = miniIconSize,
+                    )
+                }
             }
-        }
+            // Klasör badge — renk: en yüksek bildirimli uygulamanın kategorisine göre
+            // folderBadgeEnabled — HomeScreen'den reaktif parametre, varsayılan kapalı (D226):
+            // klasör içindeki uygulama bazlı bildirim rozetleri (FolderScreen) etkilenmez.
+            if (folderBadgeEnabled && totalBadge > 0) {
+                val badgeText = if (totalBadge > 99) "99+" else totalBadge.toString()
+                val badgeW = if (totalBadge > 9) 20.dp else 16.dp
+                val topNotifApp = folder.apps.maxByOrNull { it.notificationCount }
+                val badgeIntelligence = com.armutlu.apporganizer.utils.AppPrefs.isBadgeIntelligenceEnabled(context)
+                val folderBadgeColor = if (badgeIntelligence && topNotifApp != null) {
+                    BadgeColorEngine.badgeColor(topNotifApp.categoryId, topNotifApp.packageName)
+                } else {
+                    BadgeColorEngine.Red
+                }
+                Box(
+                    modifier = Modifier
+                        .size(badgeW, 16.dp)
+                        .align(Alignment.TopEnd)
+                        .shadow(
+                            3.dp,
+                            androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                            ambientColor = folderBadgeColor,
+                            spotColor = folderBadgeColor,
+                        )
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                        .background(folderBadgeColor),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        badgeText,
+                        color = Color.White,
+                        fontSize = 9.sp,
+                        lineHeight = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        style = androidx.compose.ui.text.TextStyle(
+                            platformStyle = androidx.compose.ui.text.PlatformTextStyle(includeFontPadding = false),
+                        ),
+                    )
+                }
+            }
         } // outer Box
 
         Spacer(Modifier.height(4.dp))
@@ -286,7 +303,7 @@ fun FolderTile(
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
             lineHeight = 13.sp,
-            modifier = Modifier.width(tileWidth)
+            modifier = Modifier.width(tileWidth),
         )
         // Hizli acma ipucu — klasor uzerinde yukari kaydirinca en cok kullanilan uygulama acilir
         // folderSwipeHintEnabled — HomeScreen'den reaktif parametre olarak gelir
@@ -294,13 +311,13 @@ fun FolderTile(
             Row(
                 modifier = Modifier.width(tileWidth),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = "↑",
                     color = effectiveLabelColor.copy(alpha = 0.40f * textAlpha),
                     fontSize = 10.sp,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.width(3.dp))
                 Text(
@@ -309,7 +326,7 @@ fun FolderTile(
                     fontSize = 10.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
             }
         }
@@ -326,7 +343,7 @@ fun FolderTile(
         val notifRecencyComparator = remember {
             compareBy<com.armutlu.apporganizer.domain.models.AppInfo>(
                 { it.notificationImportance },
-                { it.lastNotificationPostedAt }
+                { it.lastNotificationPostedAt },
             )
         }
         val latestNotifApp = remember(folder.apps) {
@@ -364,10 +381,12 @@ fun FolderTile(
                                 onClick = {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                     onNotificationTap(latestNotifApp.packageName)
-                                }
+                                },
                             )
-                        } else Modifier
-                    )
+                        } else {
+                            Modifier
+                        },
+                    ),
             )
         }
         // Kullanım bilgisi alt yazısı — "X gündür açılmadı" / "Hiç açılmadı"
@@ -402,7 +421,7 @@ fun FolderTile(
                         .background(Color.Black.copy(alpha = 0.22f * textAlpha))
                         .padding(horizontal = 6.dp, vertical = 2.dp),
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(text = "⏱", fontSize = 9.sp)
                     Spacer(Modifier.width(3.dp))
@@ -414,7 +433,7 @@ fun FolderTile(
                         lineHeight = 11.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -425,7 +444,7 @@ fun FolderTile(
 @Composable
 private fun MiniIconGrid(
     apps: List<com.armutlu.apporganizer.domain.models.AppInfo>,
-    iconSize: Dp
+    iconSize: Dp,
 ) {
     // Pad to 4 slots (null = empty)
     val slots: List<com.armutlu.apporganizer.domain.models.AppInfo?> = buildList {
@@ -435,7 +454,7 @@ private fun MiniIconGrid(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(2.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Row 1: slots 0, 1
         Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -453,7 +472,7 @@ private fun MiniIconGrid(
 @Composable
 private fun MiniAppIcon(
     app: com.armutlu.apporganizer.domain.models.AppInfo?,
-    size: Dp
+    size: Dp,
 ) {
     if (app == null) {
         // Empty slot — transparent placeholder
@@ -470,7 +489,7 @@ private fun MiniAppIcon(
 
     val bitmap: ImageBitmap? by produceState<ImageBitmap?>(
         initialValue = iconCache[cacheKey],
-        key1 = cacheKey
+        key1 = cacheKey,
     ) {
         if (value == null) {
             val loaded = withContext(Dispatchers.IO) {
@@ -491,7 +510,7 @@ private fun MiniAppIcon(
         Image(
             bitmap = bitmapSnapshot,
             contentDescription = app.appName,
-            modifier = Modifier.size(size)
+            modifier = Modifier.size(size),
         )
     } else {
         // Fallback: small circle with first letter
@@ -501,12 +520,12 @@ private fun MiniAppIcon(
                 .clip(CircleShape)
                 .background(Color.White.copy(alpha = 0.4f))
                 .semantics { contentDescription = app.appName },
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = app.appName.take(1).uppercase(),
                 color = Color.White,
-                fontSize = 8.sp
+                fontSize = 8.sp,
             )
         }
     }

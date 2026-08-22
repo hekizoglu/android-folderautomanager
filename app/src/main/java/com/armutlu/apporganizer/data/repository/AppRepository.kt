@@ -34,7 +34,7 @@ class AppRepository @Inject constructor(
     private val appDao: AppDao,
     private val categoryDao: CategoryDao,
     private val notificationEventDao: NotificationEventDao,
-    private val classifier: AppClassifier
+    private val classifier: AppClassifier,
 ) {
     fun getAllCategoriesFlow(): Flow<List<Category>> {
         return categoryDao.getAllCategoriesFlow()
@@ -106,7 +106,6 @@ class AppRepository @Inject constructor(
         return (categoryDao.getMaxDisplayOrder() ?: 0) + 1
     }
 
-    
     /**
      * Get all apps as a Flow
      */
@@ -115,7 +114,7 @@ class AppRepository @Inject constructor(
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
     }
-    
+
     /**
      * Get all apps one-time
      */
@@ -127,7 +126,7 @@ class AppRepository @Inject constructor(
             emptyList()
         }
     }
-    
+
     /**
      * Get apps by category
      */
@@ -168,7 +167,7 @@ class AppRepository @Inject constructor(
     suspend fun getAppByPackageName(packageName: String): AppInfo? {
         return appDao.getAppByPackageName(packageName)
     }
-    
+
     /**
      * Search apps by name
      */
@@ -177,7 +176,7 @@ class AppRepository @Inject constructor(
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
     }
-    
+
     /**
      * Insert apps with auto-classification
      */
@@ -201,7 +200,7 @@ class AppRepository @Inject constructor(
             throw e
         }
     }
-    
+
     /**
      * Update app category — P0.4: Exception throws, ViewModel'de sonuç doğrulanır
      */
@@ -226,7 +225,7 @@ class AppRepository @Inject constructor(
             Timber.d("Updated category for $packageName to $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating app category")
-            throw e  // P0.4: ViewModel'e hata bildir, sessiz başarısızlık yapma
+            throw e // P0.4: ViewModel'e hata bildir, sessiz başarısızlık yapma
         }
     }
 
@@ -327,7 +326,7 @@ class AppRepository @Inject constructor(
             throw e
         }
     }
-    
+
     /**
      * Update multiple apps' category — FINDING-003: tekli updateAppCategory() ile aynı
      * sözleşme (rethrow). ViewModel katmanı DAO hatasını görmeden AppPrefs override,
@@ -356,7 +355,7 @@ class AppRepository @Inject constructor(
             Timber.d("Updated ${packageNames.size} apps to category $categoryId")
         } catch (e: Exception) {
             Timber.e(e, "Error updating multiple apps")
-            throw e  // FINDING-003: ViewModel'e hata bildir, sessiz başarısızlık yapma
+            throw e // FINDING-003: ViewModel'e hata bildir, sessiz başarısızlık yapma
         }
     }
 
@@ -404,7 +403,7 @@ class AppRepository @Inject constructor(
         }
         return migrated
     }
-    
+
     /**
      * Delete app
      */
@@ -417,7 +416,7 @@ class AppRepository @Inject constructor(
             throw e
         }
     }
-    
+
     /**
      * Clear all apps
      */
@@ -430,7 +429,7 @@ class AppRepository @Inject constructor(
             throw e
         }
     }
-    
+
     /**
      * Count total apps
      */
@@ -442,7 +441,7 @@ class AppRepository @Inject constructor(
             0
         }
     }
-    
+
     /**
      * Count apps in category
      */
@@ -454,7 +453,7 @@ class AppRepository @Inject constructor(
             0
         }
     }
-    
+
     /**
      * Get apps with category info
      */
@@ -464,7 +463,7 @@ class AppRepository @Inject constructor(
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
     }
-    
+
     /**
      * Get recently installed apps
      */
@@ -476,7 +475,7 @@ class AppRepository @Inject constructor(
             emptyList()
         }
     }
-    
+
     /**
      * Get system apps
      */
@@ -494,7 +493,7 @@ class AppRepository @Inject constructor(
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
     }
-    
+
     /**
      * Sync installed apps (main operation for scanning device)
      */
@@ -568,7 +567,7 @@ class AppRepository @Inject constructor(
             throw e
         }
     }
-    
+
     /**
      * Check if app exists
      */

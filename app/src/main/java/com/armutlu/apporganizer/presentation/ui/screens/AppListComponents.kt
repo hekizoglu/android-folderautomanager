@@ -42,13 +42,13 @@ import kotlinx.coroutines.withContext
 internal fun LoadingSkeleton() {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         items(12) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.fillMaxWidth().height(68.dp)
+                modifier = Modifier.fillMaxWidth().height(68.dp),
             ) {}
         }
     }
@@ -60,7 +60,7 @@ internal fun LoadingSkeleton() {
 internal fun AppEmptyState(
     icon: ImageVector,
     title: String,
-    subtitle: String
+    subtitle: String,
 ) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -80,7 +80,7 @@ internal fun CategoryChip(
     emoji: String,
     count: Int,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     FilterChip(
         selected = selected,
@@ -91,21 +91,21 @@ internal fun CategoryChip(
                 Text(label, fontSize = 13.sp)
                 Surface(
                     shape = CircleShape,
-                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                 ) {
                     Text(
                         count.toString(),
                         fontSize = 11.sp,
                         color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     )
                 }
             }
         },
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
     )
 }
 
@@ -118,12 +118,12 @@ internal fun AppListContent(
     selectedApps: Set<String>,
     categories: List<Category>,
     onAppClick: (AppInfo) -> Unit,
-    onAppLongClick: (AppInfo) -> Unit
+    onAppLongClick: (AppInfo) -> Unit,
 ) {
     val context = LocalContext.current
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         items(apps, key = { it.packageName }) { app ->
             val isSelected = app.packageName in selectedApps
@@ -131,26 +131,33 @@ internal fun AppListContent(
 
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = if (isSelected)
+                color = if (isSelected) {
                     MaterialTheme.colorScheme.primaryContainer
-                else
-                    MaterialTheme.colorScheme.surface,
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .then(
-                        if (isSelected) Modifier.border(
-                            1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)
-                        ) else Modifier
+                        if (isSelected) {
+                            Modifier.border(
+                                1.5.dp,
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(12.dp),
+                            )
+                        } else {
+                            Modifier
+                        },
                     )
                     .combinedClickable(
                         onClick = { onAppClick(app) },
-                        onLongClick = { onAppLongClick(app) }
-                    )
+                        onLongClick = { onAppLongClick(app) },
+                    ),
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     val px = (48 * context.resources.displayMetrics.density).toInt()
                     val icon by produceState<ImageBitmap?>(initialValue = null, key1 = app.packageName) {
@@ -164,14 +171,14 @@ internal fun AppListContent(
                     Box(
                         modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         val iconSnapshot = icon
                         if (iconSnapshot != null) {
                             Image(
                                 bitmap = iconSnapshot,
                                 contentDescription = app.appName,
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier.size(48.dp),
                             )
                         } else {
                             Text(app.appName.take(1), fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -185,13 +192,13 @@ internal fun AppListContent(
                             fontSize = 15.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         if (cat != null) {
                             Text(
                                 "${cat.iconEmoji} ${cat.categoryName}",
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -201,7 +208,7 @@ internal fun AppListContent(
                             Icons.Default.CheckCircle,
                             null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(22.dp),
                         )
                     }
                 }
@@ -218,7 +225,7 @@ internal fun CategoryPickerDialog(
     app: AppInfo,
     categories: List<Category>,
     onCategorySelected: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -228,25 +235,36 @@ internal fun CategoryPickerDialog(
                 items(categories.filter { it.categoryId != Category.CAT_UNCATEGORIZED }, key = { it.categoryId }) { cat ->
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = if (app.categoryId == cat.categoryId)
+                        color = if (app.categoryId == cat.categoryId) {
                             MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.surfaceVariant,
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
                         modifier = Modifier.fillMaxWidth()
                             .semantics {
                                 role = Role.Button
                                 contentDescription = if (app.categoryId == cat.categoryId) "${cat.categoryName}, seçili" else cat.categoryName
                             }
-                            .combinedClickable(onClick = { onCategorySelected(cat.categoryId); onDismiss() })
+                            .combinedClickable(onClick = {
+                                onCategorySelected(cat.categoryId)
+                                onDismiss()
+                            }),
                     ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(cat.iconEmoji, fontSize = 20.sp)
                             Text(cat.categoryName, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                            if (app.categoryId == cat.categoryId)
-                                Icon(Icons.Default.Check, "Seçili", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                            if (app.categoryId == cat.categoryId) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    "Seçili",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
                         }
                     }
                 }
@@ -255,6 +273,6 @@ internal fun CategoryPickerDialog(
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("İptal") }
-        }
+        },
     )
 }

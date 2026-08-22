@@ -86,16 +86,16 @@ fun QuickWheelOverlay(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onDismiss
-            )
+                onClick = onDismiss,
+            ),
     ) {
         val radiusPx = with(density) { RADIUS_DP.toPx() }
-        val iconPx   = with(density) { ICON_DP.toPx() }
-        val count    = topApps.size
+        val iconPx = with(density) { ICON_DP.toPx() }
+        val count = topApps.size
         if (count == 0) return@Box
 
         topApps.forEachIndexed { i, app ->
-            val angle = (2 * PI / count * i) - PI / 2  // üstten başla
+            val angle = (2 * PI / count * i) - PI / 2 // üstten başla
             val cx = pressX + radiusPx * cos(angle).toFloat()
             val cy = pressY + radiusPx * sin(angle).toFloat()
 
@@ -113,7 +113,7 @@ fun QuickWheelOverlay(
                 onClick = {
                     onLaunch(app.packageName)
                     onDismiss()
-                }
+                },
             )
         }
     }
@@ -142,16 +142,16 @@ private fun QuickWheelItem(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
             ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
             modifier = Modifier
                 .size(iconSize)
                 .clip(RoundedCornerShape(14.dp))
                 .background(Color.White.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             icon?.let { bmp ->
                 Image(bitmap = bmp, contentDescription = app.appName, modifier = Modifier.size(iconSize - 8.dp))
@@ -164,7 +164,7 @@ private fun QuickWheelItem(
             color = Color.White,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }

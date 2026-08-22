@@ -20,7 +20,7 @@ interface TaskScoreEventDao {
         """
         SELECT COALESCE(SUM(delta), 0) FROM task_score_events
         WHERE createdAt BETWEEN :fromInclusive AND :toInclusive
-        """
+        """,
     )
     suspend fun getScoreBetween(
         fromInclusive: Long,
@@ -32,7 +32,7 @@ interface TaskScoreEventDao {
         SELECT * FROM task_score_events
         ORDER BY createdAt DESC, id DESC
         LIMIT 1
-        """
+        """,
     )
     suspend fun getLatestEvent(): TaskScoreEventEntry?
 
@@ -41,7 +41,7 @@ interface TaskScoreEventDao {
         SELECT COUNT(*) FROM task_score_events
         WHERE createdAt BETWEEN :fromInclusive AND :toInclusive
         AND (:positiveOnly = 0 OR delta > 0)
-        """
+        """,
     )
     suspend fun countEventsBetween(
         fromInclusive: Long,
@@ -54,7 +54,7 @@ interface TaskScoreEventDao {
         SELECT COUNT(*) FROM task_score_events
         WHERE createdAt BETWEEN :fromInclusive AND :toInclusive
         AND eventKey IN (:eventKeys)
-        """
+        """,
     )
     suspend fun countEventsBetweenByKeys(
         fromInclusive: Long,

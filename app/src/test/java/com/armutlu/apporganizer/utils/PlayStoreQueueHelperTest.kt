@@ -52,7 +52,7 @@ class PlayStoreQueueHelperTest {
     fun `playStoreUrl dogru formatta uretiliyor`() {
         assertEquals(
             "https://play.google.com/store/apps/details?id=com.whatsapp",
-            PlayStoreQueueHelper.playStoreUrl("com.whatsapp")
+            PlayStoreQueueHelper.playStoreUrl("com.whatsapp"),
         )
     }
 

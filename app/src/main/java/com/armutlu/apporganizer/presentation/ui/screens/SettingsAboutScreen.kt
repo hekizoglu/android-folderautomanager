@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.runtime.Composable
@@ -8,11 +9,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.presentation.viewmodel.DiagnosticsReportViewModel
-import androidx.hilt.navigation.compose.hiltViewModel
-import android.content.Intent
 
 /**
  * U1: Hakkında & Yedekleme alt ekranı — uygulama bilgisi, gizlilik merkezi,
@@ -46,7 +46,6 @@ fun SettingsAboutScreen(
     }
 
     SettingsSubScreenScaffold(title = "Hakkında & Yedekleme", onNavigateBack = onNavigateBack) {
-
         // Hakkında (üst) + Yedek/Geri Yükle + Gizlilik + Debug
         settingsBackupAboutSection(
             viewModel = viewModel,
@@ -55,7 +54,7 @@ fun SettingsAboutScreen(
             logs = logs,
             onNavigateToPrivacyPolicy = onNavigateToPrivacyPolicy,
             onNavigateToUsageReport = onNavigateToUsageReport,
-            onNavigateToDashboard = onNavigateToDashboard
+            onNavigateToDashboard = onNavigateToDashboard,
         )
 
         // ── Geri Bildirim ────────────────────────────────────────────────
@@ -69,7 +68,7 @@ fun SettingsAboutScreen(
                     showChevron = false,
                     onClick = {
                         diagnosticsViewModel.generateFeedbackReport()
-                    }
+                    },
                 )
             }
         }

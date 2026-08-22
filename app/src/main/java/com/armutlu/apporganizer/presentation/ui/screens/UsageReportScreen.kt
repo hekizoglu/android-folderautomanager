@@ -24,12 +24,11 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 import com.armutlu.apporganizer.utils.UsageStatsHelper
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -37,7 +36,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun UsageReportScreen(
     viewModel: AppListViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val screenState by viewModel.screenState.collectAsState()
@@ -65,8 +64,8 @@ fun UsageReportScreen(
     val appsSorted = remember(visibleUserApps, usageMetric) {
         visibleUserApps.map { app ->
             val value = when (usageMetric) {
-                UsageMetric.DURATION -> app.usageCount   // ön plan süresi (ms)
-                UsageMetric.COUNT -> app.launchCount     // kaç kez açıldı
+                UsageMetric.DURATION -> app.usageCount // ön plan süresi (ms)
+                UsageMetric.COUNT -> app.launchCount // kaç kez açıldı
             }
             app to value
         }.sortedByDescending { (_, v) -> v }
@@ -75,7 +74,7 @@ fun UsageReportScreen(
     val unusedApps = remember(visibleUserApps) {
         visibleUserApps.filter { app ->
             app.lastUsedTimestamp > 0L &&
-            (now - app.lastUsedTimestamp) > thirtyDaysMs
+                (now - app.lastUsedTimestamp) > thirtyDaysMs
         }.sortedBy { it.lastUsedTimestamp }
     }
 
@@ -93,25 +92,30 @@ fun UsageReportScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         if (!hasPermission) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
-                Icon(Icons.Default.Warning, null,
+                Icon(
+                    Icons.Default.Warning,
+                    null,
                     modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.primary)
+                    tint = MaterialTheme.colorScheme.primary,
+                )
                 Spacer(Modifier.height(16.dp))
                 Text("Kullanım İzni Gerekli", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Spacer(Modifier.height(8.dp))
-                Text("Uygulama kullanım verilerine erişmek için izin gerekiyor.",
+                Text(
+                    "Uygulama kullanım verilerine erişmek için izin gerekiyor.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp)
+                    fontSize = 14.sp,
+                )
                 Spacer(Modifier.height(24.dp))
                 Button(onClick = { UsageStatsHelper.openPermissionSettings(context) }) {
                     Text("İzin Ver")
@@ -123,7 +127,7 @@ fun UsageReportScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // Özet kartı
             item {
@@ -157,10 +161,11 @@ fun UsageReportScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(
-                            if (usageMetric == UsageMetric.DURATION)
+                            if (usageMetric == UsageMetric.DURATION) {
                                 "En Çok Kullanılan · Süre (30 gün)"
-                            else
-                                "En Çok Açılan · Adet (30 gün)",
+                            } else {
+                                "En Çok Açılan · Adet (30 gün)"
+                            },
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
                         )
@@ -181,7 +186,7 @@ fun UsageReportScreen(
                         maxValue = maxValue,
                         rank = index + 1,
                         metric = usageMetric,
-                        onClick = { openAppInfoSettings(context, app.packageName) }
+                        onClick = { openAppInfoSettings(context, app.packageName) },
                     )
                 }
             }
@@ -191,36 +196,51 @@ fun UsageReportScreen(
                 item {
                     Row(
                         modifier = Modifier.padding(top = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Default.Warning, null,
+                        Icon(
+                            Icons.Default.Warning,
+                            null,
                             tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(18.dp))
+                            modifier = Modifier.size(18.dp),
+                        )
                         Spacer(Modifier.width(6.dp))
-                        Text("30 Gündür Açılmadı (${unusedApps.size})",
-                            fontWeight = FontWeight.Bold, fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.error)
+                        Text(
+                            "30 Gündür Açılmadı (${unusedApps.size})",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.error,
+                        )
                     }
                 }
                 itemsIndexed(unusedApps.take(15)) { _, app ->
-                    UnusedRow(app = app, now = now,
+                    UnusedRow(
+                        app = app,
+                        now = now,
                         onClick = { openAppInfoSettings(context, app.packageName) },
-                        onHide = { viewModel.setAppHidden(app.packageName, true) })
+                        onHide = { viewModel.setAppHidden(app.packageName, true) },
+                    )
                 }
             }
 
             // Hiç açılmamış
             if (neverUsed.isNotEmpty()) {
                 item {
-                    Text("Hiç Kullanılmadı (${neverUsed.size})",
-                        fontWeight = FontWeight.Bold, fontSize = 14.sp,
+                    Text(
+                        "Hiç Kullanılmadı (${neverUsed.size})",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
                         modifier = Modifier.padding(top = 4.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 itemsIndexed(neverUsed.take(10)) { _, app ->
-                    UnusedRow(app = app, now = now,
+                    UnusedRow(
+                        app = app,
+                        now = now,
                         onClick = { openAppInfoSettings(context, app.packageName) },
-                        onHide = { viewModel.setAppHidden(app.packageName, true) })
+                        onHide = { viewModel.setAppHidden(app.packageName, true) },
+                    )
                 }
             }
 
@@ -232,8 +252,12 @@ fun UsageReportScreen(
 @Composable
 private fun SummaryChip(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontWeight = FontWeight.Bold, fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.primary)
+        Text(
+            value,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.primary,
+        )
         Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
@@ -245,59 +269,67 @@ private fun UsageRow(
     maxValue: Long,
     rank: Int,
     metric: UsageMetric,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val barFraction = (value.toFloat() / maxValue).coerceIn(0f, 1f)
 
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("$rank", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(24.dp))
+        Text(
+            "$rank",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(24.dp),
+        )
         Column(Modifier.weight(1f)) {
             Text(app.appName, fontSize = 13.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(3.dp))
             Box(
                 modifier = Modifier.fillMaxWidth().height(6.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
             ) {
                 Box(
                     modifier = Modifier.fillMaxWidth(barFraction).fillMaxHeight()
                         .clip(RoundedCornerShape(3.dp))
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(MaterialTheme.colorScheme.primary),
                 )
             }
         }
         Spacer(Modifier.width(8.dp))
         Text(
             text = formatUsageMetric(value, metric),
-            fontSize = 12.sp, color = MaterialTheme.colorScheme.primary
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.primary,
         )
     }
 }
 
 @Composable
 private fun UnusedRow(app: AppInfo, now: Long, onClick: () -> Unit, onHide: () -> Unit) {
-    val daysSince = if (app.lastUsedTimestamp > 0L)
+    val daysSince = if (app.lastUsedTimestamp > 0L) {
         TimeUnit.MILLISECONDS.toDays(now - app.lastUsedTimestamp)
-    else -1L
+    } else {
+        -1L
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 3.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
             Text(app.appName, fontSize = 13.sp)
             Text(
                 text = if (daysSince >= 0) "$daysSince gün önce" else "Hiç açılmadı",
-                fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         TextButton(
             onClick = onHide,
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
         ) {
             Icon(Icons.Default.VisibilityOff, null, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(4.dp))
@@ -317,12 +349,12 @@ private fun UsageMetricToggle(selected: UsageMetric, onSelect: (UsageMetric) -> 
         FilterChip(
             selected = selected == UsageMetric.DURATION,
             onClick = { onSelect(UsageMetric.DURATION) },
-            label = { Text("Süre") }
+            label = { Text("Süre") },
         )
         FilterChip(
             selected = selected == UsageMetric.COUNT,
             onClick = { onSelect(UsageMetric.COUNT) },
-            label = { Text("Adet") }
+            label = { Text("Adet") },
         )
     }
 }
@@ -347,7 +379,7 @@ internal fun openAppInfoSettings(context: Context, packageName: String) {
         } else {
             val intent = Intent(
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.fromParts("package", packageName, null)
+                Uri.fromParts("package", packageName, null),
             ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
             context.startActivity(intent)
         }

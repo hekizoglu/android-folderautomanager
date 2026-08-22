@@ -31,7 +31,6 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -102,7 +101,7 @@ class LauncherViewModelTest {
             packageManagerHelper = mockPmHelper,
             classifier = mockClassifier,
             homeIntelligenceCoordinator = mockHomeIntelligenceCoordinator,
-            tickerHistoryDao = mockTickerHistoryDao
+            tickerHistoryDao = mockTickerHistoryDao,
         )
     }
 
@@ -133,7 +132,7 @@ class LauncherViewModelTest {
     private fun app(pkg: String, name: String, categoryId: String = "social") = AppInfo(
         packageName = pkg,
         appName = name,
-        categoryId = categoryId
+        categoryId = categoryId,
     )
 
     // ── toggleFavorite ───────────────────────────────────────────────────────
@@ -176,7 +175,7 @@ class LauncherViewModelTest {
         appsFlow.value = listOf(
             app("com.a", "Alpha"),
             app("com.b", "Beta"),
-            app("com.c", "Gamma")
+            app("com.c", "Gamma"),
         )
 
         val result = viewModel.filteredAllApps.value
@@ -187,7 +186,7 @@ class LauncherViewModelTest {
     fun `bos_searchQuery_gizli_uygulamalari_dislar`() = runTest(testDispatcher) {
         appsFlow.value = listOf(
             app("com.a", "Alpha"),
-            AppInfo(packageName = "com.hidden", appName = "Hidden", isHidden = true)
+            AppInfo(packageName = "com.hidden", appName = "Hidden", isHidden = true),
         )
 
         val result = viewModel.filteredAllApps.value
@@ -200,7 +199,7 @@ class LauncherViewModelTest {
         appsFlow.value = listOf(
             app("com.a", "Alpha"),
             app("com.b", "Beta"),
-            app("com.c", "Gamma")
+            app("com.c", "Gamma"),
         )
 
         viewModel.setSearchQuery("alp")
@@ -215,7 +214,7 @@ class LauncherViewModelTest {
     fun `searchQuery_paket_adina_gore_de_filtreler`() = runTest(testDispatcher) {
         appsFlow.value = listOf(
             AppInfo(packageName = "com.whatsapp", appName = "WhatsApp"),
-            AppInfo(packageName = "com.telegram", appName = "Telegram")
+            AppInfo(packageName = "com.telegram", appName = "Telegram"),
         )
 
         viewModel.setSearchQuery("whats")
@@ -230,7 +229,7 @@ class LauncherViewModelTest {
     fun `searchQuery_temizlenince_tum_uygulamalar_geri_gelir`() = runTest(testDispatcher) {
         appsFlow.value = listOf(
             app("com.a", "Alpha"),
-            app("com.b", "Beta")
+            app("com.b", "Beta"),
         )
 
         viewModel.setSearchQuery("alp")
@@ -249,7 +248,7 @@ class LauncherViewModelTest {
         appsFlow.value = listOf(
             app("com.instagram", "Instagram", "social"),
             app("com.pubg", "PUBG", "games"),
-            app("com.youtube", "YouTube", "social")
+            app("com.youtube", "YouTube", "social"),
         )
 
         val socialFolder = viewModel.folders.value.firstOrNull { it.category.categoryId == "social" }
@@ -275,7 +274,7 @@ class LauncherViewModelTest {
         appsFlow.value = listOf(
             app("com.z", "Zoom", "social"),
             app("com.a", "Asana", "social"),
-            app("com.t", "Twitter", "social")
+            app("com.t", "Twitter", "social"),
         )
 
         val social = viewModel.folders.value.first { it.category.categoryId == "social" }
@@ -289,7 +288,7 @@ class LauncherViewModelTest {
 
         appsFlow.value = listOf(
             app("com.a", "AppA", "social"),
-            app("com.b", "AppB", "social")
+            app("com.b", "AppB", "social"),
         )
         assertEquals(2, viewModel.folders.value.first { it.category.categoryId == "social" }.apps.size)
     }

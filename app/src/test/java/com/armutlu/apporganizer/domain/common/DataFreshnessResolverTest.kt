@@ -1,10 +1,10 @@
 package com.armutlu.apporganizer.domain.common
 
+import org.junit.Assert.assertEquals
+import org.junit.Test
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import org.junit.Assert.assertEquals
-import org.junit.Test
 
 /**
  * DataFreshnessResolver — Dongu H03 (ANA_EKRAN_AKILLI_NABIZ_GOREVLER_DIJITAL_YASAM_ROADMAP.md

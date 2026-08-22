@@ -11,7 +11,8 @@ import org.junit.Test
 class FuzzySearchTest {
 
     private fun editDistance(a: String, b: String): Int {
-        val s = a.take(20); val t = b.take(20)
+        val s = a.take(20)
+        val t = b.take(20)
         if (s == t) return 0
         if (s.isEmpty()) return t.length
         if (t.isEmpty()) return s.length
@@ -19,8 +20,11 @@ class FuzzySearchTest {
         for (i in 0..s.length) dp[i][0] = i
         for (j in 0..t.length) dp[0][j] = j
         for (i in 1..s.length) for (j in 1..t.length) {
-            dp[i][j] = if (s[i - 1] == t[j - 1]) dp[i - 1][j - 1]
-            else 1 + minOf(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+            dp[i][j] = if (s[i - 1] == t[j - 1]) {
+                dp[i - 1][j - 1]
+            } else {
+                1 + minOf(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+            }
         }
         return dp[s.length][t.length]
     }

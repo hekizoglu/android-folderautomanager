@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(
     tableName = "notification_history",
-    indices = [Index("packageName"), Index("postedAt")]
+    indices = [Index("packageName"), Index("postedAt")],
 )
 data class NotificationHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

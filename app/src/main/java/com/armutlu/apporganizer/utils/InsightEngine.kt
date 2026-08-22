@@ -28,14 +28,14 @@ enum class InsightType {
 
 object InsightEngine {
 
-    private val MS_7D  = 7L  * 24 * 3600 * 1000
+    private val MS_7D = 7L * 24 * 3600 * 1000
     private val MS_30D = 30L * 24 * 3600 * 1000
 
     fun generate(
         context: Context,
         apps: List<AppInfo>,
         categories: List<Category>,
-        badgeCounts: Map<String, Int>
+        badgeCounts: Map<String, Int>,
     ): List<InsightCard> {
         val candidates = buildCandidates(apps, categories, badgeCounts, context)
         return candidates

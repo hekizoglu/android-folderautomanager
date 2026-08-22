@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 17: ktlint-format toplu temizleme)
+**Yapılanlar:** Formatlama borcunun büyük bölümü tek turda temizlendi:
+- `.editorconfig` eklendi (max_line_length=140, detekt.yml ile hizalı; önceden yoktu).
+- ktlint 0.50.0 (detekt 1.23.8'in formatlama motoruyla aynı sürüm) `--format` çalıştırıldı: **318 dosya** yeniden biçimlendi (+7028/-4466 satır). En çok düzelen kurallar: trailing-comma-on-call-site (2028), argument-list-wrapping (1288), indent (963), wrapping (713), no-multi-spaces (512), multiline-if-else, parameter-list-wrapping, import-ordering, no-unused-imports.
+- Formatlama sonrası doğrulama: `testDebugUnitTest + assembleDebug` → **1392 test, 0 fail**, BUILD SUCCESSFUL (mekanik formatın davranış bozmadığı kanıtlandı).
+- Baseline yeniden üretildi: **detekt borcu 5244 → 2394 bulgu** (~%54 azalma). Kalanlar: MagicNumber (test fixture'ları), uzun yorum satırları (MaxLineLength), yapısal complexity kuralları (CyclomaticComplexMethod/LongMethod/LongParameterList) — bunlar bilinçli olarak kod değişikliği gerektiren ayrı turlara bırakıldı.
+**Kanıt:** `:app:detekt` BUILD SUCCESSFUL (baseline sonrası 0 yeni bulgu); 1392 test yeşil.
+**Sonraki:** (öneri) Play Store hazırlık maddeleri veya cihaz Maestro bulguları.
+
 ## Döngü — 2026-08-22 (Tur 16: detekt kalite kapısı yeşile alındı — baseline politikası)
 **Yapılanlar:** Workspace kota sorunu çözüldü ve statik analiz kapısı işletildi:
 - Kota düzeltmesi: proje `.gradle` cache'i silindi (56MB) ve build'ler artık `--project-cache-dir=/opt/gradle-project-cache` ile workspace dışına yazıyor; toolchain zaten /usr ve /opt'ta — workspace ~55MB'ye indi (limit 128MB).

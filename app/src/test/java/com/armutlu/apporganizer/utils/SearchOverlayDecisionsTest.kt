@@ -14,21 +14,21 @@ class SearchOverlayDecisionsTest {
                 query = "pdf",
                 filesOn = true,
                 filesIndexState = FileIndexState.PermissionRequired,
-            )
+            ),
         )
         assertFalse(
             SearchOverlayDecisions.shouldShowFilesPermissionHint(
                 query = "",
                 filesOn = true,
                 filesIndexState = FileIndexState.PermissionRequired,
-            )
+            ),
         )
         assertFalse(
             SearchOverlayDecisions.shouldShowFilesPermissionHint(
                 query = "pdf",
                 filesOn = true,
                 filesIndexState = FileIndexState.Ready(itemCount = 12, lastIndexedAt = 1L),
-            )
+            ),
         )
     }
 
@@ -43,7 +43,7 @@ class SearchOverlayDecisionsTest {
                 contactCount = 0,
                 settingCount = 0,
                 fileCount = 0,
-            )
+            ),
         )
         assertFalse(
             SearchOverlayDecisions.shouldShowWebFallback(
@@ -54,7 +54,7 @@ class SearchOverlayDecisionsTest {
                 contactCount = 0,
                 settingCount = 0,
                 fileCount = 0,
-            )
+            ),
         )
         assertFalse(
             SearchOverlayDecisions.shouldShowWebFallback(
@@ -66,7 +66,7 @@ class SearchOverlayDecisionsTest {
                 settingCount = 0,
                 fileCount = 0,
                 showFilesPermissionHint = true,
-            )
+            ),
         )
     }
 }

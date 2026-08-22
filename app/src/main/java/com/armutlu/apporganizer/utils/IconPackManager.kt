@@ -19,7 +19,7 @@ object IconPackManager {
         "org.adw.launcher.THEMES",
         "com.gau.go.launcherex.theme",
         "app.lawnchair.ICON_PACK",
-        "com.teslacoilsw.launcher.THEME"
+        "com.teslacoilsw.launcher.THEME",
     )
 
     fun getInstalledIconPacks(context: Context): List<IconPackInfo> {
@@ -82,7 +82,7 @@ object IconPackManager {
         context: Context,
         iconPackPkg: String,
         drawableName: String,
-        sizePx: Int
+        sizePx: Int,
     ): Bitmap? = runCatching {
         val res = context.packageManager.getResourcesForApplication(iconPackPkg)
         val resId = res.getIdentifier(drawableName, "drawable", iconPackPkg)
@@ -100,16 +100,18 @@ fun loadAppIcon(context: android.content.Context, packageName: String, sizePx: I
     runCatching {
         val drawable = context.packageManager.getApplicationIcon(packageName)
         if (android.os.Build.VERSION.SDK_INT >= 26 &&
-            drawable is android.graphics.drawable.AdaptiveIconDrawable) {
+            drawable is android.graphics.drawable.AdaptiveIconDrawable
+        ) {
             val bmp = android.graphics.Bitmap.createBitmap(sizePx, sizePx, android.graphics.Bitmap.Config.ARGB_8888)
             val canvas = android.graphics.Canvas(bmp)
             // Squircle mask — Android default adaptive icon shape approximation
             val path = android.graphics.Path()
-            val r = sizePx * 0.22f  // 22% corner radius ≈ squircle
+            val r = sizePx * 0.22f // 22% corner radius ≈ squircle
             path.addRoundRect(
                 android.graphics.RectF(0f, 0f, sizePx.toFloat(), sizePx.toFloat()),
-                r, r,
-                android.graphics.Path.Direction.CW
+                r,
+                r,
+                android.graphics.Path.Direction.CW,
             )
             canvas.clipPath(path)
             drawable.setBounds(0, 0, sizePx, sizePx)

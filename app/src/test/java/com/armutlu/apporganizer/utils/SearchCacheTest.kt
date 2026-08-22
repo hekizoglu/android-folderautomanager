@@ -14,9 +14,9 @@ class SearchCacheTest {
                 AppInfo(
                     packageName = "com.google.chromeremotedesktop",
                     appName = "Uzak Masaustu",
-                    appFileName = "remote-desktop"
-                )
-            )
+                    appFileName = "remote-desktop",
+                ),
+            ),
         )
 
         val results = SearchCache.searchApps("remote desktop", maxResults = 5)

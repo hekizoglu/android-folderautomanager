@@ -1,11 +1,12 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+import android.provider.Settings
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -57,7 +58,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.provider.Settings
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.home.SmartTickerItem
 import com.armutlu.apporganizer.domain.home.SmartTickerType
@@ -133,7 +133,15 @@ internal fun HomeTickerRow(
     // Otomatik ilerleme — visible=false, TalkBack aktif, kritik öğe (autoAdvanceAllowed=false),
     // Ayarlar'dan kapatılmış (autoAdvanceEnabled=false, roadmap T05) veya kullanıcı yakın
     // zamanda etkileşimde bulunduysa (pausedUntil) çalışmaz.
-    LaunchedEffect(index, items.size, visible, touchExplorationEnabled, current.autoAdvanceAllowed, autoAdvanceEnabled, autoAdvanceIntervalMs) {
+    LaunchedEffect(
+        index,
+        items.size,
+        visible,
+        touchExplorationEnabled,
+        current.autoAdvanceAllowed,
+        autoAdvanceEnabled,
+        autoAdvanceIntervalMs,
+    ) {
         if (!visible || !autoAdvanceEnabled || touchExplorationEnabled || !current.autoAdvanceAllowed || items.size <= 1) return@LaunchedEffect
         val now = System.currentTimeMillis()
         val waitMillis = autoAdvanceIntervalMs.coerceAtLeast(pausedUntil - now)
@@ -154,7 +162,7 @@ internal fun HomeTickerRow(
         initialValue = 0.4f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
-        label = "ticker_pulse_alpha"
+        label = "ticker_pulse_alpha",
     )
 
     val typeLabel = current.type.toTypeLabel()
@@ -188,18 +196,22 @@ internal fun HomeTickerRow(
                     contentDescription = a11yDescription
                     customActions = buildList {
                         if (items.size > 1) {
-                            add(CustomAccessibilityAction(prevActionLabel) {
-                                direction = -1
-                                index = (index - 1 + items.size) % items.size
-                                pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
-                                true
-                            })
-                            add(CustomAccessibilityAction(nextActionLabel) {
-                                direction = 1
-                                index = (index + 1) % items.size
-                                pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
-                                true
-                            })
+                            add(
+                                CustomAccessibilityAction(prevActionLabel) {
+                                    direction = -1
+                                    index = (index - 1 + items.size) % items.size
+                                    pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
+                                    true
+                                },
+                            )
+                            add(
+                                CustomAccessibilityAction(nextActionLabel) {
+                                    direction = 1
+                                    index = (index + 1) % items.size
+                                    pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
+                                    true
+                                },
+                            )
                         }
                     }
                 }
@@ -217,38 +229,44 @@ internal fun HomeTickerRow(
                     onLongPress = { if (onMute != null || onDismissItem != null) menuOpen = true },
                     onSwipe = { forward ->
                         direction = if (forward) 1 else -1
-                        index = if (forward) (index + 1) % items.size
-                                else (index - 1 + items.size) % items.size
+                        index = if (forward) {
+                            (index + 1) % items.size
+                        } else {
+                            (index - 1 + items.size) % items.size
+                        }
                         pausedUntil = System.currentTimeMillis() + USER_INTERACTION_PAUSE_MS
                         if (forward) {
                             // Döngü U02 — kullanıcının elle "sonraki"ye geçtiği öğenin türü.
-                            TelemetryManager.log(TelemetryEvent.TickerManualNext(items[index.coerceIn(0, items.lastIndex)].type.toWireType()))
+                            TelemetryManager.log(
+                                TelemetryEvent.TickerManualNext(items[index.coerceIn(0, items.lastIndex)].type.toWireType()),
+                            )
                         }
-                    }
+                    },
                 )
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Box(
                 modifier = Modifier
                     .size(6.dp)
                     .alpha(pulse)
-                    .background(current.type.dotColor(), CircleShape)
+                    .background(current.type.dotColor(), CircleShape),
             )
-            val transitionSpec: androidx.compose.animation.AnimatedContentTransitionScope<Int>.() -> androidx.compose.animation.ContentTransform = {
-                if (reduceMotion) {
-                    fadeIn(tween(150)).togetherWith(fadeOut(tween(120)))
-                } else {
-                    (slideInHorizontally { it * direction } + fadeIn(tween(200)))
-                        .togetherWith(slideOutHorizontally { -it * direction } + fadeOut(tween(150)))
+            val transitionSpec:
+                androidx.compose.animation.AnimatedContentTransitionScope<Int>.() -> androidx.compose.animation.ContentTransform = {
+                    if (reduceMotion) {
+                        fadeIn(tween(150)).togetherWith(fadeOut(tween(120)))
+                    } else {
+                        (slideInHorizontally { it * direction } + fadeIn(tween(200)))
+                            .togetherWith(slideOutHorizontally { -it * direction } + fadeOut(tween(150)))
+                    }
                 }
-            }
             AnimatedContent(
                 targetState = index,
                 transitionSpec = transitionSpec,
                 label = "ticker_content",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) { i ->
                 val item = items[i.coerceIn(0, items.lastIndex)]
                 Column {
@@ -258,7 +276,7 @@ internal fun HomeTickerRow(
                         fontSize = 12.sp,
                         fontWeight = if (item.type.isEmphasized()) FontWeight.Bold else FontWeight.Medium,
                         maxLines = 1,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                     item.subtitle?.let { sub ->
                         Text(
@@ -267,7 +285,7 @@ internal fun HomeTickerRow(
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Normal,
                             maxLines = 1,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -276,7 +294,7 @@ internal fun HomeTickerRow(
                 Text(
                     text = stringResource(R.string.ticker_page_indicator, index + 1, items.size),
                     color = Color.White.copy(alpha = 0.45f),
-                    fontSize = 10.sp
+                    fontSize = 10.sp,
                 )
             }
             if (onDismissItem != null) {
@@ -291,13 +309,13 @@ internal fun HomeTickerRow(
                     },
                     modifier = Modifier
                         .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-                        .semantics { contentDescription = context.getString(R.string.ticker_action_dismiss) }
+                        .semantics { contentDescription = context.getString(R.string.ticker_action_dismiss) },
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = null,
                         tint = Color.White.copy(alpha = 0.55f),
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
                     )
                 }
             }
@@ -313,7 +331,7 @@ internal fun HomeTickerRow(
                                 // Döngü U02 — kapatılan öğenin türü (başlık/hedef YOK).
                                 TelemetryManager.log(TelemetryEvent.TickerDismissed(current.type.toWireType()))
                                 onDismissItem(current)
-                            }
+                            },
                         )
                     }
                     if (onHideType != null) {
@@ -324,7 +342,7 @@ internal fun HomeTickerRow(
                                 // Döngü U02 — tüm türü kapatan kullanıcı kararı (bkz. roadmap ticker_type_disabled).
                                 TelemetryManager.log(TelemetryEvent.TickerTypeDisabled(current.type.toWireType()))
                                 onHideType(current.type)
-                            }
+                            },
                         )
                     }
                     if (onMute != null) {
@@ -340,7 +358,7 @@ internal fun HomeTickerRow(
                                     // Döngü U02 — sessize alma (tüm şerit) — o anki öğenin türü örneklenir.
                                     TelemetryManager.log(TelemetryEvent.TickerSnoozed(current.type.toWireType()))
                                     onMute(duration)
-                                }
+                                },
                             )
                         }
                     }
@@ -350,7 +368,7 @@ internal fun HomeTickerRow(
                             onClick = {
                                 menuOpen = false
                                 onOpenTickerHistory()
-                            }
+                            },
                         )
                     }
                     if (onOpenTickerSettings != null) {
@@ -359,7 +377,7 @@ internal fun HomeTickerRow(
                             onClick = {
                                 menuOpen = false
                                 onOpenTickerSettings()
-                            }
+                            },
                         )
                     }
                     if (onDisableTicker != null) {
@@ -368,7 +386,7 @@ internal fun HomeTickerRow(
                             onClick = {
                                 menuOpen = false
                                 onDisableTicker()
-                            }
+                            },
                         )
                     }
                 }
@@ -486,8 +504,9 @@ private fun Modifier.pointerInputTicker(
         }
         if (isDragging) {
             // Sola kaydırma = sonraki haber (haber şeridi alışkanlığı), sağa = önceki
-            if (accumulated < -48f) onSwipe(true)
-            else if (accumulated > 48f) onSwipe(false)
+            if (accumulated < -48f) {
+                onSwipe(true)
+            } else if (accumulated > 48f) onSwipe(false)
         }
     }
 }

@@ -1,15 +1,16 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -30,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.R
 
@@ -75,16 +75,15 @@ fun SettingsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
             )
-        }
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 80.dp),
         ) {
-
             // ── Eksik İzinler — sadece eksik izin varsa görünür ──────────
             item { SettingsPermissionsCard() }
 
@@ -98,14 +97,20 @@ fun SettingsScreen(
                         subtitle = "Görünümünü sana uygun hale getir",
                         onClick = onNavigateToAppearance,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.Home,
                         title = "Launcher",
                         subtitle = "Ana ekran davranışı, dock, hareketler ve widget alanı",
                         onClick = onNavigateToLauncher,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.Apps,
                         title = stringResource(R.string.settings_drawer_title),
@@ -151,14 +156,20 @@ fun SettingsScreen(
                         subtitle = stringResource(R.string.usage_data_hub_subtitle),
                         onClick = onNavigateToUsageData,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.Notifications,
                         title = "Bildirimler",
                         subtitle = "Bildirim izni, rozetler ve akıllı bildirimler",
                         onClick = onNavigateToNotifications,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.BarChart,
                         title = "İstatistikler & Raporlar",
@@ -191,7 +202,10 @@ fun SettingsScreen(
                         subtitle = "Gerekli izinler, neden gerekli ve kapalıyken ne çalışmaz",
                         onClick = onNavigateToPermissionsGuide,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.Info,
                         title = "Hakkında & Yedekleme",

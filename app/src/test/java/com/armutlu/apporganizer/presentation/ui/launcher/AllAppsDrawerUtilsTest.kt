@@ -22,11 +22,11 @@ class AllAppsDrawerUtilsTest {
 
         assertEquals(
             listOf("Alpha", "Beta", "Core"),
-            apps.sortedByMode(AllAppsSortMode.ALPHA).map { it.appName }
+            apps.sortedByMode(AllAppsSortMode.ALPHA).map { it.appName },
         )
         assertEquals(
             listOf("Core", "Beta", "Alpha"),
-            apps.sortedByMode(AllAppsSortMode.USAGE).map { it.appName }
+            apps.sortedByMode(AllAppsSortMode.USAGE).map { it.appName },
         )
     }
 

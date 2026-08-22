@@ -1,7 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
 import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,24 +14,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.TouchApp
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Numbers
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -58,6 +56,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -91,28 +90,56 @@ fun SearchSettingsScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-    var homeAppSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_APP_SEARCH_ENABLED) { AppPrefs.isHomeAppSearchEnabled(context) }
-    var homeSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_SEARCH_ENABLED) { AppPrefs.isHomeSearchEnabled(context) }
-    var fullscreenSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_FULLSCREEN_SEARCH_ENABLED) { AppPrefs.isFullscreenSearchEnabled(context) }
-    var doubleTapSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_DOUBLE_TAP_SEARCH) { AppPrefs.isDoubleTapSearchEnabled(context) }
+    var homeAppSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_HOME_APP_SEARCH_ENABLED) {
+        AppPrefs.isHomeAppSearchEnabled(context)
+    }
+    var homeSearchEnabled by rememberBooleanPreferenceState(
+        context,
+        AppPrefs.KEY_HOME_SEARCH_ENABLED,
+    ) { AppPrefs.isHomeSearchEnabled(context) }
+    var fullscreenSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_FULLSCREEN_SEARCH_ENABLED) {
+        AppPrefs.isFullscreenSearchEnabled(context)
+    }
+    var doubleTapSearchEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_DOUBLE_TAP_SEARCH) {
+        AppPrefs.isDoubleTapSearchEnabled(context)
+    }
     val appsSourceEnabled = true
-    var categoriesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CATEGORIES) { AppPrefs.isSearchSourceCategoriesEnabled(context) }
-    var settingsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_SETTINGS) { AppPrefs.isSearchSourceSettingsEnabled(context) }
-    var contactsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CONTACTS) { AppPrefs.isSearchSourceContactsEnabled(context) }
-    var contactSuggestionsEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_CONTACT_SUGGESTIONS_ENABLED) { AppPrefs.isContactSuggestionsEnabled(context) }
-    var filesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_FILES) { AppPrefs.isSearchSourceFilesEnabled(context) }
+    var categoriesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CATEGORIES) {
+        AppPrefs.isSearchSourceCategoriesEnabled(context)
+    }
+    var settingsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_SETTINGS) {
+        AppPrefs.isSearchSourceSettingsEnabled(context)
+    }
+    var contactsSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_CONTACTS) {
+        AppPrefs.isSearchSourceContactsEnabled(context)
+    }
+    var contactSuggestionsEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_CONTACT_SUGGESTIONS_ENABLED) {
+        AppPrefs.isContactSuggestionsEnabled(context)
+    }
+    var filesSourceEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SOURCE_FILES) {
+        AppPrefs.isSearchSourceFilesEnabled(context)
+    }
     var searchBarPosition by remember { mutableStateOf(AppPrefs.getSearchBarPosition(context)) }
     var pendingPermission by remember { mutableStateOf<ContextualPermission?>(null) }
 
     // Gelişmiş arama ayarları
     var fuzzyEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_FUZZY) { AppPrefs.isSearchFuzzyEnabled(context) }
-    var phoneticEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_PHONETIC) { AppPrefs.isSearchPhoneticEnabled(context) }
+    var phoneticEnabled by rememberBooleanPreferenceState(
+        context,
+        AppPrefs.KEY_SEARCH_PHONETIC,
+    ) { AppPrefs.isSearchPhoneticEnabled(context) }
     var sortByUsage by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SORT_BY_USAGE) { AppPrefs.isSearchSortByUsage(context) }
-    var maxResults        by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
+    var maxResults by remember { mutableStateOf(AppPrefs.getSearchMaxResults(context)) }
     var showIcons by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SHOW_ICONS) { AppPrefs.isSearchShowIcons(context) }
-    var showContactAvatar by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SHOW_CONTACT_AVATAR) { AppPrefs.isSearchShowContactAvatar(context) }
-    var searchStatsEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_STATS_ENABLED) { AppPrefs.isSearchStatsEnabled(context) }
-    var webFallbackEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED) { AppPrefs.isSearchWebFallbackEnabled(context) }
+    var showContactAvatar by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_SHOW_CONTACT_AVATAR) {
+        AppPrefs.isSearchShowContactAvatar(context)
+    }
+    var searchStatsEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_STATS_ENABLED) {
+        AppPrefs.isSearchStatsEnabled(context)
+    }
+    var webFallbackEnabled by rememberBooleanPreferenceState(context, AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED) {
+        AppPrefs.isSearchWebFallbackEnabled(context)
+    }
 
     pendingPermission?.let { permission ->
         ContextualPermissionDialog(
@@ -140,7 +167,7 @@ fun SearchSettingsScreen(
                     else -> Unit
                 }
                 pendingPermission = null
-            }
+            },
         )
     }
 
@@ -179,7 +206,10 @@ fun SearchSettingsScreen(
                             AppPrefs.setHomeAppSearchEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Category,
                         title = "Klasör ve Kategori Arama",
@@ -190,7 +220,10 @@ fun SearchSettingsScreen(
                             AppPrefs.setHomeSearchEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.TouchApp,
                         title = stringResource(R.string.search_settings_fullscreen_title),
@@ -201,7 +234,10 @@ fun SearchSettingsScreen(
                             AppPrefs.setFullscreenSearchEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.TouchApp,
                         title = "Çift Dokunarak Arama",
@@ -212,7 +248,10 @@ fun SearchSettingsScreen(
                             AppPrefs.setDoubleTapSearchEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.SwapVert,
                         title = "Arama Çubuğu Konumu",
@@ -244,7 +283,10 @@ fun SearchSettingsScreen(
                         onCheckedChange = { AppPrefs.setSearchSourceAppsEnabled(context, true) },
                         enabled = false,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Category,
                         title = "Kategoriler",
@@ -255,7 +297,10 @@ fun SearchSettingsScreen(
                             AppPrefs.setSearchSourceCategoriesEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Settings,
                         title = "Android Ayarları",
@@ -266,7 +311,10 @@ fun SearchSettingsScreen(
                             AppPrefs.setSearchSourceSettingsEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Person,
                         title = "Kişiler",
@@ -276,7 +324,7 @@ fun SearchSettingsScreen(
                             if (it) {
                                 val hasContactsPermission = ContextCompat.checkSelfPermission(
                                     context,
-                                    android.Manifest.permission.READ_CONTACTS
+                                    android.Manifest.permission.READ_CONTACTS,
                                 ) == PackageManager.PERMISSION_GRANTED
                                 if (hasContactsPermission) {
                                     contactsSourceEnabled = true
@@ -294,7 +342,10 @@ fun SearchSettingsScreen(
                         },
                         enabled = !sourceOpInFlight,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     // P1.3: Saat bazli kisi onerileri - launcher icinden baslatilan Ara/SMS/WhatsApp
                     // aksiyonlarindan ogrenir. READ_CALL_LOG ISTENMEZ.
                     SettingsSwitchRow(
@@ -307,7 +358,10 @@ fun SearchSettingsScreen(
                             AppPrefs.setContactSuggestionsEnabled(context, it)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.Refresh,
                         title = stringResource(R.string.search_settings_history_clear_title),
@@ -315,7 +369,10 @@ fun SearchSettingsScreen(
                         showChevron = false,
                         onClick = { SearchHistoryPrefs.clearAll(context) },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.Refresh,
                         title = stringResource(R.string.search_settings_contact_suggestions_clear_title),
@@ -325,7 +382,10 @@ fun SearchSettingsScreen(
                             com.armutlu.apporganizer.utils.ContactActionPrefs.clearAll(context)
                         },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Description,
                         title = stringResource(R.string.search_settings_files_title),
@@ -385,7 +445,10 @@ fun SearchSettingsScreen(
                         onClick = {},
                         showChevron = false,
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.AutoMirrored.Filled.Sort,
                         title = "Kullanım Sıklığına Göre Sırala",
@@ -394,7 +457,7 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             sortByUsage = it
                             AppPrefs.setSearchSortByUsage(context, it)
-                        }
+                        },
                     )
                 }
             }
@@ -411,9 +474,12 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             fuzzyEnabled = it
                             AppPrefs.setSearchFuzzyEnabled(context, it)
-                        }
+                        },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Translate,
                         title = "Türkçe Yazım Toleransı",
@@ -422,9 +488,12 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             phoneticEnabled = it
                             AppPrefs.setSearchPhoneticEnabled(context, it)
-                        }
+                        },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     // M2 denetimi: instantEnabled hiçbir arama tetikleme mantığında
                     // tüketilmiyor (arama zaten her tuşta anlık çalışıyor, Enter-ile-ara
                     // modu koda yazılmamış) — kilitli/bilgi satırına çevrildi.
@@ -451,9 +520,12 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             showIcons = it
                             AppPrefs.setSearchShowIcons(context, it)
-                        }
+                        },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.AccountCircle,
                         title = "Kişi Fotoğrafları",
@@ -462,9 +534,12 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             showContactAvatar = it
                             AppPrefs.setSearchShowContactAvatar(context, it)
-                        }
+                        },
                     )
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsSwitchRow(
                         icon = Icons.Default.Search,
                         title = stringResource(R.string.search_settings_web_fallback_title),
@@ -473,7 +548,7 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             webFallbackEnabled = it
                             AppPrefs.setSearchWebFallbackEnabled(context, it)
-                        }
+                        },
                     )
                 }
             }
@@ -490,7 +565,7 @@ fun SearchSettingsScreen(
                         onCheckedChange = {
                             searchStatsEnabled = it
                             AppPrefs.setSearchStatsEnabled(context, it)
-                        }
+                        },
                     )
                 }
             }
@@ -505,10 +580,13 @@ fun SearchSettingsScreen(
                         subtitle = "Şu an: $maxResults sonuç. Dokunarak 4, 6, 8 veya 10 yap",
                         onClick = {
                             maxResults = when (maxResults) {
-                                4 -> 6; 6 -> 8; 8 -> 10; else -> 4
+                                4 -> 6
+                                6 -> 8
+                                8 -> 10
+                                else -> 4
                             }
                             AppPrefs.setSearchMaxResults(context, maxResults)
-                        }
+                        },
                     )
                 }
             }

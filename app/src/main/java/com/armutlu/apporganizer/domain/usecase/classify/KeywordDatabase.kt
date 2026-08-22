@@ -23,7 +23,7 @@ object KeywordDatabase {
             "lemon8", "yubo", "gas", "poparazzi", "spill", "post",
             // Loop 14 — ek keyword'ler
             "message", "community", "forum", "feed", "photo", "video",
-            "story", "reel", "short", "live", "stream", "follow", "friend"
+            "story", "reel", "short", "live", "stream", "follow", "friend",
         ),
         Category.CAT_PRODUCTIVITY to listOf(
             "productivity", "office", "calendar", "notes", "todo", "task",
@@ -36,7 +36,7 @@ object KeywordDatabase {
             "character.ai", "inflection", "mistral", "groq",
             // Loop 84 — PKM / bilgi yonetimi
             "anytype", "appflowy", "workflowy", "dynalist", "milanote", "mindmeister",
-            "roam", "logseq", "obsidian", "foam", "pkm", "zettelkasten", "taskade"
+            "roam", "logseq", "obsidian", "foam", "pkm", "zettelkasten", "taskade",
         ),
         Category.CAT_GAMES to listOf(
             "game", "games", "gaming", "play", "battle", "royal", "chess",
@@ -54,7 +54,7 @@ object KeywordDatabase {
             "wuthering", "nikke", "punishing", "reverse1999", "aether", "gazer",
             "maplestory", "dragonraja", "summoners", "genshin", "honkai", "zenless",
             // Loop 14 — ek keyword'ler
-            "arcade", "strategy", "multiplayer", "casino", "satranc"
+            "arcade", "strategy", "multiplayer", "casino", "satranc",
         ),
         Category.CAT_SHOPPING to listOf(
             // Genel
@@ -82,7 +82,7 @@ object KeywordDatabase {
             "shopback", "blibli", "kilimall", "jumia",
             // Loop 14 — ek keyword'ler
             "mall", "siparis", "kargo", "cargo", "commerce", "fashion",
-            "style", "wear", "clothing", "giyim", "ayakkabi", "shoe"
+            "style", "wear", "clothing", "giyim", "ayakkabi", "shoe",
         ),
         Category.CAT_NEWS to listOf(
             "news", "newspaper", "article", "press", "tribune", "gazette",
@@ -100,7 +100,7 @@ object KeywordDatabase {
             "lemonde", "lefigaro", "elpais", "corriere", "repubblica",
             // Loop 84 — TR dijital medya
             "onedio", "webtekno", "donanimhaber", "haberler", "lidya", "teknoblog",
-            "webrazzi", "chip", "pcworld", "shiftdelete", "log", "bilisim"
+            "webrazzi", "chip", "pcworld", "shiftdelete", "log", "bilisim",
         ),
         Category.CAT_HEALTH to listOf(
             // Genel
@@ -126,7 +126,7 @@ object KeywordDatabase {
             "youper", "brightside", "sevencups", "7cups", "daylio", "moodfit",
             "moodistory", "happify", "sanvello", "reflectly", "finch", "woebot",
             // Loop 14 — ek keyword'ler
-            "medic", "beslenme", "pharmacy"
+            "medic", "beslenme", "pharmacy",
         ),
         Category.CAT_FINANCE to listOf(
             // Genel
@@ -170,7 +170,7 @@ object KeywordDatabase {
             "metamask", "trustwallet", "ledger", "trezor", "uniswap", "aave",
             "compound", "opensea", "blur", "gem wallet", "argent", "zerion",
             // Loop 14 — ek keyword'ler
-            "banking", "coin", "bourse", "mortgage", "trade"
+            "banking", "coin", "bourse", "mortgage", "trade",
         ),
         Category.CAT_EDUCATION to listOf(
             "education", "learn", "course", "class", "school", "university",
@@ -183,7 +183,7 @@ object KeywordDatabase {
             "ogren", "kurs", "sertifika", "yds", "tyt", "ayt", "yks",
             "meb", "dershane", "hazirlik", "lgs", "kpss", "ales",
             // Loop 14 — ek keyword'ler
-            "vocabulary", "kelime", "matematik", "science", "bilim"
+            "vocabulary", "kelime", "matematik", "science", "bilim",
         ),
         Category.CAT_UTILITIES to listOf(
             // Genel
@@ -212,7 +212,7 @@ object KeywordDatabase {
             "aurora", "shizuku", "netguard", "blokada", "tasker", "macrodroid",
             "kdeconnect", "syncthing", "pushbullet", "flud", "libretorrent",
             "automate", "foldersync", "ladb", "termux", "supersu", "kingoroot",
-            "root", "adb", "wireless", "automation", "macro", "trigger"
+            "root", "adb", "wireless", "automation", "macro", "trigger",
         ),
         Category.CAT_TRAVEL to listOf(
             // Genel
@@ -242,7 +242,7 @@ object KeywordDatabase {
             // Loop 77 — Africa/Global
             "bykea", "indriver", "yandex taxi",
             // Loop 14 — ek keyword'ler
-            "ticket", "havalimanı"
+            "ticket", "havalimanı",
         ),
         Category.CAT_ENTERTAINMENT to listOf(
             "entertainment", "movie", "film", "video", "stream", "watch",
@@ -254,7 +254,7 @@ object KeywordDatabase {
             "blutv", "exxen", "puhutv", "tabii", "gain", "trt",
             "dsmart", "digiturk", "fizy", "muud",
             // Loop 77 — India entertainment
-            "kuku", "pratilipi", "moj", "takatak", "roposo", "mx player"
+            "kuku", "pratilipi", "moj", "takatak", "roposo", "mx player",
         ),
         Category.CAT_FOOD to listOf(
             "food", "restaurant", "delivery", "eat", "meal", "recipe",
@@ -276,7 +276,7 @@ object KeywordDatabase {
             // Loop 77 — India food
             "dunzo", "fassos", "rebel foods",
             // Loop 14 — ek keyword'ler
-            "tea", "cay", "bistro", "sushi", "yiyecek", "recipe"
+            "tea", "cay", "bistro", "sushi", "yiyecek", "recipe",
         ),
         Category.CAT_PHOTOGRAPHY to listOf(
             "photo", "camera", "picture", "image", "gallery", "edit",
@@ -289,7 +289,7 @@ object KeywordDatabase {
             "fotor", "pixlr", "picsart", "afterlight", "prequel",
             "efectum", "capcut", "filmora", "kinemaster", "inshot",
             "remove.bg", "background", "eraser", "cutout", "ai photo",
-            "photoroom", "designer", "adobe"
+            "photoroom", "designer", "adobe",
         ),
         // ─── YENİ KATEGORİLER (Loop 90 — Google Play eslesmesi) ─────────────────
         Category.CAT_COMMUNICATION to listOf(
@@ -302,7 +302,7 @@ object KeywordDatabase {
             "zoho.cliq", "flock", "revolt", "wire", "olvid",
             "tutanota", "fastmail", "protonmail", "yahoo.mail", "outlook",
             "spark.mail", "airmail", "edison.mail", "spike.email", "superhuman",
-            "bip", "turkcell", "iletisim", "mesaj", "arama", "gorusme"
+            "bip", "turkcell", "iletisim", "mesaj", "arama", "gorusme",
         ),
         Category.CAT_MUSIC to listOf(
             "spotify", "deezer", "tidal", "apple.music", "youtube.music",
@@ -317,7 +317,7 @@ object KeywordDatabase {
             "radyo7", "kral.fm", "powerapp.fm", "enerji.fm", "muud", "fizy",
             // Loop 14 — ek keyword'ler
             "song", "sarki", "playlist", "radio", "ringtone", "zil",
-            "stream", "beat", "bass", "melody"
+            "stream", "beat", "bass", "melody",
         ),
         Category.CAT_VIDEO to listOf(
             "vlc", "mx.player", "kodi", "plex", "bsplayer", "nplayer",
@@ -325,7 +325,7 @@ object KeywordDatabase {
             "capcut", "kinemaster", "inshot", "filmorago", "vn.video",
             "premiere.rush", "lomotif", "vivavideo", "splice", "magisto",
             "unfold", "prequel", "videoleap", "actiondirector", "powerdirector",
-            "filmmaker", "recut", "vizmato", "quik", "gopro", "edit"
+            "filmmaker", "recut", "vizmato", "quik", "gopro", "edit",
         ),
         Category.CAT_MAPS to listOf(
             "maps", "navigation", "navigate", "gps", "route", "direction",
@@ -334,7 +334,7 @@ object KeywordDatabase {
             "sygic", "tomtom", "copilot.gps", "navmii", "maps.me",
             "openstreetmap", "organic.maps", "radar", "compass",
             "iett", "ankarakart", "izulas", "bursaulasimlari",
-            "mapy.cz", "geocaching", "harita", "yol", "rota", "navigasyon"
+            "mapy.cz", "geocaching", "harita", "yol", "rota", "navigasyon",
         ),
         Category.CAT_SPORTS to listOf(
             "sport", "football", "soccer", "basketball", "baseball", "tennis",
@@ -345,7 +345,7 @@ object KeywordDatabase {
             "cycling", "triathlon", "skiing", "snowboard", "surfing",
             "dazn", "bein", "sky.sports", "nbc.sports", "fox.sports",
             "fanatik", "ntvspor", "trtspor", "futbol", "basketbol",
-            "spor", "lig", "mac", "gol", "takim", "nesine", "bilyoner"
+            "spor", "lig", "mac", "gol", "takim", "nesine", "bilyoner",
         ),
         Category.CAT_BOOKS to listOf(
             "book", "ebook", "read", "kindle", "epub", "library", "literature",
@@ -355,7 +355,7 @@ object KeywordDatabase {
             "fbreader", "wattpad", "radish", "tapas", "webtoon",
             "comixology", "marvel.unlimited", "dc.universe",
             "audible", "blinkist", "storytel", "nextory", "bookbub",
-            "turkcell.yayin", "dergi", "okuma", "roman", "hikaye", "gazete"
+            "turkcell.yayin", "dergi", "okuma", "roman", "hikaye", "gazete",
         ),
         Category.CAT_LIFESTYLE to listOf(
             "lifestyle", "horoscope", "astrology", "zodiac", "tarot",
@@ -377,7 +377,7 @@ object KeywordDatabase {
             "hindu", "hinduism", "puja", "vedic", "yoga.spiritual",
             "diyanet", "ilahi", "dini", "ibadet", "dua", "tesbih", "secde",
             "youversion", "biblegateway", "olivetree", "logos.bible",
-            "jwlibrary", "watchtower", "jehovah"
+            "jwlibrary", "watchtower", "jehovah",
         ),
         Category.CAT_BUSINESS to listOf(
             "business", "crm", "erp", "invoice", "sales", "hr", "hiring",
@@ -390,7 +390,7 @@ object KeywordDatabase {
             "bionluk", "youthall", "kariyer.net", "linkedin.jobs",
             "xing", "glassdoor", "indeed", "monster", "ziprecruiter",
             "asana", "jira", "clickup", "linear", "notion", "confluence",
-            "kanban", "agile", "scrum", "sprint", "iş", "sirket", "proje"
+            "kanban", "agile", "scrum", "sprint", "iş", "sirket", "proje",
         ),
         Category.CAT_DATING to listOf(
             "dating", "match", "tinder", "bumble", "hinge", "grindr",
@@ -398,7 +398,7 @@ object KeywordDatabase {
             "blind.date", "zoosk", "eharmony", "coffee.meets.bagel",
             "meetyou", "meetme", "ngl", "her", "lovoo", "badoo",
             "mamba", "once", "happn", "pure", "feeld", "pair",
-            "askeri", "flirt", "cift", "partner", "eslesme", "randevu"
+            "askeri", "flirt", "cift", "partner", "eslesme", "randevu",
         ),
         Category.CAT_ART to listOf(
             "art", "design", "draw", "paint", "sketch", "creative",
@@ -408,7 +408,7 @@ object KeywordDatabase {
             "sketchbook", "autodesk", "medibangpaint", "ibis.paint",
             "pixel.art", "tayasui", "concepts", "mischief", "pixelmator",
             "gimp", "krita", "inkscape", "vector", "artboard", "artflow",
-            "sanat", "cizim", "tasarim", "grafik", "renk", "boya"
+            "sanat", "cizim", "tasarim", "grafik", "renk", "boya",
         ),
         Category.CAT_BEAUTY to listOf(
             "beauty", "makeup", "cosmetic", "skincare", "nail", "hair",
@@ -417,7 +417,7 @@ object KeywordDatabase {
             "avon", "loreal", "maybelline", "mac.cosmetics", "nyx",
             "fenty", "kylie", "morphe", "too.faced", "tarte",
             "flormar", "farmasi", "elidor", "watsons",
-            "guzellik", "makyaj", "cilt", "sac", "tirnak", "krem"
+            "guzellik", "makyaj", "cilt", "sac", "tirnak", "krem",
         ),
         Category.CAT_AUTO to listOf(
             "car", "auto", "vehicle", "drive", "parking", "garage",
@@ -427,7 +427,7 @@ object KeywordDatabase {
             "renault", "peugeot", "togg", "gasbuddy", "opet", "shell",
             "bp.app", "sixt", "enterprise.rent", "hertz", "avis", "budget",
             "turo", "getaround", "zipcar", "otopark", "epark", "parkopedia",
-            "araba", "otomobil", "lastik", "akaryakit", "servis", "sigorta"
+            "araba", "otomobil", "lastik", "akaryakit", "servis", "sigorta",
         ),
         Category.CAT_HOUSE to listOf(
             "home", "house", "smart.home", "interior", "furniture", "decor",
@@ -438,7 +438,7 @@ object KeywordDatabase {
             "ring", "arlo", "nest.cam", "wyze", "eufy", "blink",
             "roomba", "roborock", "ecovacs", "dyson",
             "ev", "bahce", "guvenlik", "kamera", "kapi", "akilli",
-            "elektrik", "su", "dogalgaz", "fatura", "sayac"
+            "elektrik", "su", "dogalgaz", "fatura", "sayac",
         ),
         Category.CAT_WEATHER to listOf(
             "weather", "forecast", "temperature", "rain", "snow", "wind",
@@ -447,7 +447,7 @@ object KeywordDatabase {
             "weather.channel", "weather.underground", "dark.sky", "carrot",
             "weatherpro", "windy", "ventusky", "meteoblue", "hava",
             "yagmur", "gunes", "bulut", "firtina", "hava.durumu",
-            "mgm", "meteoroloji", "sicaklik", "nem", "ruzgar"
+            "mgm", "meteoroloji", "sicaklik", "nem", "ruzgar",
         ),
         Category.CAT_PARENTING to listOf(
             "parent", "baby", "child", "kid", "toddler", "pregnancy",
@@ -458,7 +458,7 @@ object KeywordDatabase {
             "cocomelon", "peppa.pig", "bluey", "paw.patrol",
             "khan.kids", "abc.mouse", "starfall", "monkey.junior",
             "cocuk", "bebek", "anne", "baba", "aile", "okul.oncesi",
-            "hikaye", "masal", "oyun.cocuk", "egitici"
+            "hikaye", "masal", "oyun.cocuk", "egitici",
         ),
         Category.CAT_EVENTS to listOf(
             "event", "ticket", "concert", "festival", "show", "theater",
@@ -466,7 +466,7 @@ object KeywordDatabase {
             "ticketmaster", "stubhub", "eventbrite", "bandsintown", "songkick",
             "seatgeek", "viagogo", "axs", "dice.fm", "resident.advisor",
             "biletix", "biletinial", "iksv", "bilet", "konser", "tiyatro",
-            "sinema", "festival", "etkinlik", "gece", "sahne", "kulup"
+            "sinema", "festival", "etkinlik", "gece", "sahne", "kulup",
         ),
         Category.CAT_COMICS to listOf(
             "comic", "manga", "webtoon", "manhwa", "anime", "cartoon",
@@ -475,7 +475,7 @@ object KeywordDatabase {
             "crunchyroll", "funimation", "vrv", "hidive", "animelab",
             "bilibili", "tapas", "webtoon", "lezhin", "pocket.comics",
             "izneo", "readera", "mangaplus", "shonen.jump",
-            "anime", "manga", "cizgiroman", "animasyon", "kahraman"
+            "anime", "manga", "cizgiroman", "animasyon", "kahraman",
         ),
         Category.CAT_PERSONALIZATION to listOf(
             "launcher", "wallpaper", "theme", "icon.pack", "widget",
@@ -488,9 +488,9 @@ object KeywordDatabase {
             "good.lock", "one.ui", "samsung.theme", "miui.theme",
             "substratum", "pixelify", "magisk.module", "xposed",
             "tasker", "shortcut.maker", "back.button",
-            "tema", "duvar.kagidi", "ikon", "kilit.ekrani", "zil.sesi"
+            "tema", "duvar.kagidi", "ikon", "kilit.ekrani", "zil.sesi",
         ),
-        Category.CAT_OTHER to listOf()
+        Category.CAT_OTHER to listOf(),
     )
 
     fun getKeywordMap(): Map<String, List<String>> = keywordMap

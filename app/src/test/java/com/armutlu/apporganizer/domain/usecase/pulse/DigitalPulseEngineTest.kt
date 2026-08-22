@@ -44,7 +44,9 @@ class DigitalPulseEngineTest {
     // 1) Boş liste crash yok, skor 0..100 döner.
     @Test
     fun `empty app list does not crash and returns neutral-ish score in range`() {
-        val result = DigitalPulseEngine.compute(PulseInput(apps = emptyList(), notification = null, previousCategoryUsage = null, nowMillis = now))
+        val result = DigitalPulseEngine.compute(
+            PulseInput(apps = emptyList(), notification = null, previousCategoryUsage = null, nowMillis = now),
+        )
         assertTrue(result.total in 0..100)
         assertTrue(result.organization in 0..100)
     }
@@ -67,10 +69,10 @@ class DigitalPulseEngineTest {
             app("com.mixed.app$it", categoryId = "productivity", usageCount = 500L)
         }
         val socialResult = DigitalPulseEngine.compute(
-            PulseInput(apps = socialHeavy, notification = null, previousCategoryUsage = null, nowMillis = now)
+            PulseInput(apps = socialHeavy, notification = null, previousCategoryUsage = null, nowMillis = now),
         )
         val balancedResult = DigitalPulseEngine.compute(
-            PulseInput(apps = balanced, notification = null, previousCategoryUsage = null, nowMillis = now)
+            PulseInput(apps = balanced, notification = null, previousCategoryUsage = null, nowMillis = now),
         )
         // Kategori tek başına organization/attention/cleanup/consistency'yi etkilemediği için
         // iki senaryonun toplam skoru birbirine yakın olmalı (sosyal olduğu için otomatik ceza yok).
@@ -98,7 +100,7 @@ class DigitalPulseEngineTest {
                 unlockCount = 900,
                 previousUnlockCount = 10,
                 nowMillis = now,
-            )
+            ),
         )
         assertTrue(result.total in 0..100)
         assertTrue(result.organization in 0..100)
@@ -113,7 +115,7 @@ class DigitalPulseEngineTest {
     fun `first week with no baseline keeps balance subscore neutral`() {
         val apps = listOf(app("com.a", "social", usageCount = 500L))
         val result = DigitalPulseEngine.compute(
-            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, nowMillis = now)
+            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, nowMillis = now),
         )
         assertEquals(DigitalPulseEngine.NEUTRAL_SUBSCORE, result.balance)
     }
@@ -123,7 +125,7 @@ class DigitalPulseEngineTest {
     fun `missing signals lower confidence but never crash or force score to zero`() {
         val apps = listOf(app("com.a", "productivity"))
         val result = DigitalPulseEngine.compute(
-            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, hasUsageAccess = false, nowMillis = now)
+            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, hasUsageAccess = false, nowMillis = now),
         )
         assertEquals(DataConfidence.LOW, result.confidence)
         assertTrue(result.total in 0..100)
@@ -142,7 +144,7 @@ class DigitalPulseEngineTest {
                 previousUnlockCount = 45,
                 hasUsageAccess = true,
                 nowMillis = now,
-            )
+            ),
         )
         assertEquals(DataConfidence.HIGH, result.confidence)
     }
@@ -151,11 +153,24 @@ class DigitalPulseEngineTest {
     @Test
     fun `system apps and recently installed apps are excluded from cleanup penalty`() {
         val apps = listOf(
-            app("com.system", "productivity", isSystemApp = true, lastUsedTimestamp = now - 200 * day, installTime = now - 300 * day, firstInstalledTime = now - 300 * day),
-            app("com.new", "productivity", lastUsedTimestamp = now - 200 * day, installTime = now - 5 * day, firstInstalledTime = now - 5 * day),
+            app(
+                "com.system",
+                "productivity",
+                isSystemApp = true,
+                lastUsedTimestamp = now - 200 * day,
+                installTime = now - 300 * day,
+                firstInstalledTime = now - 300 * day,
+            ),
+            app(
+                "com.new",
+                "productivity",
+                lastUsedTimestamp = now - 200 * day,
+                installTime = now - 5 * day,
+                firstInstalledTime = now - 5 * day,
+            ),
         )
         val result = DigitalPulseEngine.compute(
-            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, nowMillis = now)
+            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, nowMillis = now),
         )
         // Değerlendirmeye giren uygun uygulama kalmadığı için nötr olmalı.
         assertEquals(DigitalPulseEngine.NEUTRAL_SUBSCORE, result.cleanup)
@@ -166,7 +181,14 @@ class DigitalPulseEngineTest {
     fun `high but stable unlock count does not penalize consistency`() {
         val apps = listOf(app("com.a", "productivity"))
         val result = DigitalPulseEngine.compute(
-            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, unlockCount = 300, previousUnlockCount = 290, nowMillis = now)
+            PulseInput(
+                apps = apps,
+                notification = null,
+                previousCategoryUsage = null,
+                unlockCount = 300,
+                previousUnlockCount = 290,
+                nowMillis = now,
+            ),
         )
         assertTrue(result.consistency >= 70)
     }
@@ -176,7 +198,14 @@ class DigitalPulseEngineTest {
     fun `volatile unlock count lowers consistency`() {
         val apps = listOf(app("com.a", "productivity"))
         val result = DigitalPulseEngine.compute(
-            PulseInput(apps = apps, notification = null, previousCategoryUsage = null, unlockCount = 300, previousUnlockCount = 50, nowMillis = now)
+            PulseInput(
+                apps = apps,
+                notification = null,
+                previousCategoryUsage = null,
+                unlockCount = 300,
+                previousUnlockCount = 50,
+                nowMillis = now,
+            ),
         )
         assertTrue(result.consistency < DigitalPulseEngine.NEUTRAL_SUBSCORE)
     }
@@ -186,8 +215,12 @@ class DigitalPulseEngineTest {
     fun `many uncategorized apps lower organization score`() {
         val tidy = (1..15).map { app("com.tidy.app$it", categoryId = "productivity") }
         val messy = (1..15).map { app("com.messy.app$it", categoryId = "uncategorized") }
-        val tidyResult = DigitalPulseEngine.compute(PulseInput(apps = tidy, notification = null, previousCategoryUsage = null, nowMillis = now))
-        val messyResult = DigitalPulseEngine.compute(PulseInput(apps = messy, notification = null, previousCategoryUsage = null, nowMillis = now))
+        val tidyResult = DigitalPulseEngine.compute(
+            PulseInput(apps = tidy, notification = null, previousCategoryUsage = null, nowMillis = now),
+        )
+        val messyResult = DigitalPulseEngine.compute(
+            PulseInput(apps = messy, notification = null, previousCategoryUsage = null, nowMillis = now),
+        )
         assertTrue(messyResult.organization < tidyResult.organization)
     }
 
@@ -201,7 +234,7 @@ class DigitalPulseEngineTest {
                 notification = PulseNotificationSignals(200, 10, 10, nightCount = 100),
                 previousCategoryUsage = null,
                 nowMillis = now,
-            )
+            ),
         )
         assertTrue(result.attention < DigitalPulseEngine.NEUTRAL_SUBSCORE)
         assertTrue(result.attention >= 0)
@@ -219,7 +252,7 @@ class DigitalPulseEngineTest {
                 previousCategoryUsage = null,
                 taskScoreContribution = 99,
                 nowMillis = now,
-            )
+            ),
         )
         val penalized = DigitalPulseEngine.compute(
             PulseInput(
@@ -228,7 +261,7 @@ class DigitalPulseEngineTest {
                 previousCategoryUsage = null,
                 taskScoreContribution = -99,
                 nowMillis = now,
-            )
+            ),
         )
 
         assertEquals(10, boosted.reasons.first { it.id == PulseReasonId.TASK_MISSIONS }.delta)
@@ -257,12 +290,11 @@ class DigitalPulseEngineTest {
                 previousUnlockCount = 75,
                 taskScoreContribution = 0,
                 nowMillis = now,
-            )
+            ),
         )
 
         assertEquals(0, result.taskContribution)
         assertEquals(result.baseScore, result.total)
         assertNull(result.reasons.firstOrNull { it.id == PulseReasonId.TASK_MISSIONS })
     }
-
 }

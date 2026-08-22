@@ -45,11 +45,11 @@ data class HomePulseSummary(
 
 /** Skor bandı → nötr durum etiketi (roadmap satır 1398-1406). Yargılayıcı dil YOK. */
 enum class PulseStatusBand {
-    EXCELLENT,   // 80-100 "Çok iyi"
-    GOOD,        // 65-79  "İyi"
-    BALANCED,    // 50-64  "Dengeli"
+    EXCELLENT, // 80-100 "Çok iyi"
+    GOOD, // 65-79  "İyi"
+    BALANCED, // 50-64  "Dengeli"
     NEEDS_FOCUS, // 35-49  "Dikkat gerekiyor"
-    IMPROVING,   // 0-34   "İyileştirme alanı var"
+    IMPROVING, // 0-34   "İyileştirme alanı var"
     ;
 
     companion object {

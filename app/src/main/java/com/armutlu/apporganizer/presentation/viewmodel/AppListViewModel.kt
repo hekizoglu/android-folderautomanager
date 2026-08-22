@@ -8,16 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.data.repository.AppRepository
 import com.armutlu.apporganizer.data.repository.SearchRepository
-import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
-import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.TaskScoreManager
-import com.armutlu.apporganizer.utils.WidgetSuggestion
-import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.AppClassifier
-import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
 import com.armutlu.apporganizer.domain.usecase.classify.CLASSIFICATION_ENGINE_VERSION
+import com.armutlu.apporganizer.domain.usecase.classify.CategoryLLMFallback
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationDecision
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReason
 import com.armutlu.apporganizer.domain.usecase.classify.ClassificationReviewPolicy
@@ -26,18 +21,23 @@ import com.armutlu.apporganizer.domain.usecase.classify.ClassificationSource
 import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestion
 import com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestionEngine
 import com.armutlu.apporganizer.presentation.ui.screens.AppListScreenState
+import com.armutlu.apporganizer.presentation.ui.screens.OrganizeState
 import com.armutlu.apporganizer.presentation.ui.screens.SortOption
 import com.armutlu.apporganizer.presentation.ui.screens.computeCategoryStats
 import com.armutlu.apporganizer.presentation.ui.screens.computeFilteredApps
 import com.armutlu.apporganizer.presentation.ui.screens.computeVisibleCategories
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.TaskScoreManager
+import com.armutlu.apporganizer.utils.WidgetSuggestion
+import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import javax.inject.Inject
 import java.util.Locale
+import javax.inject.Inject
 
 /**
  * ViewModel for AppListScreen
@@ -50,7 +50,7 @@ class AppListViewModel @Inject constructor(
     private val searchRepository: SearchRepository,
     private val classifier: AppClassifier,
     private val llmFallback: CategoryLLMFallback,
-    private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService
+    private val appDatabaseService: com.armutlu.apporganizer.data.remote.AppDatabaseService,
 ) : AndroidViewModel(application) {
 
     // â"€â"€ Log sistemi - MUTLAKA ilk sırada olmalı (init'ten önce hazır) â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -72,16 +72,16 @@ class AppListViewModel @Inject constructor(
 
     // Private state flows
     private val _screenState = MutableStateFlow(AppListScreenState.loading())
-    
+
     private val _selectedCategory = MutableStateFlow("all")
     private val _searchQuery = MutableStateFlow("")
     private val _sortOption = MutableStateFlow(SortOption.NAME_ASC)
     private val _showSystemApps = MutableStateFlow(
-        com.armutlu.apporganizer.utils.AppPrefs.isShowSystemApps(application)
+        com.armutlu.apporganizer.utils.AppPrefs.isShowSystemApps(application),
     )
     private val _showUncertainOnly = MutableStateFlow(false)
     private val _selectedApps = MutableStateFlow<Set<String>>(emptySet())
-    
+
     // Public state flows
     val screenState: StateFlow<AppListScreenState> = _screenState.asStateFlow()
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
@@ -90,6 +90,7 @@ class AppListViewModel @Inject constructor(
     val showSystemApps: StateFlow<Boolean> = _showSystemApps.asStateFlow()
     val showUncertainOnly: StateFlow<Boolean> = _showUncertainOnly.asStateFlow()
     val selectedApps: StateFlow<Set<String>> = _selectedApps.asStateFlow()
+
     // Widget öneri listesi - en çok kullanılan ve widget'ı olan uygulamalar
     // P1-19 FIX: getSuggestions() suspend fun oldu, flatMapLatest + flow() ile ViewModel scope'ta çalıştır
     val widgetSuggestions: StateFlow<List<WidgetSuggestion>> = repository.getAllAppsFlow()
@@ -145,15 +146,15 @@ class AppListViewModel @Inject constructor(
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
     private val _folderSuggestionsInfoDismissed = MutableStateFlow(
-        AppPrefs.isFolderSuggestionsInfoDismissed(application)
+        AppPrefs.isFolderSuggestionsInfoDismissed(application),
     )
     val folderSuggestionsInfoDismissed: StateFlow<Boolean> = _folderSuggestionsInfoDismissed.asStateFlow()
-    
+
     // Initialization
     init {
         initializeScreen()
     }
-    
+
     /**
      * Initialize screen with data from repository
      */
@@ -180,7 +181,7 @@ class AppListViewModel @Inject constructor(
                 Timber.d("Initializing screen...")
                 repository.ensureDefaultCategories()
                 migrateManualOverridesIfNeeded()
-                
+
                 // Get apps from repository - tüm filtre flow'larını combine et
                 combine(
                     repository.getAllAppsFlow(),
@@ -190,7 +191,7 @@ class AppListViewModel @Inject constructor(
                     _sortOption,
                     _showSystemApps,
                     _showUncertainOnly,
-                    _selectedApps
+                    _selectedApps,
                 ) { values ->
                     @Suppress("UNCHECKED_CAST")
                     createScreenState(
@@ -201,13 +202,13 @@ class AppListViewModel @Inject constructor(
                         sort = values[4] as SortOption,
                         showSystem = values[5] as Boolean,
                         showUncertainOnly = values[6] as Boolean,
-                        selectedApps = values[7] as Set<String>
+                        selectedApps = values[7] as Set<String>,
                     )
                 }
                     .collect { state ->
                         _screenState.value = state
                     }
-                
+
                 Timber.d("Screen initialized successfully")
             } catch (e: Exception) {
                 Timber.e(e, "Error initializing screen")
@@ -225,7 +226,7 @@ class AppListViewModel @Inject constructor(
             appendDebugLog("Manuel kategori kararları Room metadata'ya taşındı: $migrated")
         }
     }
-    
+
     /**
      * Create screen state from data and filter options
      */
@@ -237,7 +238,7 @@ class AppListViewModel @Inject constructor(
         sort: SortOption = _sortOption.value,
         showSystem: Boolean = _showSystemApps.value,
         showUncertainOnly: Boolean = _showUncertainOnly.value,
-        selectedApps: Set<String> = _selectedApps.value
+        selectedApps: Set<String> = _selectedApps.value,
     ): AppListScreenState {
         val visibleApps = if (showSystem) apps else apps.filter { !it.isSystemApp }
         val categoryStats = computeCategoryStats(visibleApps, categories)
@@ -262,10 +263,10 @@ class AppListViewModel @Inject constructor(
             visibleCategories = computeVisibleCategories(categories, categoryStats),
             categoryStats = categoryStats,
             isLoading = false,
-            isInitializing = false
+            isInitializing = false,
         )
     }
-    
+
     /**
      * Sync installed apps from device
      */
@@ -274,22 +275,22 @@ class AppListViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 _screenState.value = _screenState.value.copy(isRefreshing = true)
-                
+
                 repository.syncInstalledApps(installedApps)
                 searchRepository.bootstrapIndex()
-                
+
                 Timber.d("Synced ${installedApps.size} apps")
                 _screenState.value = _screenState.value.copy(isRefreshing = false)
             } catch (e: Exception) {
                 Timber.e(e, "Error syncing apps")
                 _screenState.value = _screenState.value.copy(
                     isRefreshing = false,
-                    error = "Failed to sync apps"
+                    error = "Failed to sync apps",
                 )
             }
         }
     }
-    
+
     /**
      * Update app category
      */
@@ -312,7 +313,7 @@ class AppListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error updating app category")
                 _screenState.value = _screenState.value.copy(
-                    error = "Failed to update category"
+                    error = "Failed to update category",
                 )
             }
         }
@@ -327,7 +328,7 @@ class AppListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error confirming classification for $packageName")
                 _screenState.value = _screenState.value.copy(
-                    error = getApplication<Application>().getString(R.string.classification_confirm_failed)
+                    error = getApplication<Application>().getString(R.string.classification_confirm_failed),
                 )
             }
         }
@@ -345,7 +346,7 @@ class AppListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error confirming pending classifications")
                 _screenState.value = _screenState.value.copy(
-                    error = getApplication<Application>().getString(R.string.classification_confirm_all_failed)
+                    error = getApplication<Application>().getString(R.string.classification_confirm_all_failed),
                 )
             }
         }
@@ -367,7 +368,7 @@ class AppListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error skipping classification for $packageName")
                 _screenState.value = _screenState.value.copy(
-                    error = getApplication<Application>().getString(R.string.classification_skip_failed)
+                    error = getApplication<Application>().getString(R.string.classification_skip_failed),
                 )
             }
         }
@@ -393,7 +394,7 @@ class AppListViewModel @Inject constructor(
                     iconEmoji = emoji,
                     colorHex = "#00897B",
                     isSystemCategory = false,
-                    displayOrder = order
+                    displayOrder = order,
                 )
                 repository.addCategory(category)
                 searchRepository.reindexCategory(null, category)
@@ -450,7 +451,7 @@ class AppListViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Update multiple apps category (batch)
      */
@@ -578,21 +579,21 @@ class AppListViewModel @Inject constructor(
         }
         clearSelection()
     }
-    
+
     /**
      * Change search query
      */
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
     }
-    
+
     /**
      * Change sort option
      */
     fun setSortOption(option: SortOption) {
         _sortOption.value = option
     }
-    
+
     /**
      * Toggle show system apps
      */
@@ -601,7 +602,7 @@ class AppListViewModel @Inject constructor(
         _showSystemApps.value = newVal
         com.armutlu.apporganizer.utils.AppPrefs.setShowSystemApps(getApplication(), newVal)
     }
-    
+
     /**
      * Toggle app selection
      */
@@ -614,56 +615,56 @@ class AppListViewModel @Inject constructor(
         }
         _selectedApps.value = current
     }
-    
+
     /**
      * Select all visible apps
      */
     fun selectAllVisibleApps() {
         _selectedApps.value = _screenState.value.filteredApps.map { it.packageName }.toSet()
     }
-    
+
     /**
      * Clear all selections
      */
     fun clearSelection() {
         _selectedApps.value = emptySet()
     }
-    
+
     /**
      * Clear search query
      */
     fun clearSearch() {
         _searchQuery.value = ""
     }
-    
+
     /**
      * Clear error message
      */
     fun clearError() {
         _screenState.value = _screenState.value.copy(error = null)
     }
-    
+
     /**
      * Get category by ID
      */
     fun getCategoryById(categoryId: String): Category? {
         return _screenState.value.categories.find { it.categoryId == categoryId }
     }
-    
+
     /**
      * Get app by package name
      */
     fun getAppByPackageName(packageName: String): AppInfo? {
         return _screenState.value.apps.find { it.packageName == packageName }
     }
-    
+
     /**
      * Get app count by category
      */
     fun getAppCountByCategory(categoryId: String): Int {
         return _screenState.value.countAppsByCategory(categoryId)
     }
-    
+
     /**
      * Get category statistics
      */
@@ -689,7 +690,7 @@ class AppListViewModel @Inject constructor(
             oldCategoryId = oldCategoryId,
             newCategoryId = newCategoryId,
             allApps = allApps,
-            manualOverrides = manualOverrides
+            manualOverrides = manualOverrides,
         )
         // K2 — daha once "Evet, tasi" ile kabul edilmis bir grup paket (ayni hedef kategoriye)
         // varsa, o paketleri tekrar oneri listesine sokma (kullaniciya ayni oneriyi tekrar sormamak icin).
@@ -701,7 +702,7 @@ class AppListViewModel @Inject constructor(
         _suggestedSimilarApps.value = suggestions
         _suggestedSimilarCategoryId.value = newCategoryId.takeIf { suggestions.isNotEmpty() }
     }
-    
+
     /**
      * Delete app
      */
@@ -713,12 +714,12 @@ class AppListViewModel @Inject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Error deleting app: $packageName")
                 _screenState.value = _screenState.value.copy(
-                    error = getApplication<Application>().getString(R.string.app_delete_failed)
+                    error = getApplication<Application>().getString(R.string.app_delete_failed),
                 )
             }
         }
     }
-    
+
     /**
      * Classify unclassified apps
      */
@@ -755,7 +756,7 @@ class AppListViewModel @Inject constructor(
                 var classified = 0
                 unclassifiedApps.forEach { app ->
                     val decision = applyLowConfidenceReviewPreference(
-                        classifier.classifyAppDecision(app, mode)
+                        classifier.classifyAppDecision(app, mode),
                     )
                     if (decision.categoryId != "uncategorized") {
                         repository.updateAppCategoryAutomatically(app.packageName, decision)
@@ -775,7 +776,7 @@ class AppListViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * "Diger" klasorundeki uygulamalari DeepSeek LLM ile kategorize eder.
      */
@@ -829,7 +830,7 @@ class AppListViewModel @Inject constructor(
                                 requiresReview = requiresReview,
                                 reviewState = reviewState,
                                 engineVersion = CLASSIFICATION_ENGINE_VERSION,
-                            )
+                            ),
                         )
                         repository.updateAppCategoryAutomatically(pkg, decision)
                         updated++
@@ -859,7 +860,7 @@ class AppListViewModel @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "launchIntent failed")
             _screenState.value = _screenState.value.copy(
-                error = getApplication<Application>().getString(R.string.screen_open_failed)
+                error = getApplication<Application>().getString(R.string.screen_open_failed),
             )
         }
     }
@@ -880,13 +881,13 @@ class AppListViewModel @Inject constructor(
                 } else {
                     Timber.w("No launch intent for $packageName")
                     _screenState.value = _screenState.value.copy(
-                        error = getApplication<Application>().getString(R.string.app_launch_failed, packageName)
+                        error = getApplication<Application>().getString(R.string.app_launch_failed, packageName),
                     )
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error launching $packageName")
                 _screenState.value = _screenState.value.copy(
-                    error = getApplication<Application>().getString(R.string.app_launch_failed, packageName)
+                    error = getApplication<Application>().getString(R.string.app_launch_failed, packageName),
                 )
             }
         }
@@ -911,7 +912,7 @@ class AppListViewModel @Inject constructor(
                     .getClassificationMode(getApplication())
                 apps.forEach { app ->
                     val decision = applyLowConfidenceReviewPreference(
-                        classifier.classifyAppDecision(app, mode)
+                        classifier.classifyAppDecision(app, mode),
                     )
                     if (decision.categoryId != "uncategorized") {
                         repository.updateAppCategoryAutomatically(app.packageName, decision)
@@ -934,7 +935,6 @@ class AppListViewModel @Inject constructor(
         AppPrefs.setShowSystemApps(getApplication(), false)
         clearSelection()
     }
-
 
     fun appendDebugLog(line: String) {
         val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
@@ -971,7 +971,7 @@ class AppListViewModel @Inject constructor(
                 }.onFailure {
                     Timber.e(it, "resetAllPrivacyData hatası")
                     _screenState.value = _screenState.value.copy(
-                        error = getApplication<Application>().getString(R.string.privacy_reset_failed)
+                        error = getApplication<Application>().getString(R.string.privacy_reset_failed),
                     )
                 }
             }
@@ -982,12 +982,13 @@ class AppListViewModel @Inject constructor(
     // UI'a bildirilir (snackbar/dialog); sessiz bitirme yok.
     private val _statsResetResult =
         kotlinx.coroutines.flow.MutableStateFlow<List<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.ScopeResult>?>(null)
-    val statsResetResult: kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.ScopeResult>?> =
+    val statsResetResult:
+        kotlinx.coroutines.flow.StateFlow<List<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.ScopeResult>?> =
         _statsResetResult
 
     fun resetStatsScoped(
         context: android.content.Context,
-        scopes: Set<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope>
+        scopes: Set<com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.Scope>,
     ) {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val results = com.armutlu.apporganizer.domain.usecase.stats.StatsResetService.reset(context, repository, scopes)
@@ -1036,7 +1037,7 @@ class AppListViewModel @Inject constructor(
 
     suspend fun importBackup(
         context: android.content.Context,
-        json: String
+        json: String,
     ): com.armutlu.apporganizer.utils.BackupManager.ImportResult =
         com.armutlu.apporganizer.utils.BackupManager.importFromJson(context, json, repository, searchRepository)
 

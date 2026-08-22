@@ -12,7 +12,7 @@ class DockPrefsTest {
             "com.google.android.dialer",
             "com.google.android.apps.messaging",
             "com.google.android.GoogleCamera",
-            "com.android.chrome"
+            "com.android.chrome",
         )
 
         val result = DockPrefs.buildHeroDockItems(current, fallbackPackages)
@@ -29,7 +29,7 @@ class DockPrefsTest {
             "com.google.android.apps.messaging",
             "com.google.android.GoogleCamera",
             "com.android.chrome",
-            "com.example.extra"  // 5th slot should be ignored
+            "com.example.extra", // 5th slot should be ignored
         )
 
         val result = DockPrefs.buildHeroDockItems(current, fallbackPackages)
@@ -40,9 +40,9 @@ class DockPrefsTest {
                 "com.google.android.dialer",
                 "com.google.android.apps.messaging",
                 "com.google.android.GoogleCamera",
-                "com.android.chrome"
+                "com.android.chrome",
             ),
-            result
+            result,
         )
     }
 
@@ -57,7 +57,7 @@ class DockPrefsTest {
             "com.google.android.GoogleCamera",
             "com.android.chrome",
             "com.example.fifth",
-            "com.example.extra"  // 6th — should be dropped
+            "com.example.extra", // 6th — should be dropped
         )
 
         val result = DockPrefs.sanitizeHeroDockItems(items)
@@ -69,9 +69,9 @@ class DockPrefsTest {
                 "com.google.android.apps.messaging",
                 "com.google.android.GoogleCamera",
                 "com.android.chrome",
-                "com.example.fifth"
+                "com.example.fifth",
             ),
-            result
+            result,
         )
     }
 
@@ -79,11 +79,11 @@ class DockPrefsTest {
     fun sanitizeHeroDockItems_removesBlankAndFolder_thenCapsAt4() {
         val items = listOf(
             "com.google.android.dialer",
-            "",  // blank
-            "folder:CAT_WORK",  // folder item
+            "", // blank
+            "folder:CAT_WORK", // folder item
             "com.google.android.apps.messaging",
             "com.google.android.GoogleCamera",
-            "com.android.chrome"
+            "com.android.chrome",
         )
 
         val result = DockPrefs.sanitizeHeroDockItems(items)
@@ -94,9 +94,9 @@ class DockPrefsTest {
                 "com.google.android.dialer",
                 "com.google.android.apps.messaging",
                 "com.google.android.GoogleCamera",
-                "com.android.chrome"
+                "com.android.chrome",
             ),
-            result
+            result,
         )
     }
 }

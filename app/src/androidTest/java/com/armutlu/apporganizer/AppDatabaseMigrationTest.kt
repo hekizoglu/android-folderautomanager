@@ -34,7 +34,7 @@ class AppDatabaseMigrationTest {
                     query TEXT NOT NULL,
                     timestamp INTEGER NOT NULL DEFAULT 0
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             execSQL("INSERT INTO search_history (query, timestamp) VALUES ('weather', 1234)")
             close()
@@ -73,7 +73,7 @@ class AppDatabaseMigrationTest {
                     oldCategoryMapping TEXT NOT NULL,
                     rolledBack INTEGER NOT NULL DEFAULT 0
                 )
-                """.trimIndent()
+                """.trimIndent(),
             )
             execSQL(
                 """
@@ -82,7 +82,7 @@ class AppDatabaseMigrationTest {
                  movedPackageNames, oldCategoryMapping, rolledBack)
                 VALUES ('op-1', 'FOLDER_MERGE', 1234, 'social', 'communication',
                         '[\"com.example.app\"]', '{\"com.example.app\":\"social\"}', 0)
-                """.trimIndent()
+                """.trimIndent(),
             )
             close()
         }

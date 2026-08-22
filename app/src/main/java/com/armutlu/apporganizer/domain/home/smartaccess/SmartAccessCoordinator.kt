@@ -25,8 +25,11 @@ object SmartAccessCoordinator {
             SmartAccessCandidate(
                 app = app,
                 sameTimeSlotScore = slotScore[app.packageName] ?: 0f,
-                recencyScore = if (app.lastUsedTimestamp <= 0L) 0f
-                    else 1f - age.coerceAtMost(RECENCY_WINDOW_MS).toFloat() / RECENCY_WINDOW_MS,
+                recencyScore = if (app.lastUsedTimestamp <= 0L) {
+                    0f
+                } else {
+                    1f - age.coerceAtMost(RECENCY_WINDOW_MS).toFloat() / RECENCY_WINDOW_MS
+                },
                 frequencyScore = frequencyScores[app.packageName] ?: 0f,
                 weekdayContextScore = weekdayScores[app.packageName] ?: 0f,
             )

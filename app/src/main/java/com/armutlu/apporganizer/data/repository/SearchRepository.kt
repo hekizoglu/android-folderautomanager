@@ -1,32 +1,32 @@
 package com.armutlu.apporganizer.data.repository
 
 import android.content.Context
-import com.armutlu.apporganizer.utils.AppPrefs
-import com.armutlu.apporganizer.utils.SearchStatsPrefs
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.AppDatabase
 import com.armutlu.apporganizer.data.local.CategoryDao
 import com.armutlu.apporganizer.data.local.ContactsIndexer
-import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.FilesIndexWorker
+import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.SearchDao
 import com.armutlu.apporganizer.data.local.SearchIndexer
 import com.armutlu.apporganizer.domain.models.FileIndexState
+import com.armutlu.apporganizer.domain.models.ScoreType
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SearchScore
-import com.armutlu.apporganizer.domain.models.ScoreType
 import com.armutlu.apporganizer.domain.models.SourceType
+import com.armutlu.apporganizer.telemetry.PerformanceTraceName
+import com.armutlu.apporganizer.telemetry.TelemetryManager
+import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.SearchStatsPrefs
 import com.armutlu.apporganizer.utils.SystemSettingsCatalog
-import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
-import kotlin.system.measureTimeMillis
 import timber.log.Timber
-import javax.inject.Singleton
-import com.armutlu.apporganizer.telemetry.PerformanceTraceName
-import com.armutlu.apporganizer.telemetry.TelemetryManager
 import java.util.Locale
+import javax.inject.Singleton
+import kotlin.system.measureTimeMillis
 
 @Singleton
 class SearchRepository(
@@ -37,7 +37,7 @@ class SearchRepository(
     private val indexer: SearchIndexer,
     private val contactsIndexer: ContactsIndexer,
     private val filesIndexer: FilesIndexer,
-    private val db: AppDatabase
+    private val db: AppDatabase,
 ) {
 
     internal companion object {
@@ -70,7 +70,7 @@ class SearchRepository(
                 else -> {
                     val similarity = calculateLevenshteinSimilarity(
                         queryLower,
-                        title.lowercase(Locale("tr"))
+                        title.lowercase(Locale("tr")),
                     )
                     when {
                         similarity > 0.85 ->
@@ -103,7 +103,7 @@ class SearchRepository(
                     d[i][j] = minOf(
                         d[i - 1][j] + 1,
                         d[i][j - 1] + 1,
-                        d[i - 1][j - 1] + if (a[i - 1] == b[j - 1]) 0 else 1
+                        d[i - 1][j - 1] + if (a[i - 1] == b[j - 1]) 0 else 1,
                     )
                 }
             }
@@ -192,7 +192,6 @@ class SearchRepository(
     }
 
     private suspend fun searchMeasured(trimmed: String, limit: Int): Map<SourceType, List<SearchDocument>> {
-
         var result: Map<SourceType, List<SearchDocument>> = emptyMap()
         val elapsedMs = measureTimeMillis {
             result = withContext(Dispatchers.IO) {
@@ -209,8 +208,8 @@ class SearchRepository(
                             val score = calculateScore(trimmed, doc.title, doc.subtitle)
                             doc to score
                         }
-                        .filter { (_, score) -> score.score > 0 }  // Eşleşmeyenleri filtrele
-                        .sortedByDescending { (_, score) -> score.score }  // En yüksek puan önce
+                        .filter { (_, score) -> score.score > 0 } // Eşleşmeyenleri filtrele
+                        .sortedByDescending { (_, score) -> score.score } // En yüksek puan önce
                         .take(limit)
                         .map { (doc, _) -> doc }
 
@@ -247,7 +246,7 @@ class SearchRepository(
         if (SourceType.CONTACT.key in allowedSources) {
             if (androidx.core.content.ContextCompat.checkSelfPermission(
                     context,
-                    android.Manifest.permission.READ_CONTACTS
+                    android.Manifest.permission.READ_CONTACTS,
                 ) == android.content.pm.PackageManager.PERMISSION_GRANTED
             ) {
                 if (searchDao.countBySource(SourceType.CONTACT.key) == 0) {
@@ -406,8 +405,10 @@ class SearchRepository(
      * - Kategori adı değişmişse: o kategorideki app'lerin subtitle'ını güncelle + kategori dökümanını güncelle
      * - Kategori silinmişse: kategori dökümanını sil
      */
-    suspend fun reindexCategory(oldCategory: com.armutlu.apporganizer.domain.models.Category?,
-                                newCategory: com.armutlu.apporganizer.domain.models.Category) = withContext(Dispatchers.IO) {
+    suspend fun reindexCategory(
+        oldCategory: com.armutlu.apporganizer.domain.models.Category?,
+        newCategory: com.armutlu.apporganizer.domain.models.Category,
+    ) = withContext(Dispatchers.IO) {
         runCatching {
             val now = System.currentTimeMillis()
             if (oldCategory != null && oldCategory.categoryName != newCategory.categoryName) {

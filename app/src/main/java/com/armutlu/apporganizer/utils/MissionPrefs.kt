@@ -15,9 +15,9 @@ object MissionPrefs {
 
     private const val PREFS_NAME = "mission_prefs"
     private const val KEY_TOTAL_STARS = "total_stars"
-    private const val KEY_DAILY_STATE = "daily_state"    // {"epochDay":N,"completed":["id"]}
-    private const val KEY_WEEKLY_STATE = "weekly_state"  // {"epochWeek":N,"completed":["id"]}
-    private const val KEY_MANUAL_STATE = "manual_state"  // {"epochDay":N,"ids":["id"]}
+    private const val KEY_DAILY_STATE = "daily_state" // {"epochDay":N,"completed":["id"]}
+    private const val KEY_WEEKLY_STATE = "weekly_state" // {"epochWeek":N,"completed":["id"]}
+    private const val KEY_MANUAL_STATE = "manual_state" // {"epochDay":N,"ids":["id"]}
     private const val KEY_LAST_REWARD_AT = "last_reward_at"
     private const val KEY_V2_MIGRATED = "missions_v2_room_migrated"
 

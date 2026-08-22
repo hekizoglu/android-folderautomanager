@@ -16,7 +16,7 @@ private const val KEY_DB_VERSION = "db_version"
 
 @Singleton
 class AppDatabaseService @Inject constructor(
-    private val context: Context
+    private val context: Context,
 ) {
     private var cachedMap: Map<String, String>? = null
 
@@ -37,7 +37,7 @@ class AppDatabaseService @Inject constructor(
         try {
             Timber.d("AppDatabase: indirme başlıyor — $DB_URL")
             val json = URL(DB_URL).readText(Charsets.UTF_8)
-            val obj  = JSONObject(json)
+            val obj = JSONObject(json)
             val version = obj.optInt("version", 0)
             val appsObj = obj.getJSONObject("apps")
 
@@ -87,7 +87,7 @@ class AppDatabaseService @Inject constructor(
     fun loadFromCacheSync() {
         try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val json  = prefs.getString(KEY_DB_JSON, null)
+            val json = prefs.getString(KEY_DB_JSON, null)
             if (json != null) {
                 val obj = JSONObject(json)
                 val appsObj = obj.getJSONObject("apps")
@@ -121,9 +121,9 @@ class AppDatabaseService @Inject constructor(
     private fun loadFromCache(): FetchResult {
         return try {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val json  = prefs.getString(KEY_DB_JSON, null)
+            val json = prefs.getString(KEY_DB_JSON, null)
                 ?: return FetchResult.NoCache
-            val obj   = JSONObject(json)
+            val obj = JSONObject(json)
             val version = obj.optInt("version", 0)
             val appsObj = obj.getJSONObject("apps")
             val map = mutableMapOf<String, String>()

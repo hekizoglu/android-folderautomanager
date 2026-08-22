@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.annotation.StringRes
 import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.presentation.ui.components.ColorPickerDialog
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeObjectStylePrefs
@@ -97,8 +97,11 @@ internal fun HomeObjectColorSettingsCard() {
                                 .background(option.preview)
                                 .border(
                                     width = if (selected) 3.dp else 1.dp,
-                                    color = if (selected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.outlineVariant,
+                                    color = if (selected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.outlineVariant
+                                    },
                                     shape = CircleShape,
                                 ),
                         )

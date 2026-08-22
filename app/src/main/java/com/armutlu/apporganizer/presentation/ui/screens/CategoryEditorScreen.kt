@@ -49,7 +49,7 @@ import com.armutlu.apporganizer.presentation.viewmodel.AppListViewModel
 @Composable
 fun CategoryEditorScreen(
     viewModel: AppListViewModel,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
 ) {
     val screenState by viewModel.screenState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
@@ -65,7 +65,7 @@ fun CategoryEditorScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
                     }
-                }
+                },
             )
         },
         floatingActionButton = {
@@ -73,21 +73,21 @@ fun CategoryEditorScreen(
                 Icon(Icons.Default.Add, contentDescription = "Kategori ekle")
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(items = screenState.categories, key = { category -> category.categoryId }) { category ->
                 CategoryItem(
                     category = category,
                     appCount = screenState.countAppsByCategory(category.categoryId),
                     onEdit = { editingCategory = category },
-                    onDelete = { deleteConfirmCategory = category }
+                    onDelete = { deleteConfirmCategory = category },
                 )
             }
         }
@@ -103,7 +103,7 @@ fun CategoryEditorScreen(
             onConfirm = { name, emoji ->
                 viewModel.addCategory(name, emoji)
                 showAddDialog = false
-            }
+            },
         )
     }
 
@@ -124,7 +124,7 @@ fun CategoryEditorScreen(
             onConfirm = { name, emoji ->
                 viewModel.updateCategory(category.copy(categoryName = name, iconEmoji = emoji))
                 editingCategory = null
-            }
+            },
         )
     }
 
@@ -133,10 +133,12 @@ fun CategoryEditorScreen(
         AlertDialog(
             onDismissRequest = { deleteConfirmCategory = null },
             title = { Text("Kategori Sil") },
-            text = { Text(
-                "\"${category.categoryName}\" kategorisinde $appCount uygulama var. " +
-                "Bu kategorideki uygulamalar \"Kategorisiz\" kategorisine taşınacak. Silmek istediğinize emin misiniz?"
-            )},
+            text = {
+                Text(
+                    "\"${category.categoryName}\" kategorisinde $appCount uygulama var. " +
+                        "Bu kategorideki uygulamalar \"Kategorisiz\" kategorisine taşınacak. Silmek istediğinize emin misiniz?",
+                )
+            },
             confirmButton = {
                 Button(onClick = {
                     viewModel.deleteCategory(category)
@@ -149,7 +151,7 @@ fun CategoryEditorScreen(
                 TextButton(onClick = { deleteConfirmCategory = null }) {
                     Text("İptal")
                 }
-            }
+            },
         )
     }
 }
@@ -159,29 +161,29 @@ private fun CategoryItem(
     category: Category,
     appCount: Int,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = 8.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "${category.iconEmoji} ${category.categoryName}",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
                     text = "$appCount uygulama",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -191,8 +193,8 @@ private fun CategoryItem(
                     .background(
                         runCatching { Color(android.graphics.Color.parseColor(category.colorHex)) }
                             .getOrDefault(Color.Gray),
-                        shape = MaterialTheme.shapes.small
-                    )
+                        shape = MaterialTheme.shapes.small,
+                    ),
             )
 
             if (!category.isSystemCategory) {
@@ -214,7 +216,7 @@ private fun CategoryDialog(
     initialName: String,
     initialEmoji: String,
     onDismiss: () -> Unit,
-    onConfirm: (String, String) -> Unit
+    onConfirm: (String, String) -> Unit,
 ) {
     var categoryName by remember(initialName) { mutableStateOf(initialName) }
     var selectedEmoji by remember(initialEmoji) { mutableStateOf(initialEmoji) }
@@ -234,14 +236,14 @@ private fun CategoryDialog(
                     isError = showError,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(bottom = 16.dp),
                 )
                 if (showError) {
                     Text(
                         text = "Kategori adı boş olamaz",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
                     )
                 }
 
@@ -250,12 +252,12 @@ private fun CategoryDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     emojiOptions.forEach { emoji ->
                         Button(
                             onClick = { selectedEmoji = emoji },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         ) {
                             Text(emoji)
                         }
@@ -266,7 +268,7 @@ private fun CategoryDialog(
         confirmButton = {
             Button(
                 enabled = trimmedName.isNotEmpty(),
-                onClick = { onConfirm(trimmedName, selectedEmoji) }
+                onClick = { onConfirm(trimmedName, selectedEmoji) },
             ) {
                 Text(confirmLabel)
             }
@@ -275,6 +277,6 @@ private fun CategoryDialog(
             TextButton(onClick = onDismiss) {
                 Text("İptal")
             }
-        }
+        },
     )
 }

@@ -27,51 +27,48 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.models.SearchDocument
 import com.armutlu.apporganizer.domain.models.SourceType
+import com.armutlu.apporganizer.domain.usecase.notification.UnreadNotificationModel
 import com.armutlu.apporganizer.service.AppNotificationListenerService
 import com.armutlu.apporganizer.utils.AppPrefs
 import com.armutlu.apporganizer.utils.DockPrefs
 import com.armutlu.apporganizer.utils.DominantColorExtractor
-import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import com.armutlu.apporganizer.utils.InsightCard
 import com.armutlu.apporganizer.utils.InsightEngine
-import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.NotificationAccessUtils
 import com.armutlu.apporganizer.utils.NotificationReadPrefs
-import com.armutlu.apporganizer.domain.usecase.notification.UnreadNotificationModel
+import com.armutlu.apporganizer.utils.PackageManagerHelper
 import com.armutlu.apporganizer.utils.SharedPrefsSuggestionHistoryStore
 import com.armutlu.apporganizer.utils.SuggestionCoordinator
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import com.armutlu.apporganizer.utils.WidgetHostManager
 import com.armutlu.apporganizer.utils.WidgetPrefs
-import java.io.File
+import com.armutlu.apporganizer.utils.WidgetSuggestionEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -89,7 +86,7 @@ internal val DOCK_MAX_SIZE: Int
 @Immutable
 data class AppFolder(
     val category: Category,
-    val apps: List<AppInfo>
+    val apps: List<AppInfo>,
 )
 
 /**
@@ -105,7 +102,7 @@ internal fun buildFolders(apps: List<AppInfo>, categories: List<Category>): List
                 category = cat,
                 apps = apps
                     .filter { it.categoryId == cat.categoryId }
-                    .sortedBy { it.appName }
+                    .sortedBy { it.appName },
             )
         }
         .filter { it.apps.isNotEmpty() || !it.category.isSystemCategory }
@@ -124,7 +121,7 @@ internal fun filterAllAppsByQuery(sortedApps: List<AppInfo>, query: String): Lis
     if (trimmed.isEmpty()) return sortedApps
     return sortedApps.filter {
         it.appName.lowercase(java.util.Locale("tr")).contains(trimmed) ||
-        it.packageName.lowercase().contains(trimmed)
+            it.packageName.lowercase().contains(trimmed)
     }
 }
 
@@ -144,7 +141,7 @@ internal fun filterTodayInstalledApps(
 internal fun fillDockSuggestions(
     slotApps: List<AppInfo>,
     fallbackApps: List<AppInfo>,
-    maxSize: Int = DOCK_MAX_SIZE
+    maxSize: Int = DOCK_MAX_SIZE,
 ): List<AppInfo> {
     val slotPicks = slotApps.take(maxSize)
     if (slotPicks.size >= maxSize) return slotPicks
@@ -203,15 +200,18 @@ class LauncherViewModel @Inject constructor(
 
     // launchApp'ta başlatılan son paket — onResume'da timestamp güncellenir (startActivity process'i askıya aldığında coroutine tamamlanamıyor)
     @Volatile private var lastLaunchedPkg: String? = null
+
     @Volatile private var lastLaunchedTs: Long = 0L
 
     // Favori paket seti — toggleFavorite() ile güncellenir, allApps ile combine edilir
     private val _favoritePkgs = MutableStateFlow<Set<String>>(emptySet())
 
-    private val _hiddenFromNotifications = MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNotifications(application))
+    private val _hiddenFromNotifications =
+        MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNotifications(application))
     val hiddenFromNotifications: StateFlow<Set<String>> = _hiddenFromNotifications.asStateFlow()
 
-    private val _hiddenFromRecents = MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromRecents(application))
+    private val _hiddenFromRecents =
+        MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromRecents(application))
     val hiddenFromRecents: StateFlow<Set<String>> = _hiddenFromRecents.asStateFlow()
 
     private val _hiddenFromNow = MutableStateFlow<Set<String>>(com.armutlu.apporganizer.utils.AppPrefs.getHiddenFromNow(application))
@@ -224,7 +224,7 @@ class LauncherViewModel @Inject constructor(
         com.armutlu.apporganizer.utils.AppPrefs.KEY_SHOWN_APPS_COUNT,
         "hidden_from_notifications",
         "hidden_from_recents",
-        "hidden_from_now"
+        "hidden_from_now",
     )
     private val smartAccessPrefsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key in smartAccessPrefKeys) {
@@ -248,7 +248,7 @@ class LauncherViewModel @Inject constructor(
     val showNotificationBadgePermissionCard: StateFlow<Boolean> = flow {
         while (true) {
             emit(NotificationListenerPermissionHelper.shouldShowNotificationBadgePermissionCard(application))
-            delay(5000)  // 5 saniyede bir kontrol (ayarlar açılıp izin verildiğinde update olsun)
+            delay(5000) // 5 saniyede bir kontrol (ayarlar açılıp izin verildiğinde update olsun)
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, false)
 
@@ -315,7 +315,7 @@ class LauncherViewModel @Inject constructor(
 
     val searchResults: StateFlow<Map<SourceType, List<SearchDocument>>> = combine(
         instantResults,
-        debouncedResults
+        debouncedResults,
     ) { instant, debounced ->
         // Merge: instant + debounced sonuçlarını birleştir
         (instant.toMutableMap() + debounced).toMap()
@@ -331,21 +331,23 @@ class LauncherViewModel @Inject constructor(
     val folders: StateFlow<List<AppFolder>> = combine(
         allAppsSource,
         categories,
-        _folderOrder
+        _folderOrder,
     ) { apps, categoryList, order ->
         val built = buildFolders(apps, categoryList)
-        if (order.isEmpty()) built
-        else {
+        if (order.isEmpty()) {
+            built
+        } else {
             val orderMap = order.mapIndexed { i, id -> id to i }.toMap()
             built.sortedBy { orderMap[it.category.categoryId] ?: Int.MAX_VALUE }
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _openFolderId = MutableStateFlow<String?>(null)
+
     // folders flow'undan türetilir — kategori değişince FolderScreen anlık güncellenir
     val openFolder: StateFlow<AppFolder?> = combine(
         _openFolderId,
-        folders
+        folders,
     ) { id, folderList ->
         if (id == null) null else folderList.firstOrNull { it.category.categoryId == id }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -371,13 +373,16 @@ class LauncherViewModel @Inject constructor(
 
     val recentNotificationApps: StateFlow<List<AppInfo>> = combine(
         allAppsSource,
-        recentNotificationCounts
+        recentNotificationCounts,
     ) { apps, counts ->
-        if (counts.isEmpty()) emptyList()
-        else apps
-            .filter { !it.isHidden && (counts[it.packageName] ?: 0) > 0 }
-            .sortedByDescending { counts[it.packageName] ?: 0 }
-            .take(4)
+        if (counts.isEmpty()) {
+            emptyList()
+        } else {
+            apps
+                .filter { !it.isHidden && (counts[it.packageName] ?: 0) > 0 }
+                .sortedByDescending { counts[it.packageName] ?: 0 }
+                .take(4)
+        }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // P1.2: Count of pending classifications for badge display in HeroDashboardPage
@@ -409,7 +414,7 @@ class LauncherViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     val filteredAllApps: StateFlow<List<AppInfo>> = combine(
         allAppsSource,
-        _searchQuery.debounce(300)
+        _searchQuery.debounce(300),
     ) { apps, q -> filterAllAppsByQuery(buildAllApps(apps), q) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -510,7 +515,7 @@ class LauncherViewModel @Inject constructor(
                 if (needsRefresh) {
                     Timber.d(
                         "reconcileIfNeeded: full catalog sync baslatiliyor " +
-                            "(empty=${existing.isEmpty()}, schemaCurrent=${AppPrefs.isAppCatalogSchemaCurrent(context)})"
+                            "(empty=${existing.isEmpty()}, schemaCurrent=${AppPrefs.isAppCatalogSchemaCurrent(context)})",
                     )
                     loadAppsIfEmpty()
                 } else {
@@ -522,7 +527,7 @@ class LauncherViewModel @Inject constructor(
 
     /** Tam katalog taramasi — sadece bootstrap, surum gecisi ve dusuk frekansli fallback icin. */
     fun loadAppsIfEmpty() {
-        if (!isLoadingApps.compareAndSet(false, true)) return  // atomik: zaten çalışıyorsa dön
+        if (!isLoadingApps.compareAndSet(false, true)) return // atomik: zaten çalışıyorsa dön
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val installed = packageManagerHelper.getInstalledApps(includeSystem = true, onlyLaunchable = true)
@@ -568,7 +573,7 @@ class LauncherViewModel @Inject constructor(
                                     versionName = installedApp.versionName,
                                     targetSdkVersion = installedApp.targetSdkVersion,
                                     iconUrl = installedApp.iconUrl,
-                                )
+                                ),
                             )
                             searchRepository.indexApp(installedApp)
                         }
@@ -746,7 +751,7 @@ class LauncherViewModel @Inject constructor(
             // gercek bildirimleri launcher tarafindan silinmemeli, yalnizca "gorulmedi" isareti
             // kalkiyor. (Kod tarandi: bu projede daha once de cancelNotification cagrisi yoktu.)
             com.armutlu.apporganizer.utils.NotificationReadPrefs.markRead(context, packageName, ts)
-            
+
             // Gizleme listelerinden temizle
             if (packageName in _hiddenFromNotifications.value) {
                 val next = _hiddenFromNotifications.value - packageName
@@ -1017,11 +1022,13 @@ class LauncherViewModel @Inject constructor(
     // Uygulama listesi değişimi (kurulum/güncelleme/silme) her emisyonda anında yansır
     // — stale liste bug'ı (öneriler yenilenmiyor) bu ayrımla çözüldü.
     @Volatile private var cachedScores: Map<String, Float>? = null
+
     @Volatile private var cacheTimestamp: Long = 0L
-    private val CACHE_DURATION_MS = 30 * 60 * 1000L  // 30 dakika
+    private val CACHE_DURATION_MS = 30 * 60 * 1000L // 30 dakika
 
     // "Bu saatte en çok" — saat dilimine bağlı cache (dilim değişince yenilenir)
     @Volatile private var cachedSlotApps: List<String>? = null
+
     @Volatile private var cachedSlotHour: Int = -1
 
     // Akıllı öneriler — UsageScore v2: recency+frequency+timeSlot + dock boost
@@ -1034,10 +1041,10 @@ class LauncherViewModel @Inject constructor(
             .distinctUntilChanged { old, new ->
                 old.size == new.size && old.zip(new).all { (a, b) ->
                     a.packageName == b.packageName && a.usageCount == b.usageCount &&
-                    a.lastUsedTimestamp == b.lastUsedTimestamp && a.isHidden == b.isHidden
+                        a.lastUsedTimestamp == b.lastUsedTimestamp && a.isHidden == b.isHidden
                 }
             },
-        _suggestionTick
+        _suggestionTick,
     ) { apps, _ ->
         val now = System.currentTimeMillis()
         val ctx = getApplication<Application>()
@@ -1254,7 +1261,7 @@ class LauncherViewModel @Inject constructor(
     // Son kullanılan 5 uygulama — Hero Akıllı Erişim ile ortak gerçek timestamp sırası.
     val recentApps: StateFlow<List<AppInfo>> = combine(
         allAppsSource,
-        _hiddenFromRecents
+        _hiddenFromRecents,
     ) { apps, hidden ->
         apps.filter { !it.isHidden && it.lastUsedTimestamp > 0L && it.packageName !in hidden }
             .sortedByDescending { it.lastUsedTimestamp }
@@ -1300,7 +1307,7 @@ class LauncherViewModel @Inject constructor(
     val smartAccessFilters: Flow<Triple<Set<String>, Set<String>, Int>> = combine(
         _hiddenFromNotifications,
         _hiddenFromNow,
-        _maxShownAppsCount
+        _maxShownAppsCount,
     ) { hiddenNotifs, hiddenNow, maxCount ->
         Triple(hiddenNotifs, hiddenNow, maxCount)
     }
@@ -1311,14 +1318,14 @@ class LauncherViewModel @Inject constructor(
         suggestedApps,
         recentApps,
         smartAccessRefreshContext,
-        smartAccessFilters
+        smartAccessFilters,
     ) { apps, suggested, recent, refreshContext, filters ->
         val (notificationSummaries, loaded, lastReadAt) = refreshContext
         val (hiddenNotifs, hiddenNow, maxCount) = filters
         val context = getApplication<Application>()
         val byPackage = apps.associateBy { it.packageName }
         val favorites = _favoritePkgs.value.mapNotNull(byPackage::get)
-        
+
         val filteredSuggested = suggested.filter { it.packageName !in hiddenNow }
         val filteredRecent = recent.filter { it.packageName !in hiddenNow }
         val filteredFavorites = favorites.filter { it.packageName !in hiddenNow }
@@ -1326,24 +1333,24 @@ class LauncherViewModel @Inject constructor(
             apps = filteredSuggested + filteredRecent + filteredFavorites,
             ownPackageName = context.packageName,
         ).take(maxCount)
-        
+
         val rankedRecentApps = SmartAccessRanker.recent(
             apps = apps.filter { it.packageName !in _hiddenFromRecents.value },
             ownPackageName = context.packageName,
-            limit = maxCount
+            limit = maxCount,
         )
         val notificationNow = System.currentTimeMillis()
         val notificationApps = notificationSummaries
             .filter {
                 it.packageName !in hiddenNotifs &&
-                SmartAccessNotificationPolicy.isWithinWindow(
-                    lastPostedAt = it.lastPostedAt,
-                    nowMillis = notificationNow,
-                    windowMillis = RECENT_NOTIFICATIONS_WINDOW_MS,
-                ) && UnreadNotificationModel.isUnread(
-                    postedAt = it.lastPostedAt,
-                    lastReadAt = lastReadAt[it.packageName],
-                )
+                    SmartAccessNotificationPolicy.isWithinWindow(
+                        lastPostedAt = it.lastPostedAt,
+                        nowMillis = notificationNow,
+                        windowMillis = RECENT_NOTIFICATIONS_WINDOW_MS,
+                    ) && UnreadNotificationModel.isUnread(
+                        postedAt = it.lastPostedAt,
+                        lastReadAt = lastReadAt[it.packageName],
+                    )
             }
             .mapNotNull { summary ->
                 byPackage[summary.packageName]
@@ -1374,12 +1381,13 @@ class LauncherViewModel @Inject constructor(
         java.time.Clock.systemDefaultZone(),
         java.time.ZoneId.systemDefault(),
     )
+
     // Ayar toggle'i degisince akisi yeniden tetiklemek icin — allAppsSource yeni emisyon
     // yapana kadar UI eski degerde takili kalmasin (refreshTodayInstalled() HomeScreen'den cagrilir).
     private val _todayInstalledRefresh = MutableStateFlow(0)
     val todayInstalledApps: StateFlow<List<AppInfo>> = combine(
         allAppsSource,
-        _todayInstalledRefresh
+        _todayInstalledRefresh,
     ) { apps, _ ->
         val ctx = getApplication<Application>()
         if (!AppPrefs.isRecentInstallsEnabled(ctx)) return@combine emptyList()
@@ -1457,17 +1465,17 @@ class LauncherViewModel @Inject constructor(
 
     fun dispatchGestureAction(context: Context, action: AppPrefs.GestureAction) {
         when (action) {
-            AppPrefs.GestureAction.OPEN_DRAWER       -> openAllApps()
-            AppPrefs.GestureAction.OPEN_SEARCH       -> openAllAppsWithSearch()
-            AppPrefs.GestureAction.OPEN_APP_MANAGER  -> openManager(context)
-            AppPrefs.GestureAction.LAUNCH_CAMERA     -> {
+            AppPrefs.GestureAction.OPEN_DRAWER -> openAllApps()
+            AppPrefs.GestureAction.OPEN_SEARCH -> openAllAppsWithSearch()
+            AppPrefs.GestureAction.OPEN_APP_MANAGER -> openManager(context)
+            AppPrefs.GestureAction.LAUNCH_CAMERA -> {
                 runCatching {
                     val intent = Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 }
             }
-            AppPrefs.GestureAction.DO_NOTHING        -> Unit
+            AppPrefs.GestureAction.DO_NOTHING -> Unit
         }
     }
 

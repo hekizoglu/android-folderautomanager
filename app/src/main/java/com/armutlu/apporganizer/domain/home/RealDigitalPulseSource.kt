@@ -11,14 +11,14 @@ import com.armutlu.apporganizer.domain.usecase.pulse.DigitalPulseSnapshot
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseInputFactory
 import com.armutlu.apporganizer.utils.PulseHistoryPrefs
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Döngü D00 — Dijital Nabız için GERÇEK TEK kaynak. [PulseInputFactory] ile [PulseInput]

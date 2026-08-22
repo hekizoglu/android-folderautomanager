@@ -57,17 +57,17 @@ fun PrivacyReportScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.privacy_report_back)
+                            contentDescription = stringResource(R.string.privacy_report_back),
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         when (val s = state) {
             is PrivacyReportUiState.Loading -> Box(
                 modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) { CircularProgressIndicator() }
 
             is PrivacyReportUiState.AnalyticsDisabled -> ReportStatusPane(
@@ -76,7 +76,7 @@ fun PrivacyReportScreen(
                 title = stringResource(R.string.privacy_report_disabled_title),
                 description = stringResource(R.string.privacy_report_disabled_desc),
                 buttonText = stringResource(R.string.privacy_report_disabled_btn),
-                onButtonClick = { viewModel.enableAnalytics() }
+                onButtonClick = { viewModel.enableAnalytics() },
             )
 
             is PrivacyReportUiState.Ready -> PrivacyReportContent(
@@ -96,7 +96,7 @@ private fun ReportStatusPane(
     title: String,
     description: String,
     buttonText: String?,
-    onButtonClick: (() -> Unit)?
+    onButtonClick: (() -> Unit)?,
 ) {
     Column(
         modifier = Modifier
@@ -104,19 +104,20 @@ private fun ReportStatusPane(
             .padding(padding)
             .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            icon, null,
+            icon,
+            null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(48.dp),
         )
         Spacer(Modifier.height(16.dp))
         Text(
             title,
             fontWeight = FontWeight.SemiBold,
             fontSize = 17.sp,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
@@ -124,7 +125,7 @@ private fun ReportStatusPane(
             fontSize = 13.sp,
             lineHeight = 19.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         if (buttonText != null && onButtonClick != null) {
             Spacer(Modifier.height(20.dp))
@@ -163,7 +164,7 @@ private fun PrivacyReportContent(
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { SummaryCard(totalGrantedApps) }
 
@@ -179,7 +180,7 @@ private fun PrivacyReportContent(
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             )
         }
 
@@ -195,9 +196,10 @@ private fun EmptyPrivacyState(padding: PaddingValues) {
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            Icons.Default.Shield, null,
+            Icons.Default.Shield,
+            null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(48.dp),
         )
         Spacer(Modifier.height(16.dp))
         Text(
@@ -221,7 +223,7 @@ private fun SummaryCard(totalGrantedApps: Int) {
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -231,7 +233,7 @@ private fun SummaryCard(totalGrantedApps: Int) {
                     stringResource(R.string.privacy_report_summary_none)
                 },
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp
+                fontSize = 15.sp,
             )
         }
     }
@@ -246,7 +248,7 @@ private fun PermissionGroupCard(
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column {
             Row(
@@ -254,7 +256,7 @@ private fun PermissionGroupCard(
                     .fillMaxWidth()
                     .clickable(enabled = groupReport.grantedCount > 0) { expanded = !expanded }
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(groupReport.group.emoji, fontSize = 22.sp)
                 Spacer(Modifier.width(12.dp))
@@ -264,17 +266,17 @@ private fun PermissionGroupCard(
                         Text(
                             stringResource(R.string.privacy_report_group_granted_count, groupReport.grantedCount),
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                     }
                     if (groupReport.requestedNotGrantedCount > 0) {
                         Text(
                             stringResource(
                                 R.string.privacy_report_group_requested_not_granted,
-                                groupReport.requestedNotGrantedCount
+                                groupReport.requestedNotGrantedCount,
                             ),
                             fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -282,14 +284,14 @@ private fun PermissionGroupCard(
                     Icon(
                         if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
             AnimatedVisibility(visible = expanded, enter = expandVertically(), exit = shrinkVertically()) {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     groupReport.grantedApps.forEach { app ->
                         Row(
@@ -298,7 +300,7 @@ private fun PermissionGroupCard(
                                 .clip(RoundedCornerShape(12.dp))
                                 .clickable { onAppClick(app.packageName) }
                                 .padding(horizontal = 8.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(app.appName, fontSize = 13.sp, modifier = Modifier.weight(1f))
                         }

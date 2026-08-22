@@ -16,7 +16,7 @@ object DominantColorExtractor {
     suspend fun extractFromPackages(
         context: Context,
         packageNames: List<String>,
-        iconSizePx: Int = 64
+        iconSizePx: Int = 64,
     ): String? = withContext(Dispatchers.IO) {
         val bitmaps = packageNames.take(DockPrefs.MAX_SLOTS).mapNotNull { pkg ->
             runCatching { loadAppIcon(context, pkg, iconSizePx) }.getOrNull()

@@ -35,7 +35,7 @@ object WallpaperHelper {
             shader = LinearGradient(
                 0f, 0f, 0f, height.toFloat(),
                 startHex.toColorInt(), endHex.toColorInt(),
-                Shader.TileMode.CLAMP
+                Shader.TileMode.CLAMP,
             )
         }
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)

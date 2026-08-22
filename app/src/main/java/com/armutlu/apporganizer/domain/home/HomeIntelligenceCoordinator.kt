@@ -1,8 +1,10 @@
 package com.armutlu.apporganizer.domain.home
 
+import com.armutlu.apporganizer.domain.common.HomeDataResult
+import com.armutlu.apporganizer.domain.common.HomeErrorCodes
+import com.armutlu.apporganizer.domain.common.valueOrNull
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,13 +15,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import com.armutlu.apporganizer.domain.common.HomeDataResult
-import com.armutlu.apporganizer.domain.common.HomeErrorCodes
-import com.armutlu.apporganizer.domain.common.MissingReason
-import com.armutlu.apporganizer.domain.common.valueOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 /**
  * Döngü H02 — Ana ekranın görev/skor/şerit verisini üç ayrı dağınık kaynaktan değil
@@ -143,7 +140,8 @@ class HomeIntelligenceCoordinator @Inject constructor(
                         is HomeDataResult.Ready -> HomeDataResult.Stale(previous.value, errorCode)
                         is HomeDataResult.Stale -> HomeDataResult.Stale(previous.value, errorCode)
                         is HomeDataResult.Missing,
-                        is HomeDataResult.Failed -> HomeDataResult.Failed(errorCode)
+                        is HomeDataResult.Failed,
+                        -> HomeDataResult.Failed(errorCode)
                     }
                 },
             )

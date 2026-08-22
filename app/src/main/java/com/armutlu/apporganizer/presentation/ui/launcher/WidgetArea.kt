@@ -62,7 +62,7 @@ fun WidgetArea(
     editMode: Boolean = false,
     autoResize: Boolean = false,
     screenHeightDp: Int = 800,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (widgetIds.isEmpty()) return
 
@@ -85,7 +85,7 @@ fun WidgetArea(
                 if (maxWidthDp != null) m.widthIn(max = maxWidthDp.dp) else m
             }
             .padding(vertical = 2.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
         displayIds.forEachIndexed { index, id ->
             val isDragging = dragFromIndex == index
@@ -133,7 +133,7 @@ fun WidgetArea(
                         dragFromIndex = null
                         draggingIds = null
                         dragOffsetY = 0f
-                    }
+                    },
                 )
             }
         }
@@ -150,7 +150,7 @@ private fun WidgetCard(
     screenHeightDp: Int = 800,
     onDragStart: () -> Unit = {},
     onDrag: (Float) -> Unit = {},
-    onDragEnd: () -> Unit = {}
+    onDragEnd: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var showRemoveButton by remember { mutableStateOf(false) }
@@ -181,18 +181,20 @@ private fun WidgetCard(
                     if (!editMode) {
                         Modifier.pointerInput(Unit) {
                             detectTapGestures(
-                                onLongPress = { showRemoveButton = !showRemoveButton }
+                                onLongPress = { showRemoveButton = !showRemoveButton },
                             )
                         }
-                    } else Modifier
-                )
+                    } else {
+                        Modifier
+                    },
+                ),
         ) {
             AndroidView(
                 factory = { widgetView },
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = minHeightDp.dp)
-                    .wrapContentHeight()
+                    .wrapContentHeight(),
             )
 
             if (editMode) {
@@ -215,7 +217,7 @@ private fun WidgetCard(
                             } else {
                                 detectTapGestures(onTap = {})
                             }
-                        }
+                        },
                 )
             }
 
@@ -227,7 +229,7 @@ private fun WidgetCard(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
-                        .size(18.dp)
+                        .size(18.dp),
                 )
             }
 
@@ -242,13 +244,13 @@ private fun WidgetCard(
                         .pointerInput(Unit) {
                             detectTapGestures(onTap = { onRemove() })
                         },
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Widget sil",
                         tint = Color.White,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
                     )
                 }
             }

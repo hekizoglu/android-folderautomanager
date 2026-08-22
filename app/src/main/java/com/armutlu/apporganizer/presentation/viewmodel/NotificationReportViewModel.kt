@@ -13,9 +13,6 @@ import com.armutlu.apporganizer.utils.NotificationAnalyzer
 import com.armutlu.apporganizer.utils.UsageStatsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.Locale
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,6 +23,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.Locale
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 data class NotificationHistoryFilterOption(
     val packageName: String,
@@ -230,7 +230,7 @@ class NotificationReportViewModel @Inject constructor(
                 onFailure = { error ->
                     Timber.e(error, "Bildirim raporu üretilemedi")
                     NotificationReportUiState.Error("Bildirim raporu su anda yuklenemedi.")
-                }
+                },
             )
         }
     }
@@ -311,7 +311,12 @@ class NotificationReportViewModel @Inject constructor(
                         val title = (match?.title ?: "").replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
                         val text = (match?.text ?: "").replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
                         val dateStr = sdf.format(java.util.Date(event.postedAt))
-                        appendLine("${event.id},\"${event.packageName}\",\"${appName.replace("\"", "\"\"")}\",\"$title\",\"$text\",${event.postedAt},\"$dateStr\",\"${event.category}\",${event.importanceScore},${event.wasSuppressed}")
+                        appendLine(
+                            "${event.id},\"${event.packageName}\",\"${appName.replace(
+                                "\"",
+                                "\"\"",
+                            )}\",\"$title\",\"$text\",${event.postedAt},\"$dateStr\",\"${event.category}\",${event.importanceScore},${event.wasSuppressed}",
+                        )
                     }
 
                     // 2. Olay tablosunda henüz eşleşmemiş bağımsız bildirim metni kayıtlarını da ekle
@@ -320,7 +325,12 @@ class NotificationReportViewModel @Inject constructor(
                         val title = h.title.replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
                         val text = h.text.replace("\"", "\"\"").replace("\r", " ").replace("\n", " ")
                         val dateStr = sdf.format(java.util.Date(h.postedAt))
-                        appendLine("${h.id},\"${h.packageName}\",\"${appName.replace("\"", "\"\"")}\",\"$title\",\"$text\",${h.postedAt},\"$dateStr\",\"GENERAL\",35,false")
+                        appendLine(
+                            "${h.id},\"${h.packageName}\",\"${appName.replace(
+                                "\"",
+                                "\"\"",
+                            )}\",\"$title\",\"$text\",${h.postedAt},\"$dateStr\",\"GENERAL\",35,false",
+                        )
                     }
                 }
 
@@ -331,7 +341,7 @@ class NotificationReportViewModel @Inject constructor(
                 androidx.core.content.FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider",
-                    file
+                    file,
                 )
             }.onFailure { e ->
                 Timber.e(e, "CSV export hatası")

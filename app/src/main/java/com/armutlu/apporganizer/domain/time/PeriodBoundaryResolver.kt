@@ -49,8 +49,11 @@ class PeriodBoundaryResolver(
     fun nextWeekBoundary(): Instant = currentIsoWeek().endExclusive.let { Instant.ofEpochMilli(it) }
 
     private fun mondayOf(date: LocalDate): LocalDate =
-        if (date.dayOfWeek == DayOfWeek.MONDAY) date
-        else date.with(TemporalAdjusters.previous(DayOfWeek.MONDAY))
+        if (date.dayOfWeek == DayOfWeek.MONDAY) {
+            date
+        } else {
+            date.with(TemporalAdjusters.previous(DayOfWeek.MONDAY))
+        }
 
     private fun dayBoundary(date: LocalDate): PeriodBoundary {
         val startInclusive = date.atStartOfDay(zoneId).toInstant().toEpochMilli()

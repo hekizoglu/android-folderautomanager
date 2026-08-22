@@ -11,6 +11,7 @@ object AppPrefs {
     // tipografi). Varsayılan KAPALI: kendi kimliğimiz (turkuaz, frosted dock, Pulse Clock)
     // varsayılan kalır — 2026-07-14 vizyon kararı.
     const val KEY_PIXEL_LOOK_ENABLED = "pixel_look_enabled"
+
     // Huseyin karari (2026-07-20): ilk kurulumda varsayilan Pixel Gorunumu ACIK.
     fun isPixelLookEnabled(context: Context) = prefs(context).getBoolean(KEY_PIXEL_LOOK_ENABLED, true)
     fun setPixelLookEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_PIXEL_LOOK_ENABLED, v).apply()
@@ -95,7 +96,7 @@ object AppPrefs {
     private fun writeInstallMarker(context: Context): Boolean =
         runCatching {
             java.io.File(context.filesDir, INSTALL_MARKER_FILE).writeText(
-                System.currentTimeMillis().toString()
+                System.currentTimeMillis().toString(),
             )
             true
         }.getOrDefault(false)
@@ -115,7 +116,7 @@ object AppPrefs {
 
     // Kullanılmayan uygulamaları gri göster — gün cinsinden (0 = kapalı)
     const val KEY_UNUSED_GREY_DAYS = "unused_grey_days"
-    const val UNUSED_GREY_DEFAULT = 0  // varsayılan kapalı
+    const val UNUSED_GREY_DEFAULT = 0 // varsayılan kapalı
 
     fun getUnusedGreyDays(context: Context): Int =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -162,19 +163,19 @@ object AppPrefs {
         prefs(context).edit().putBoolean(KEY_SEARCH_PERM_HINT_DISMISSED, v).apply()
 
     // Özellik toggle'ları — SettingsScreen'den yönetilir
-    const val KEY_SWIPE_HINT_ENABLED   = "swipe_hint_enabled"
-    const val KEY_NEW_BADGE_ENABLED    = "new_badge_enabled"
+    const val KEY_SWIPE_HINT_ENABLED = "swipe_hint_enabled"
+    const val KEY_NEW_BADGE_ENABLED = "new_badge_enabled"
     const val KEY_FOLDER_COUNT_VISIBLE = "folder_count_visible"
-    const val KEY_FOLDER_SWIPE_HINT    = "folder_swipe_hint_enabled"
-    const val KEY_FOLDER_SWIPE_HINT_ENABLED = KEY_FOLDER_SWIPE_HINT  // alias
+    const val KEY_FOLDER_SWIPE_HINT = "folder_swipe_hint_enabled"
+    const val KEY_FOLDER_SWIPE_HINT_ENABLED = KEY_FOLDER_SWIPE_HINT // alias
 
-    fun isSwipeHintEnabled(context: Context)   = prefs(context).getBoolean(KEY_SWIPE_HINT_ENABLED, true)
-    fun isNewBadgeEnabled(context: Context)    = prefs(context).getBoolean(KEY_NEW_BADGE_ENABLED, true)
+    fun isSwipeHintEnabled(context: Context) = prefs(context).getBoolean(KEY_SWIPE_HINT_ENABLED, true)
+    fun isNewBadgeEnabled(context: Context) = prefs(context).getBoolean(KEY_NEW_BADGE_ENABLED, true)
     fun isFolderCountVisible(context: Context) = prefs(context).getBoolean(KEY_FOLDER_COUNT_VISIBLE, true)
     fun isFolderSwipeHintEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_SWIPE_HINT, true)
 
-    fun setSwipeHintEnabled(context: Context, v: Boolean)   = prefs(context).edit().putBoolean(KEY_SWIPE_HINT_ENABLED, v).apply()
-    fun setNewBadgeEnabled(context: Context, v: Boolean)    = prefs(context).edit().putBoolean(KEY_NEW_BADGE_ENABLED, v).apply()
+    fun setSwipeHintEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SWIPE_HINT_ENABLED, v).apply()
+    fun setNewBadgeEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NEW_BADGE_ENABLED, v).apply()
     fun setFolderCountVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_COUNT_VISIBLE, v).apply()
     fun setFolderSwipeHintEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_SWIPE_HINT, v).apply()
 
@@ -190,6 +191,7 @@ object AppPrefs {
 
     // AllAppsDrawer arka plan opakligi (0.0 - 1.0)
     const val KEY_ALLAPPS_BG_ALPHA = "allapps_bg_alpha"
+
     // Varsayılan yükseltildi (D226, sonra D245): ilk kurulumda arkadaki uygulamalar çok
     // görünüyordu, AllApps ekranıyla karışıyordu. Kullanıcı talebiyle neredeyse tam opak
     // yapıldı — Settings'ten hâlâ şeffaflaştırılabilir.
@@ -212,7 +214,10 @@ object AppPrefs {
     // Bildirim metni goster (FolderTile + AllApps altinda)
     const val KEY_NOTIFICATION_TEXT_ENABLED = "notification_text_enabled"
     fun isNotificationTextEnabled(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_TEXT_ENABLED, false)
-    fun setNotificationTextEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
+    fun setNotificationTextEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_TEXT_ENABLED, v).apply()
     const val KEY_NOTIFICATION_PREVIEW_BLOCKED_PACKAGES = "notification_preview_blocked_packages"
     fun getNotificationPreviewBlockedPackages(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_NOTIFICATION_PREVIEW_BLOCKED_PACKAGES, emptySet())
@@ -244,7 +249,10 @@ object AppPrefs {
     // uygulanmaz — stok Android klasör görünümü karıştırılmaz.
     const val KEY_FOLDER_GLASS_BORDER_ENABLED = "folder_glass_border_enabled"
     fun isFolderGlassBorderEnabled(context: Context) = prefs(context).getBoolean(KEY_FOLDER_GLASS_BORDER_ENABLED, true)
-    fun setFolderGlassBorderEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FOLDER_GLASS_BORDER_ENABLED, v).apply()
+    fun setFolderGlassBorderEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_FOLDER_GLASS_BORDER_ENABLED, v).apply()
 
     // İkon paketi — kurulu ikon paketlerinden seçilir, "" = sistem ikonları
     const val KEY_ICON_PACK = "icon_pack_package"
@@ -265,7 +273,10 @@ object AppPrefs {
     // noktalari (varsa) hala calisir ama yeni kod getClassificationMode() kullanmali.
     const val KEY_MANUFACTURER_CLASSIFY = "manufacturer_classify"
     fun isManufacturerClassifyEnabled(context: Context) = prefs(context).getBoolean(KEY_MANUFACTURER_CLASSIFY, true)
-    fun setManufacturerClassifyEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
+    fun setManufacturerClassifyEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_MANUFACTURER_CLASSIFY, v).apply()
 
     // ── Siniflandirma Modu (P0.6, ROADMAP_AI_AUDIT) ─────────────────────────
     // Onceden paralel toggle'lar (manufacturer_classify + DeepSeek API key varligi) birbirini
@@ -275,10 +286,13 @@ object AppPrefs {
     enum class ClassificationMode {
         /** Sadece yerel kurallar (bundled katalog + Android kategori + keyword). Uretici/LLM atlanir. */
         LOCAL_ONLY,
+
         /** Yerel kurallar + uretici prefix/ad kurali. LLM atlanir. */
         LOCAL_WITH_MANUFACTURER,
+
         /** Yerel kurallar + uretici kurali + bilinmeyenler icin DeepSeek LLM fallback. */
         LOCAL_WITH_LLM_FALLBACK,
+
         /** Otomatik siniflandirma yapilmaz — yeni uygulamalar REVIEW_PENDING olarak isaretlenir. */
         MANUAL_REVIEW_ONLY,
     }
@@ -337,7 +351,7 @@ object AppPrefs {
         val sharedPrefs = prefs(context)
         return resolveFolderSuggestionsEnabled(
             hasStoredValue = sharedPrefs.contains(KEY_FOLDER_SUGGESTIONS_ENABLED),
-            storedValue = sharedPrefs.getBoolean(KEY_FOLDER_SUGGESTIONS_ENABLED, true)
+            storedValue = sharedPrefs.getBoolean(KEY_FOLDER_SUGGESTIONS_ENABLED, true),
         )
     }
     fun setFolderSuggestionsEnabled(context: Context, enabled: Boolean) =
@@ -355,7 +369,7 @@ object AppPrefs {
         val sharedPrefs = prefs(context)
         return resolveFolderShapePreference(
             hasStoredValue = sharedPrefs.contains(KEY_FOLDER_SHAPE),
-            storedShape = sharedPrefs.getString(KEY_FOLDER_SHAPE, DEFAULT_FOLDER_SHAPE)
+            storedShape = sharedPrefs.getString(KEY_FOLDER_SHAPE, DEFAULT_FOLDER_SHAPE),
         )
     }
     fun setFolderShape(context: Context, shape: String) = prefs(context).edit().putString(KEY_FOLDER_SHAPE, shape).apply()
@@ -381,7 +395,7 @@ object AppPrefs {
         val storedScale = sharedPrefs.getFloat(KEY_ICON_SCALE, DEFAULT_ICON_SCALE)
         return resolveIconScalePreference(
             hasStoredValue = sharedPrefs.contains(KEY_ICON_SCALE),
-            storedScale = storedScale
+            storedScale = storedScale,
         )
     }
     fun setIconScale(context: Context, scale: Float) = prefs(context).edit().putFloat(KEY_ICON_SCALE, scale).apply()
@@ -483,12 +497,12 @@ object AppPrefs {
         }
     fun getFolderTransitionEffect(context: Context): String =
         resolveFolderTransitionEffectPreference(
-            prefs(context).getString(KEY_FOLDER_TRANSITION_EFFECT, FOLDER_TRANSITION_ANDROID_SMOOTH)
+            prefs(context).getString(KEY_FOLDER_TRANSITION_EFFECT, FOLDER_TRANSITION_ANDROID_SMOOTH),
         )
     fun setFolderTransitionEffect(context: Context, effect: String) =
         prefs(context).edit().putString(
             KEY_FOLDER_TRANSITION_EFFECT,
-            resolveFolderTransitionEffectPreference(effect)
+            resolveFolderTransitionEffectPreference(effect),
         ).apply()
 
     // Widget alanı — ana ekranda widget göster
@@ -614,7 +628,10 @@ object AppPrefs {
     // P1.1 - Ana ekrandaki arama cubugu dokununca tam ekran arama overlay'i acilsin.
     const val KEY_FULLSCREEN_SEARCH_ENABLED = "fullscreen_search_enabled"
     fun isFullscreenSearchEnabled(context: Context) = prefs(context).getBoolean(KEY_FULLSCREEN_SEARCH_ENABLED, true)
-    fun setFullscreenSearchEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FULLSCREEN_SEARCH_ENABLED, v).apply()
+    fun setFullscreenSearchEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_FULLSCREEN_SEARCH_ENABLED, v).apply()
 
     // Klasör içi arama çubuğu — varsayılan KAPALI (ekranı sadeleştirme)
     const val KEY_FOLDER_SEARCH_ENABLED = "folder_search_enabled"
@@ -734,13 +751,13 @@ object AppPrefs {
     // "Görev uyarıları ve başarılar" switch'i altında BİRLEŞTİRİLİR (aynı switch iki türü de
     // kontrol eder) — roadmap listesinde ayrı satır olarak yer almıyor, kullanıcı için tek
     // kavram (görevler). Diğer 6 tür 1:1 eşlenir.
-    const val KEY_SMART_TICKER_ACTIONS = "smart_ticker_show_actions"           // Yapılması gerekenler (ACTION_REQUIRED)
-    const val KEY_SMART_TICKER_MISSIONS = "smart_ticker_show_missions"        // Görev uyarıları ve başarılar (MISSION_PROGRESS + MISSION_ACHIEVEMENT)
-    const val KEY_SMART_TICKER_PULSE = "smart_ticker_show_pulse"              // Dijital Yaşam değişimleri (PULSE_CHANGE)
-    const val KEY_SMART_TICKER_REPORTS = "smart_ticker_show_reports"          // Haftalık rapor (WEEKLY_REPORT)
-    const val KEY_SMART_TICKER_CONTEXTUAL = "smart_ticker_show_contextual"    // Zaman bazlı öneriler (CONTEXTUAL_SUGGESTION)
-    const val KEY_SMART_TICKER_DISCOVERY = "smart_ticker_show_discovery"      // Özellik ipuçları (FEATURE_DISCOVERY) — roadmap mock'ta varsayılan KAPALI
-    const val KEY_SMART_TICKER_HEALTH = "smart_ticker_show_health"            // Sistem sağlık uyarıları (CRITICAL_HEALTH)
+    const val KEY_SMART_TICKER_ACTIONS = "smart_ticker_show_actions" // Yapılması gerekenler (ACTION_REQUIRED)
+    const val KEY_SMART_TICKER_MISSIONS = "smart_ticker_show_missions" // Görev uyarıları ve başarılar (MISSION_PROGRESS + MISSION_ACHIEVEMENT)
+    const val KEY_SMART_TICKER_PULSE = "smart_ticker_show_pulse" // Dijital Yaşam değişimleri (PULSE_CHANGE)
+    const val KEY_SMART_TICKER_REPORTS = "smart_ticker_show_reports" // Haftalık rapor (WEEKLY_REPORT)
+    const val KEY_SMART_TICKER_CONTEXTUAL = "smart_ticker_show_contextual" // Zaman bazlı öneriler (CONTEXTUAL_SUGGESTION)
+    const val KEY_SMART_TICKER_DISCOVERY = "smart_ticker_show_discovery" // Özellik ipuçları (FEATURE_DISCOVERY) — roadmap mock'ta varsayılan KAPALI
+    const val KEY_SMART_TICKER_HEALTH = "smart_ticker_show_health" // Sistem sağlık uyarıları (CRITICAL_HEALTH)
 
     fun isSmartTickerActionsVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_ACTIONS, true)
     fun setSmartTickerActionsVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_ACTIONS, v).apply()
@@ -755,18 +772,27 @@ object AppPrefs {
     fun setSmartTickerReportsVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_REPORTS, v).apply()
 
     fun isSmartTickerContextualVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_CONTEXTUAL, true)
-    fun setSmartTickerContextualVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_CONTEXTUAL, v).apply()
+    fun setSmartTickerContextualVisible(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_CONTEXTUAL, v).apply()
 
     // Döngü G8 — Cihaz Düzeni İçgörüleri (depolama/kullanılmayan uygulama/bildirim yükü/öz-tanı
     // fırsatları, GOREV_SISTEMI_AKILLI_GELISTIRME_PLANI.md G8). Varsayılan AÇIK, tek toggle ile
     // tamamen kapanır — kapalıyken DeviceTidinessInsights.all() hiç çağrılmaz.
     const val KEY_DEVICE_TIDINESS_INSIGHTS = "device_tidiness_insights_enabled"
     fun isDeviceTidinessInsightsEnabled(context: Context) = prefs(context).getBoolean(KEY_DEVICE_TIDINESS_INSIGHTS, true)
-    fun setDeviceTidinessInsightsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_DEVICE_TIDINESS_INSIGHTS, v).apply()
+    fun setDeviceTidinessInsightsEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_DEVICE_TIDINESS_INSIGHTS, v).apply()
 
     // Roadmap mock (satır 1863): "[ ] Özellik ipuçları" — bu satır tek başlangıçta kapalı olan.
     fun isSmartTickerDiscoveryVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_DISCOVERY, false)
-    fun setSmartTickerDiscoveryVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_DISCOVERY, v).apply()
+    fun setSmartTickerDiscoveryVisible(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_DISCOVERY, v).apply()
 
     fun isSmartTickerHealthVisible(context: Context) = prefs(context).getBoolean(KEY_SMART_TICKER_HEALTH, true)
     fun setSmartTickerHealthVisible(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_TICKER_HEALTH, v).apply()
@@ -777,7 +803,10 @@ object AppPrefs {
     // bu pref tek başına altın rengi göstermeye yetmez (kilit açılmadıysa etkisiz kalır).
     const val KEY_MASTER_CLOCK_STYLE_ENABLED = "master_clock_style_enabled"
     fun isMasterClockStyleEnabled(context: Context) = prefs(context).getBoolean(KEY_MASTER_CLOCK_STYLE_ENABLED, false)
-    fun setMasterClockStyleEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_MASTER_CLOCK_STYLE_ENABLED, v).apply()
+    fun setMasterClockStyleEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_MASTER_CLOCK_STYLE_ENABLED, v).apply()
 
     /**
      * Belirli bir [SmartTickerType] adının (iç enum ismi) kullanıcı tercihine göre görünür olup
@@ -837,7 +866,10 @@ object AppPrefs {
     // 23:00-06:00 ile calismaya devam eder, bu ayri/opsiyonel bir gorevdir).
     const val KEY_TIME_WINDOW_MISSION_ENABLED = "time_window_mission_enabled"
     fun isTimeWindowMissionEnabled(context: Context) = prefs(context).getBoolean(KEY_TIME_WINDOW_MISSION_ENABLED, false)
-    fun setTimeWindowMissionEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_TIME_WINDOW_MISSION_ENABLED, v).apply()
+    fun setTimeWindowMissionEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_TIME_WINDOW_MISSION_ENABLED, v).apply()
 
     const val KEY_TIME_WINDOW_START_HOUR = "time_window_start_hour"
     const val KEY_TIME_WINDOW_END_HOUR = "time_window_end_hour"
@@ -905,12 +937,19 @@ object AppPrefs {
     fun isHomeWeatherUseLocation(context: Context) = prefs(context).getBoolean(KEY_HOME_WEATHER_USE_LOCATION, false)
     fun setHomeWeatherUseLocation(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_HOME_WEATHER_USE_LOCATION, v).apply()
     fun getHomeWeatherManualCity(context: Context) = prefs(context).getString(KEY_HOME_WEATHER_MANUAL_CITY, "") ?: ""
-    fun setHomeWeatherManualCity(context: Context, city: String) = prefs(context).edit().putString(KEY_HOME_WEATHER_MANUAL_CITY, city.trim()).apply()
+    fun setHomeWeatherManualCity(
+        context: Context,
+        city: String,
+    ) = prefs(context).edit().putString(KEY_HOME_WEATHER_MANUAL_CITY, city.trim()).apply()
 
     // Ticker sessize alma — basili tut menusunden secilen zamana kadar serit gizlenir (D233)
     const val KEY_TICKER_MUTED_UNTIL = "home_ticker_muted_until"
     fun getTickerMutedUntil(context: Context) = prefs(context).getLong(KEY_TICKER_MUTED_UNTIL, 0L)
-    fun setTickerMutedUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, untilMillis).apply()
+    fun setTickerMutedUntil(
+        context: Context,
+        untilMillis: Long,
+    ) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, untilMillis).apply()
+
     /** T05 — Ayarlar ekranındaki "Sessiz saatler" göstergesinden erken kaldırma. */
     fun clearTickerMutedUntil(context: Context) = prefs(context).edit().putLong(KEY_TICKER_MUTED_UNTIL, 0L).apply()
 
@@ -918,7 +957,10 @@ object AppPrefs {
     // mute-until-timestamp deseni (basili tut menusu).
     const val KEY_FOLDER_NAVIGATOR_MUTED_UNTIL = "folder_navigator_muted_until"
     fun getFolderNavigatorMutedUntil(context: Context) = prefs(context).getLong(KEY_FOLDER_NAVIGATOR_MUTED_UNTIL, 0L)
-    fun setFolderNavigatorMutedUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_FOLDER_NAVIGATOR_MUTED_UNTIL, untilMillis).apply()
+    fun setFolderNavigatorMutedUntil(
+        context: Context,
+        untilMillis: Long,
+    ) = prefs(context).edit().putLong(KEY_FOLDER_NAVIGATOR_MUTED_UNTIL, untilMillis).apply()
 
     // Icerik bazli ticker bastirma (Dongu T04) — "Bu tur bilgileri gosterme" secilince
     // SmartTickerType.name bu sete eklenir; TickerRow'a dokunmadan LauncherViewModel
@@ -928,6 +970,7 @@ object AppPrefs {
         prefs(context).getStringSet(KEY_TICKER_HIDDEN_TYPES, emptySet()) ?: emptySet()
     fun addTickerHiddenType(context: Context, typeName: String) =
         prefs(context).edit().putStringSet(KEY_TICKER_HIDDEN_TYPES, getTickerHiddenTypes(context) + typeName).apply()
+
     /** T05 — toplu ayar ekranından tekil "Bu türü gösterme" kapatmasını geri açar. */
     fun removeTickerHiddenType(context: Context, typeName: String) =
         prefs(context).edit().putStringSet(KEY_TICKER_HIDDEN_TYPES, getTickerHiddenTypes(context) - typeName).apply()
@@ -940,7 +983,10 @@ object AppPrefs {
     // Sonuç bulunamayınca web/Play Store araması öner (fallback satırları)
     const val KEY_SEARCH_WEB_FALLBACK_ENABLED = "search_web_fallback_enabled"
     fun isSearchWebFallbackEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_WEB_FALLBACK_ENABLED, true)
-    fun setSearchWebFallbackEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_WEB_FALLBACK_ENABLED, v).apply()
+    fun setSearchWebFallbackEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_SEARCH_WEB_FALLBACK_ENABLED, v).apply()
 
     // S3 — çekmece sadeleştirme: hızlı filtre + sıralama chip satırları varsayılan olarak
     // kapalı; sade modda tek kompakt menü butonu (Tune ikonu) aynı işlevi görür.
@@ -956,12 +1002,18 @@ object AppPrefs {
     // Bildirim rozeti izin akışı (P1.4) — kullanıcı "Hiçbir zaman" seçmişse kartı kalıcı gizle
     const val KEY_NOTIFICATION_BADGE_PERMISSION_DISMISSED = "notification_badge_perm_dismissed"
     fun isNotificationBadgePermDismissed(context: Context) = prefs(context).getBoolean(KEY_NOTIFICATION_BADGE_PERMISSION_DISMISSED, false)
-    fun setNotificationBadgePermDismissed(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_BADGE_PERMISSION_DISMISSED, v).apply()
+    fun setNotificationBadgePermDismissed(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_NOTIFICATION_BADGE_PERMISSION_DISMISSED, v).apply()
 
     // Bildirim rozeti izin kartının son gösterilme zamanı — 1 hafta içinde tekrar gösterilmez ("Daha sonra" seçilişinde)
     const val KEY_NOTIFICATION_BADGE_PERM_SNOOZE_UNTIL = "notification_badge_perm_snooze_until"
     fun getNotificationBadgePermSnoozeUntil(context: Context): Long = prefs(context).getLong(KEY_NOTIFICATION_BADGE_PERM_SNOOZE_UNTIL, 0L)
-    fun setNotificationBadgePermSnoozeUntil(context: Context, untilMillis: Long) = prefs(context).edit().putLong(KEY_NOTIFICATION_BADGE_PERM_SNOOZE_UNTIL, untilMillis).apply()
+    fun setNotificationBadgePermSnoozeUntil(
+        context: Context,
+        untilMillis: Long,
+    ) = prefs(context).edit().putLong(KEY_NOTIFICATION_BADGE_PERM_SNOOZE_UNTIL, untilMillis).apply()
 
     // Uygulama önerileri — en sık kullanılan 4 uygulama ana ekranda gösterilir
     const val KEY_SUGGESTIONS_ENABLED = "suggestions_enabled"
@@ -969,13 +1021,16 @@ object AppPrefs {
     fun setSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SUGGESTIONS_ENABLED, v).apply()
 
     // Favori uygulamalar — paket adları Set olarak saklanır
-    const val KEY_FAVORITES_ENABLED          = "favorites_enabled"
-    const val KEY_FAVORITES_ENABLED_ALLAPPS  = "favorites_enabled_allapps"
-    const val KEY_FAVORITES_SET              = "favorites_set"
+    const val KEY_FAVORITES_ENABLED = "favorites_enabled"
+    const val KEY_FAVORITES_ENABLED_ALLAPPS = "favorites_enabled_allapps"
+    const val KEY_FAVORITES_SET = "favorites_set"
     fun isFavoritesEnabled(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED, true)
     fun setFavoritesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED, v).apply()
     fun isFavoritesEnabledAllApps(context: Context) = prefs(context).getBoolean(KEY_FAVORITES_ENABLED_ALLAPPS, true)
-    fun setFavoritesEnabledAllApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED_ALLAPPS, v).apply()
+    fun setFavoritesEnabledAllApps(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_FAVORITES_ENABLED_ALLAPPS, v).apply()
     fun getFavorites(context: Context): Set<String> = prefs(context).getStringSet(KEY_FAVORITES_SET, emptySet()) ?: emptySet()
     fun addFavorite(context: Context, pkg: String) {
         val set = getFavorites(context).toMutableSet().also { it.add(pkg) }
@@ -988,15 +1043,18 @@ object AppPrefs {
     fun isFavorite(context: Context, pkg: String) = getFavorites(context).contains(pkg)
 
     // Son kullanılanlar satırı
-    const val KEY_RECENT_APPS_ENABLED         = "recent_apps_enabled"
+    const val KEY_RECENT_APPS_ENABLED = "recent_apps_enabled"
     const val KEY_RECENT_APPS_ENABLED_ALLAPPS = "recent_apps_enabled_allapps"
     fun isRecentAppsEnabled(context: Context) = prefs(context).getBoolean(KEY_RECENT_APPS_ENABLED, false)
     fun setRecentAppsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_RECENT_APPS_ENABLED, v).apply()
     fun isRecentAppsEnabledAllApps(context: Context) = prefs(context).getBoolean(KEY_RECENT_APPS_ENABLED_ALLAPPS, false)
-    fun setRecentAppsEnabledAllApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_RECENT_APPS_ENABLED_ALLAPPS, v).apply()
+    fun setRecentAppsEnabledAllApps(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_RECENT_APPS_ENABLED_ALLAPPS, v).apply()
 
     // Klasor ozel adlari + emoji — JSON map (categoryId -> deger)
-    const val KEY_FOLDER_CUSTOM_NAMES  = "folder_custom_names"
+    const val KEY_FOLDER_CUSTOM_NAMES = "folder_custom_names"
     const val KEY_FOLDER_CUSTOM_EMOJIS = "folder_custom_emojis"
 
     fun getFolderCustomNames(context: Context): Map<String, String> =
@@ -1052,9 +1110,9 @@ object AppPrefs {
     }
 
     // Otomatik yedekleme zamanlama — WorkManager periyodik gorev
-    const val KEY_BACKUP_DAY_OF_WEEK = "backup_day_of_week"   // 1=Pzt, 7=Paz
-    const val KEY_BACKUP_HOUR        = "backup_hour"           // 0-23
-    const val KEY_BACKUP_MINUTE      = "backup_minute"         // 0-59
+    const val KEY_BACKUP_DAY_OF_WEEK = "backup_day_of_week" // 1=Pzt, 7=Paz
+    const val KEY_BACKUP_HOUR = "backup_hour" // 0-23
+    const val KEY_BACKUP_MINUTE = "backup_minute" // 0-59
 
     fun getBackupDayOfWeek(context: Context): Int = prefs(context).getInt(KEY_BACKUP_DAY_OF_WEEK, 1)
     fun setBackupDayOfWeek(context: Context, day: Int) = prefs(context).edit().putInt(KEY_BACKUP_DAY_OF_WEEK, day).apply()
@@ -1155,19 +1213,29 @@ object AppPrefs {
         }
         return true
     }
+
     @Suppress("UNUSED_PARAMETER")
     fun setSearchSourceAppsEnabled(context: Context, enabled: Boolean) =
         prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_APPS, true).apply()
 
     fun isSearchSourceCategoriesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CATEGORIES, true)
-    fun setSearchSourceCategoriesEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CATEGORIES, v).apply()
+    fun setSearchSourceCategoriesEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CATEGORIES, v).apply()
 
     fun isSearchSourceSettingsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_SETTINGS, true)
-    fun setSearchSourceSettingsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_SETTINGS, v).apply()
+    fun setSearchSourceSettingsEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_SETTINGS, v).apply()
 
     fun isSearchSourceContactsEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_CONTACTS, true)
     fun hasSearchSourceContactsPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_CONTACTS)
-    fun setSearchSourceContactsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CONTACTS, v).apply()
+    fun setSearchSourceContactsEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_SEARCH_SOURCE_CONTACTS, v).apply()
 
     fun isSearchSourceFilesEnabled(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SOURCE_FILES, true)
     fun hasSearchSourceFilesPreference(context: Context) = prefs(context).contains(KEY_SEARCH_SOURCE_FILES)
@@ -1240,7 +1308,10 @@ object AppPrefs {
     // Kişi aramasında avatar göster/gizle
     const val KEY_SEARCH_SHOW_CONTACT_AVATAR = "search_show_contact_avatar"
     fun isSearchShowContactAvatar(context: Context) = prefs(context).getBoolean(KEY_SEARCH_SHOW_CONTACT_AVATAR, true)
-    fun setSearchShowContactAvatar(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SEARCH_SHOW_CONTACT_AVATAR, v).apply()
+    fun setSearchShowContactAvatar(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_SEARCH_SHOW_CONTACT_AVATAR, v).apply()
 
     // Assistant Kartları — ana ekranda kullanım içgörü kartları
     const val KEY_ASSISTANT_CARDS = "assistant_cards_enabled"
@@ -1319,7 +1390,10 @@ object AppPrefs {
     // Biometric Settings Lock — Ayarlar ekranını parmak izi/yüz kilidi arkasına al
     const val KEY_BIOMETRIC_SETTINGS_LOCK = "biometric_settings_lock"
     fun isBiometricSettingsLockEnabled(context: Context) = prefs(context).getBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, false)
-    fun setBiometricSettingsLockEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, v).apply()
+    fun setBiometricSettingsLockEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_BIOMETRIC_SETTINGS_LOCK, v).apply()
 
     // Badge Intelligence — bildirim badge rengi kategori bazlı (yeşil/sarı/kırmızı)
     const val KEY_BADGE_INTELLIGENCE = "badge_intelligence_enabled"
@@ -1352,7 +1426,11 @@ object AppPrefs {
      * bugun). Baslangic kaydi yoksa (orn. process restart) hicbir sey eklenmez — sahte sure
      * UYDURULMAZ.
      */
-    fun endFocusSession(context: Context, nowMillis: Long = System.currentTimeMillis(), zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault()) {
+    fun endFocusSession(
+        context: Context,
+        nowMillis: Long = System.currentTimeMillis(),
+        zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault(),
+    ) {
         val p = prefs(context)
         val startAt = p.getLong(KEY_FOCUS_SESSION_START_AT, 0L)
         if (startAt <= 0L) return
@@ -1382,7 +1460,11 @@ object AppPrefs {
      * astiysa yalniz BUGUNUN 00:00 sonrasi sayilir — dunku pay bugune yazilmaz. Gorev
      * degerlendirmesi bu toplami DAILY_FOCUS_SESSION hedefiyle (30dk) karsilastirir.
      */
-    fun getFocusMinutesToday(context: Context, nowMillis: Long = System.currentTimeMillis(), zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault()): Long {
+    fun getFocusMinutesToday(
+        context: Context,
+        nowMillis: Long = System.currentTimeMillis(),
+        zoneId: java.time.ZoneId = java.time.ZoneId.systemDefault(),
+    ): Long {
         val p = prefs(context)
         val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate()
         val stored = p.getLong(focusMinutesTodayKey(today.toEpochDay()), 0L)
@@ -1390,7 +1472,9 @@ object AppPrefs {
         val activeMinutes = if (startAt > 0L) {
             val todayStartMillis = today.atStartOfDay(zoneId).toInstant().toEpochMilli()
             ((nowMillis - maxOf(startAt, todayStartMillis)).coerceAtLeast(0L)) / 60_000L
-        } else 0L
+        } else {
+            0L
+        }
         return stored + activeMinutes
     }
 
@@ -1457,12 +1541,12 @@ object AppPrefs {
         OPEN_SEARCH("Arama ile Çekmece"),
         OPEN_APP_MANAGER("App Organizer"),
         LAUNCH_CAMERA("Kamera"),
-        DO_NOTHING("Hiçbir Şey Yapma")
+        DO_NOTHING("Hiçbir Şey Yapma"),
     }
 
-    const val KEY_GESTURE_DOUBLE_TAP   = "gesture_double_tap"
-    const val KEY_GESTURE_LONG_PRESS   = "gesture_long_press_home"
-    const val KEY_GESTURE_SWIPE_UP     = "gesture_swipe_up"
+    const val KEY_GESTURE_DOUBLE_TAP = "gesture_double_tap"
+    const val KEY_GESTURE_LONG_PRESS = "gesture_long_press_home"
+    const val KEY_GESTURE_SWIPE_UP = "gesture_swipe_up"
 
     fun getGestureDoubleTap(context: Context): GestureAction =
         runCatching { GestureAction.valueOf(prefs(context).getString(KEY_GESTURE_DOUBLE_TAP, null) ?: "") }
@@ -1582,25 +1666,25 @@ object AppPrefs {
         prefs(context).edit().putString(KEY_SEARCH_BAR_POSITION, position).apply()
 
     // Akıllı Bildirimler (SmartInsight) — ana toggle + alt seçenekler
-    const val KEY_SMART_NOTIF_ENABLED       = "smart_notif_enabled"
-    const val KEY_SMART_NOTIF_DAILY_USAGE   = "smart_notif_daily_usage"
-    const val KEY_SMART_NOTIF_UNUSED_APPS   = "smart_notif_unused_apps"
-    const val KEY_SMART_NOTIF_CAT_STATS     = "smart_notif_cat_stats"
-    const val KEY_SMART_NOTIF_HOUR          = "smart_notif_hour"  // 0-23
+    const val KEY_SMART_NOTIF_ENABLED = "smart_notif_enabled"
+    const val KEY_SMART_NOTIF_DAILY_USAGE = "smart_notif_daily_usage"
+    const val KEY_SMART_NOTIF_UNUSED_APPS = "smart_notif_unused_apps"
+    const val KEY_SMART_NOTIF_CAT_STATS = "smart_notif_cat_stats"
+    const val KEY_SMART_NOTIF_HOUR = "smart_notif_hour" // 0-23
 
-    fun isSmartNotifEnabled(context: Context)     = prefs(context).getBoolean(KEY_SMART_NOTIF_ENABLED, true)
+    fun isSmartNotifEnabled(context: Context) = prefs(context).getBoolean(KEY_SMART_NOTIF_ENABLED, true)
     fun setSmartNotifEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_ENABLED, v).apply()
 
-    fun isSmartNotifDailyUsage(context: Context)  = prefs(context).getBoolean(KEY_SMART_NOTIF_DAILY_USAGE, true)
+    fun isSmartNotifDailyUsage(context: Context) = prefs(context).getBoolean(KEY_SMART_NOTIF_DAILY_USAGE, true)
     fun setSmartNotifDailyUsage(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_DAILY_USAGE, v).apply()
 
-    fun isSmartNotifUnusedApps(context: Context)  = prefs(context).getBoolean(KEY_SMART_NOTIF_UNUSED_APPS, true)
+    fun isSmartNotifUnusedApps(context: Context) = prefs(context).getBoolean(KEY_SMART_NOTIF_UNUSED_APPS, true)
     fun setSmartNotifUnusedApps(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_UNUSED_APPS, v).apply()
 
-    fun isSmartNotifCatStats(context: Context)    = prefs(context).getBoolean(KEY_SMART_NOTIF_CAT_STATS, true)
+    fun isSmartNotifCatStats(context: Context) = prefs(context).getBoolean(KEY_SMART_NOTIF_CAT_STATS, true)
     fun setSmartNotifCatStats(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_SMART_NOTIF_CAT_STATS, v).apply()
 
-    fun getSmartNotifHour(context: Context): Int  = prefs(context).getInt(KEY_SMART_NOTIF_HOUR, 20)
+    fun getSmartNotifHour(context: Context): Int = prefs(context).getInt(KEY_SMART_NOTIF_HOUR, 20)
     fun setSmartNotifHour(context: Context, h: Int) = prefs(context).edit().putInt(KEY_SMART_NOTIF_HOUR, h).apply()
 
     // Siniflandirma/klasor onerileri sistem bildirimi (ROADMAP #26) — varsayilan KAPALI (yeni ozellik kurali)
@@ -1627,7 +1711,10 @@ object AppPrefs {
     // Varsayilan ACIK (Yeni Ozellik = Ayarlar Kurali).
     const val KEY_CONTACT_SUGGESTIONS_ENABLED = "contact_suggestions_enabled"
     fun isContactSuggestionsEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTACT_SUGGESTIONS_ENABLED, true)
-    fun setContactSuggestionsEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTACT_SUGGESTIONS_ENABLED, v).apply()
+    fun setContactSuggestionsEnabled(
+        context: Context,
+        v: Boolean,
+    ) = prefs(context).edit().putBoolean(KEY_CONTACT_SUGGESTIONS_ENABLED, v).apply()
 
     // ── Gorev Temposu (G1/G7, GOREV_SISTEMI_AKILLI_GELISTIRME_PLANI.md) ────────────────────
     // Kisisel gorev hedefi formulunun katsayisi: hedef = son 7 gun medyani x tempo.

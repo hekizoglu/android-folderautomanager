@@ -1,6 +1,5 @@
 package com.armutlu.apporganizer.utils
 
-import com.armutlu.apporganizer.domain.home.SettingsSection
 import com.armutlu.apporganizer.domain.home.SmartTickerType
 import com.armutlu.apporganizer.domain.home.TickerAction
 import org.junit.Assert.assertEquals
@@ -38,7 +37,7 @@ class TickerComposerTest {
         ZonedDateTime.of(
             java.time.LocalDate.ofEpochDay(epochDay),
             java.time.LocalTime.of(hour, 0),
-            zone
+            zone,
         ).toInstant().toEpochMilli()
 
     private val sampleFolders = listOf(

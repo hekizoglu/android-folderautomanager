@@ -141,7 +141,7 @@ class WrappedEngineTest {
                 previousSnapshot = null,
                 taskScoreContribution = 7,
                 nowMillis = now,
-            )
+            ),
         )
 
         assertEquals(report.pulse.total, report.score.score)
@@ -203,10 +203,10 @@ class WrappedEngineTest {
         val withUncategorized = allCategorized + app("com.c", categoryId = "uncategorized")
 
         val reportEarned = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = allCategorized, notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = allCategorized, notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
         val reportNotEarned = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = withUncategorized, notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = withUncategorized, notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
 
         assertTrue(reportEarned.badges.first { it.id == "organizer" }.earned)
@@ -224,10 +224,10 @@ class WrappedEngineTest {
         }
 
         val twoUnused = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = unusedApps(2), notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = unusedApps(2), notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
         val threeUnused = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = unusedApps(3), notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = unusedApps(3), notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
 
         assertTrue(twoUnused.badges.first { it.id == "minimalist" }.earned)
@@ -240,7 +240,7 @@ class WrappedEngineTest {
             app("com.new.app", categoryId = "productivity", firstInstalledTime = now - 2 * day, installTime = now - 2 * day),
         )
         val report = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
         assertTrue(report.badges.first { it.id == "explorer" }.earned)
     }
@@ -250,10 +250,10 @@ class WrappedEngineTest {
         val apps = listOf(app("com.a", categoryId = "productivity"))
 
         val sevenFolders = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, folderCount = 7, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, folderCount = 7, nowMillis = now),
         )
         val eightFolders = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, folderCount = 8, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, folderCount = 8, nowMillis = now),
         )
 
         assertTrue(!sevenFolders.badges.first { it.id == "folder_collector" }.earned)
@@ -266,7 +266,7 @@ class WrappedEngineTest {
         // dolayisiyla "Gece Kusu / Erken Kalkan" rozeti hic uretilmemeli.
         val apps = listOf(app("com.a", categoryId = "productivity"))
         val report = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
         assertTrue(report.badges.none { it.id.contains("night") || it.id.contains("early") })
     }
@@ -277,7 +277,7 @@ class WrappedEngineTest {
     fun `weekly comparison is null when no previous snapshot exists`() {
         val apps = listOf(app("com.a", categoryId = "productivity", usageCount = 5L))
         val report = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
         assertNull(report.weeklyComparison)
     }
@@ -294,7 +294,7 @@ class WrappedEngineTest {
             savedAtEpochDay = 0L,
         )
         val report = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = previous, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = previous, nowMillis = now),
         )
 
         assertNotNull(report.weeklyComparison)
@@ -313,7 +313,7 @@ class WrappedEngineTest {
             savedAtEpochDay = 0L,
         )
         val report = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = previous, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = previous, nowMillis = now),
         )
 
         val financeGrowth = report.weeklyComparison!!.topGrowingCategories.firstOrNull { it.categoryId == "finance" }
@@ -330,7 +330,7 @@ class WrappedEngineTest {
             app("com.hidden", categoryId = "productivity", usageCount = 999L, isHidden = true),
         )
         val report = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
         assertEquals("com.visible", report.stats.mostOpenedApp?.packageName)
     }
@@ -342,7 +342,7 @@ class WrappedEngineTest {
             app("com.one", categoryId = "productivity", usageCount = 1L),
         )
         val report = WrappedEngine.compute(
-            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now)
+            WrappedEngine.WrappedInput(apps = apps, notificationSummary = null, previousSnapshot = null, nowMillis = now),
         )
         assertEquals("com.one", report.stats.leastOpenedApp?.packageName)
     }

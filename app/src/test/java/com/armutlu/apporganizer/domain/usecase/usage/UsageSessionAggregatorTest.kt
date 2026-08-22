@@ -42,7 +42,13 @@ class UsageSessionAggregatorTest {
     }
 
     @Test fun `lock freezes and unlock resumes active session`() {
-        val events = listOf(resume("a", "A", 1_000), global(UsageEventType.KEYGUARD_SHOWN, 3_000), global(UsageEventType.KEYGUARD_HIDDEN, 8_000), pause("a", "A", 10_000))
+        val events =
+            listOf(
+                resume("a", "A", 1_000),
+                global(UsageEventType.KEYGUARD_SHOWN, 3_000),
+                global(UsageEventType.KEYGUARD_HIDDEN, 8_000),
+                pause("a", "A", 10_000),
+            )
         assertEquals(4_000, run(events, 0, 12_000).single().foregroundDurationMs)
     }
 
@@ -59,7 +65,8 @@ class UsageSessionAggregatorTest {
         val end = Instant.parse("2026-03-29T02:30:00Z").toEpochMilli() // 04:30 local after jump
         val result = UsageSessionAggregator(zone).aggregate(
             listOf(UsageEvent("a", "A", UsageEventType.RESUMED, start), UsageEvent("a", "A", UsageEventType.PAUSED, end)),
-            start, end,
+            start,
+            end,
         )
         assertEquals(2, result.size)
         assertEquals(30 * 60_000L, result[0].foregroundDurationMs)
@@ -83,7 +90,8 @@ class UsageSessionAggregatorTest {
     }
 
     @Test fun `resume after shutdown starts a fresh session`() {
-        val events = listOf(resume("a", "A", 1_000), global(UsageEventType.DEVICE_SHUTDOWN, 3_000), resume("a", "A", 5_000), pause("a", "A", 7_000))
+        val events =
+            listOf(resume("a", "A", 1_000), global(UsageEventType.DEVICE_SHUTDOWN, 3_000), resume("a", "A", 5_000), pause("a", "A", 7_000))
         val result = run(events, 0, 10_000).single()
         assertEquals(2, result.launchCount)
         assertEquals(4_000, result.foregroundDurationMs)

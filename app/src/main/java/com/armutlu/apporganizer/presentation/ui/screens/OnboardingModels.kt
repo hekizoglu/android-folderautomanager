@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -15,15 +14,15 @@ import com.armutlu.apporganizer.R
 // ── Renkler ve gradyanlar ────────────────────────────────────────────────────
 
 internal val OnboardingBackgroundGradient = Brush.verticalGradient(
-    colors = listOf(Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E))
+    colors = listOf(Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E)),
 )
-internal val OnboardingAccentPurple      = Color(0xFF6C63FF)
+internal val OnboardingAccentPurple = Color(0xFF6C63FF)
 internal val OnboardingAccentPurpleLight = Color(0xFF9C8FFF)
 internal val OnboardingButtonGradient = Brush.horizontalGradient(
-    colors = listOf(OnboardingAccentPurple, OnboardingAccentPurpleLight)
+    colors = listOf(OnboardingAccentPurple, OnboardingAccentPurpleLight),
 )
 internal val OnboardingTealGradient = Brush.horizontalGradient(
-    colors = listOf(Color(0xFF00897B), Color(0xFF26C6DA))
+    colors = listOf(Color(0xFF00897B), Color(0xFF26C6DA)),
 )
 
 // ── Yardımcı fonksiyon ───────────────────────────────────────────────────────
@@ -43,20 +42,20 @@ internal enum class OnboardingStep(
     @StringRes val buttonLabelRes: Int,
     @StringRes val whyRes: Int = 0,
     @StringRes val privacyNoteRes: Int = 0,
-    val isSkippable: Boolean = false
+    val isSkippable: Boolean = false,
 ) {
     WELCOME(
         titleRes = R.string.onb_welcome_title,
         descriptionRes = R.string.onb_welcome_desc,
         icon = Icons.Default.Apps,
-        buttonLabelRes = R.string.onb_welcome_btn
+        buttonLabelRes = R.string.onb_welcome_btn,
     ),
     SET_LAUNCHER(
         titleRes = R.string.onb_setlauncher_title,
         descriptionRes = R.string.onb_setlauncher_desc,
         icon = Icons.Default.Home,
         buttonLabelRes = R.string.onb_setlauncher_btn,
-        whyRes = R.string.onb_setlauncher_why
+        whyRes = R.string.onb_setlauncher_why,
     ),
     RESTORE_BACKUP(
         titleRes = R.string.onb_restore_title,
@@ -64,14 +63,14 @@ internal enum class OnboardingStep(
         icon = Icons.Default.Restore,
         buttonLabelRes = R.string.onb_restore_btn,
         whyRes = R.string.onb_restore_why,
-        isSkippable = true
+        isSkippable = true,
     ),
     THEME_SELECT(
         titleRes = R.string.onb_theme_title,
         descriptionRes = R.string.onb_theme_desc,
         icon = Icons.Default.Palette,
         buttonLabelRes = R.string.onb_theme_btn,
-        whyRes = R.string.onb_theme_why
+        whyRes = R.string.onb_theme_why,
     ),
     QUICK_SETTINGS(
         titleRes = R.string.onb_quick_settings_title,
@@ -79,19 +78,19 @@ internal enum class OnboardingStep(
         icon = Icons.Default.Tune,
         buttonLabelRes = R.string.onb_quick_settings_btn,
         whyRes = R.string.onb_quick_settings_why,
-        isSkippable = true
+        isSkippable = true,
     ),
     ORGANIZATION_PREVIEW(
         titleRes = R.string.onb_org_preview_title,
         descriptionRes = R.string.onb_org_preview_desc,
         icon = Icons.Default.Folder,
         buttonLabelRes = R.string.onb_org_preview_btn,
-        whyRes = R.string.onb_org_preview_why
+        whyRes = R.string.onb_org_preview_why,
     ),
     DONE(
         titleRes = R.string.onb_done_title,
         descriptionRes = R.string.onb_done_desc,
         icon = Icons.Default.CheckCircle,
-        buttonLabelRes = R.string.onb_done_btn
-    )
+        buttonLabelRes = R.string.onb_done_btn,
+    ),
 }

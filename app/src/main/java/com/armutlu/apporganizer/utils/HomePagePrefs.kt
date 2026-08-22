@@ -28,8 +28,10 @@ object HomePagePrefs {
     enum class StartPageMode {
         /** Akıllı Dashboard varsa her zaman Dashboard'dan başla. */
         SMART_DASHBOARD,
+
         /** Kullanıcının en son bıraktığı sayfadan devam et. */
         RESTORE_LAST_PAGE,
+
         /** Her zaman ilk klasör sayfasından başla (klasik davranış). */
         FIRST_FOLDER_PAGE,
     }
@@ -125,8 +127,11 @@ object HomePagePrefs {
         return BackupFields(
             startPageMode = sharedPrefs.getString(KEY_HOME_START_PAGE_MODE, null),
             lastPageAnchor = sharedPrefs.getString(KEY_LAST_HOME_PAGE_ANCHOR, null),
-            smartDashboardEnabled = if (sharedPrefs.contains(KEY_SMART_DASHBOARD_ENABLED))
-                sharedPrefs.getBoolean(KEY_SMART_DASHBOARD_ENABLED, true) else null,
+            smartDashboardEnabled = if (sharedPrefs.contains(KEY_SMART_DASHBOARD_ENABLED)) {
+                sharedPrefs.getBoolean(KEY_SMART_DASHBOARD_ENABLED, true)
+            } else {
+                null
+            },
         )
     }
 

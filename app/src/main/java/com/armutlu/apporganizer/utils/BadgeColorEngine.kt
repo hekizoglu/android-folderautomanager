@@ -14,19 +14,19 @@ import com.armutlu.apporganizer.domain.models.Category
  */
 object BadgeColorEngine {
 
-    val Red    = Color(0xFFE53935)
-    val Green  = Color(0xFF43A047)
+    val Red = Color(0xFFE53935)
+    val Green = Color(0xFF43A047)
     val Yellow = Color(0xFFFDD835)
-    val Grey   = Color(0xFF9E9E9E)
+    val Grey = Color(0xFF9E9E9E)
 
     private val messagingCategories = setOf(
         Category.CAT_COMMUNICATION,
         Category.CAT_SOCIAL,
-        Category.CAT_DATING
+        Category.CAT_DATING,
     )
 
     private val alertCategories = setOf(
-        Category.CAT_FINANCE
+        Category.CAT_FINANCE,
     )
 
     private val updateCategories = setOf(
@@ -34,7 +34,7 @@ object BadgeColorEngine {
         Category.CAT_UTILITIES,
         Category.CAT_GOOGLE,
         Category.CAT_SAMSUNG,
-        Category.CAT_MICROSOFT
+        Category.CAT_MICROSOFT,
     )
 
     // Paket adı önekine göre ek tanıma
@@ -44,7 +44,7 @@ object BadgeColorEngine {
         "com.samsung.android.app.clockpackage",
         "com.oneplus.clock",
         "com.miui.clock",
-        "com.coloros.alarmclock"
+        "com.coloros.alarmclock",
     )
 
     private val messagingPkgPrefixes = listOf(
@@ -64,13 +64,13 @@ object BadgeColorEngine {
         "com.slack",
         "com.google.android.apps.messaging",
         "com.samsung.android.messaging",
-        "com.android.mms"
+        "com.android.mms",
     )
 
     private val updatePkgPrefixes = listOf(
         "com.android.vending",
         "com.google.android.packageinstaller",
-        "com.android.packageinstaller"
+        "com.android.packageinstaller",
     )
 
     fun badgeColor(categoryId: String, packageName: String): Color {
@@ -82,9 +82,9 @@ object BadgeColorEngine {
         // Kategori tabanlı eşleşme
         return when (categoryId) {
             in messagingCategories -> Green
-            in alertCategories     -> Red
-            in updateCategories    -> Yellow
-            else                   -> Grey
+            in alertCategories -> Red
+            in updateCategories -> Yellow
+            else -> Grey
         }
     }
 }

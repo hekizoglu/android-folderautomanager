@@ -2,10 +2,10 @@ package com.armutlu.apporganizer.utils
 
 import com.armutlu.apporganizer.domain.models.NotificationCategory
 import com.armutlu.apporganizer.domain.models.NotificationEvent
-import java.util.Calendar
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Calendar
 
 class NotificationAnalyzerTest {
 

@@ -29,8 +29,10 @@ object PulseInputFactory {
     ): PulseInput {
         val apps = appRepository.getAllApps()
         val hasUsageAccess = UsageStatsHelper.hasPermission(context)
-        val dailySessions = (UsageStatsHelper.getDailySessionUsage(context, days = WINDOW_DAYS.toInt())
-            as? UsageStatsHelper.DailySessionResult.Available)?.days
+        val dailySessions = (
+            UsageStatsHelper.getDailySessionUsage(context, days = WINDOW_DAYS.toInt())
+                as? UsageStatsHelper.DailySessionResult.Available
+            )?.days
         val weeklyLaunches = dailySessions?.groupBy { it.packageName }
             ?.mapValues { (_, days) -> days.sumOf { it.launchCount }.toLong() }
 

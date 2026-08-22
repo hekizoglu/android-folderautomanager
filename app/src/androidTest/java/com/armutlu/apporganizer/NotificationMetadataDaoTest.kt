@@ -44,7 +44,7 @@ class NotificationMetadataDaoTest {
                 postedAt = 2_000L,
                 category = NotificationCategory.MESSAGING,
                 score = 65,
-            )
+            ),
         )
         dao.insert(
             event(
@@ -52,7 +52,7 @@ class NotificationMetadataDaoTest {
                 postedAt = 3_000L,
                 category = NotificationCategory.FINANCE,
                 score = 90,
-            )
+            ),
         )
         dao.insert(
             event(
@@ -61,7 +61,7 @@ class NotificationMetadataDaoTest {
                 category = NotificationCategory.PROMOTION,
                 score = 15,
                 suppressed = true,
-            )
+            ),
         )
         dao.insert(
             event(
@@ -69,7 +69,7 @@ class NotificationMetadataDaoTest {
                 postedAt = 500L,
                 category = NotificationCategory.OTHER,
                 score = 35,
-            )
+            ),
         )
 
         val categories = dao.categoryCountsSince(since)

@@ -27,19 +27,19 @@ class AppClassifierEdgeCaseTest {
     private lateinit var mockContext: Context
 
     private val fakeExactMap = mapOf(
-        "com.openai.chatgpt"              to Category.CAT_PRODUCTIVITY,
-        "com.anthropic.claude"            to Category.CAT_PRODUCTIVITY,
-        "com.perplexity.app"              to Category.CAT_PRODUCTIVITY,
-        "com.deepseek.app"                to Category.CAT_PRODUCTIVITY,
-        "com.microsoft.copilot"           to Category.CAT_PRODUCTIVITY,
-        "org.telegram.messenger"          to Category.CAT_COMMUNICATION,
-        "com.whatsapp"                    to Category.CAT_COMMUNICATION,
-        "com.discord"                     to Category.CAT_COMMUNICATION,
-        "com.facebook.katana"             to Category.CAT_SOCIAL,
-        "com.instagram.android"           to Category.CAT_SOCIAL,
-        "com.snapchat.android"            to Category.CAT_SOCIAL,
-        "com.reddit.frontpage"            to Category.CAT_SOCIAL,
-        "com.binance.dev"                 to Category.CAT_FINANCE
+        "com.openai.chatgpt" to Category.CAT_PRODUCTIVITY,
+        "com.anthropic.claude" to Category.CAT_PRODUCTIVITY,
+        "com.perplexity.app" to Category.CAT_PRODUCTIVITY,
+        "com.deepseek.app" to Category.CAT_PRODUCTIVITY,
+        "com.microsoft.copilot" to Category.CAT_PRODUCTIVITY,
+        "org.telegram.messenger" to Category.CAT_COMMUNICATION,
+        "com.whatsapp" to Category.CAT_COMMUNICATION,
+        "com.discord" to Category.CAT_COMMUNICATION,
+        "com.facebook.katana" to Category.CAT_SOCIAL,
+        "com.instagram.android" to Category.CAT_SOCIAL,
+        "com.snapchat.android" to Category.CAT_SOCIAL,
+        "com.reddit.frontpage" to Category.CAT_SOCIAL,
+        "com.binance.dev" to Category.CAT_FINANCE,
     )
 
     @Before
@@ -196,8 +196,8 @@ class AppClassifierEdgeCaseTest {
             Category.CAT_SAMSUNG,
             classifier.classifyApp(
                 appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-                manufacturerClassifyEnabled = true
-            )
+                manufacturerClassifyEnabled = true,
+            ),
         )
     }
 
@@ -207,13 +207,13 @@ class AppClassifierEdgeCaseTest {
             Category.CAT_SAMSUNG,
             classifier.classifyApp(
                 appInfo("com.samsung.unknownfeature", "Samsung Unknown"),
-                manufacturerClassifyEnabled = false
-            )
+                manufacturerClassifyEnabled = false,
+            ),
         )
     }
 
     private fun appInfo(packageName: String, appName: String) = AppInfo(
         packageName = packageName,
-        appName = appName
+        appName = appName,
     )
 }

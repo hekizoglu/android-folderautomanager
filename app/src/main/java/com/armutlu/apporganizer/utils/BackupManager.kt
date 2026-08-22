@@ -36,28 +36,33 @@ object BackupManager {
                 put("exportedAt", System.currentTimeMillis())
 
                 // ── Uygulama listesi ──────────────────────────────────────────────
-                put("apps", JSONArray().apply {
-                    apps.forEach { app ->
-                        put(JSONObject().apply {
-                            put("packageName", app.packageName)
-                            put("categoryId", app.categoryId)
-                            put("isHidden", app.isHidden)
-                            put("usageCount", app.usageCount)
-                            put("launchCount", app.launchCount)
-                            put("lastUsedTimestamp", app.lastUsedTimestamp)
-                            put("notificationCount", app.notificationCount)
-                            put("classificationSource", app.classificationSource)
-                            put("classificationConfidence", app.classificationConfidence)
-                            put("classificationReason", app.classificationReason)
-                            put("classificationReviewState", app.classificationReviewState)
-                            put("isCategoryLocked", app.isCategoryLocked)
-                            put("classificationVersion", app.classificationVersion)
-                            put("lastClassifiedAt", app.lastClassifiedAt)
-                            put("lastReviewedAt", app.lastReviewedAt)
-                            put("reviewSnoozedUntil", app.reviewSnoozedUntil)
-                        })
-                    }
-                })
+                put(
+                    "apps",
+                    JSONArray().apply {
+                        apps.forEach { app ->
+                            put(
+                                JSONObject().apply {
+                                    put("packageName", app.packageName)
+                                    put("categoryId", app.categoryId)
+                                    put("isHidden", app.isHidden)
+                                    put("usageCount", app.usageCount)
+                                    put("launchCount", app.launchCount)
+                                    put("lastUsedTimestamp", app.lastUsedTimestamp)
+                                    put("notificationCount", app.notificationCount)
+                                    put("classificationSource", app.classificationSource)
+                                    put("classificationConfidence", app.classificationConfidence)
+                                    put("classificationReason", app.classificationReason)
+                                    put("classificationReviewState", app.classificationReviewState)
+                                    put("isCategoryLocked", app.isCategoryLocked)
+                                    put("classificationVersion", app.classificationVersion)
+                                    put("lastClassifiedAt", app.lastClassifiedAt)
+                                    put("lastReviewedAt", app.lastReviewedAt)
+                                    put("reviewSnoozedUntil", app.reviewSnoozedUntil)
+                                },
+                            )
+                        }
+                    },
+                )
 
                 // ── Dock ──────────────────────────────────────────────────────────
                 put("dockPackages", JSONArray(DockPrefs.getDockPackages(context)))
@@ -73,92 +78,98 @@ object BackupManager {
                 put("snoozedFolderSuggestions", JSONObject(AppPrefs.getSnoozedFolderSuggestions(context)))
 
                 // ── Gesture aksiyonları ───────────────────────────────────────────
-                put("gestures", JSONObject().apply {
-                    put("doubleTap", AppPrefs.getGestureDoubleTap(context).name)
-                    put("longPress", AppPrefs.getGestureLongPress(context).name)
-                    put("swipeUp", AppPrefs.getGestureSwipeUp(context).name)
-                })
+                put(
+                    "gestures",
+                    JSONObject().apply {
+                        put("doubleTap", AppPrefs.getGestureDoubleTap(context).name)
+                        put("longPress", AppPrefs.getGestureLongPress(context).name)
+                        put("swipeUp", AppPrefs.getGestureSwipeUp(context).name)
+                    },
+                )
 
                 // ── Tema ve görünüm ayarları ──────────────────────────────────────
-                put("settings", JSONObject().apply {
-                    put("allAppsSortMode", AppPrefs.getAllAppsSortMode(context))
-                    put("folderSortMode", AppPrefs.getFolderSortMode(context))
-                    put("folderCarouselEnabled", AppPrefs.isFolderCarouselEnabled(context))
-                    put("folderCarouselPosition", AppPrefs.getFolderCarouselPosition(context))
-                    put("autoBackupEnabled", AppPrefs.isAutoBackupEnabled(context))
-                    put("backupDayOfWeek", AppPrefs.getBackupDayOfWeek(context))
-                    put("backupHour", AppPrefs.getBackupHour(context))
-                    put("backupMinute", AppPrefs.getBackupMinute(context))
-                    put("driveFolderUri", AppPrefs.getDriveFolderUri(context) ?: "")
-                    put("iconPack", AppPrefs.getIconPack(context))
-                    put("labelColor", AppPrefs.getLabelColor(context))
-                    put("folderShape", AppPrefs.getFolderShape(context))
-                    put("folderSizeDp", AppPrefs.getFolderSizeDp(context))
-                    put("bgType", AppPrefs.getBgType(context))
-                    put("bgColor", AppPrefs.getBgColor(context))
-                    put("homeObjectColorMode", AppPrefs.getHomeObjectColorMode(context))
-                    put("homeObjectCustomColor", AppPrefs.getHomeObjectCustomColor(context))
-                    put("textAlpha", AppPrefs.getTextAlpha(context))
-                    put("iconScale", AppPrefs.getIconScale(context))
-                    put("pageSize", AppPrefs.getPageSize(context))
-                    put("homeSearchEnabled", AppPrefs.isHomeSearchEnabled(context))
-                    put("homeAppSearchEnabled", AppPrefs.isHomeAppSearchEnabled(context))
-                    put("fullscreenSearchEnabled", AppPrefs.isFullscreenSearchEnabled(context))
-                    put("folderSearchEnabled", AppPrefs.isFolderSearchEnabled(context))
-                    put("tickerEnabled", AppPrefs.isTickerEnabled(context))
-                    put("widgetAreaEnabled", AppPrefs.isWidgetAreaEnabled(context))
-                    put("widgetAutoResizeEnabled", AppPrefs.isWidgetAutoResizeEnabled(context))
-                    put("favoritesEnabled", AppPrefs.isFavoritesEnabled(context))
-                    put("favoritesEnabledAllApps", AppPrefs.isFavoritesEnabledAllApps(context))
-                    put("recentAppsEnabled", AppPrefs.isRecentAppsEnabled(context))
-                    put("recentAppsEnabledAllApps", AppPrefs.isRecentAppsEnabledAllApps(context))
-                    put("notifAnalyticsEnabled", AppPrefs.isNotifAnalyticsEnabled(context))
-                    put("suggestionsEnabled", AppPrefs.isSuggestionsEnabled(context))
-                    put("searchBarPosition", AppPrefs.getSearchBarPosition(context))
-                    put("searchFuzzyEnabled", AppPrefs.isSearchFuzzyEnabled(context))
-                    put("searchPhoneticEnabled", AppPrefs.isSearchPhoneticEnabled(context))
-                    put("searchInstantEnabled", AppPrefs.isSearchInstantEnabled(context))
-                    put("searchSortByUsage", AppPrefs.isSearchSortByUsage(context))
-                    put("searchMaxResults", AppPrefs.getSearchMaxResults(context))
-                    put("searchShowIcons", AppPrefs.isSearchShowIcons(context))
-                    put("searchShowContactAvatar", AppPrefs.isSearchShowContactAvatar(context))
-                    put("weeklyDigestEnabled", AppPrefs.isWeeklyDigestEnabled(context))
-                    put("wrappedEnabled", AppPrefs.isWrappedEnabled(context))
-                    put("wrappedAiCoachEnabled", AppPrefs.isWrappedAiCoachEnabled(context))
-                    put("goalsEnabled", AppPrefs.isGoalsEnabled(context))
-                    put("privacyReportEnabled", AppPrefs.isPrivacyReportEnabled(context))
-                    put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
-                    put("assistantCardsEnabled", AppPrefs.isAssistantCardsEnabled(context))
-                    put("clockStyle", AppPrefs.getClockStyle(context))
-                    put("folderTransitionEffect", AppPrefs.getFolderTransitionEffect(context))
-                    put("homeScoreVisible", AppPrefs.isHomeScoreVisible(context))
-                    put("digitalLifeCardVisible", AppPrefs.isDigitalLifeCardVisible(context))
-                    put("homeInsightVisible", AppPrefs.isHomeInsightVisible(context))
-                    put("homeUsageChartVisible", AppPrefs.isHomeUsageChartVisible(context))
-                    put("missionsEnabled", AppPrefs.isMissionsEnabled(context))
-                    put("homeWeatherEnabled", AppPrefs.isHomeWeatherEnabled(context))
-                    put("homeWeatherUseLocation", AppPrefs.isHomeWeatherUseLocation(context))
-                    put("homeWeatherManualCity", AppPrefs.getHomeWeatherManualCity(context))
-                    put("searchShineEnabled", AppPrefs.isSearchShineEnabled(context))
-                    put("autoFolderColorEnabled", AppPrefs.isAutoFolderColorEnabled(context))
-                    put("biometricSettingsLockEnabled", AppPrefs.isBiometricSettingsLockEnabled(context))
-                    put("quickWheelEnabled", AppPrefs.isQuickWheelEnabled(context))
-                    put("focusModeEnabled", AppPrefs.isFocusModeEnabled(context))
-                    put("searchWebFallbackEnabled", AppPrefs.isSearchWebFallbackEnabled(context))
-                    put("searchStatsEnabled", AppPrefs.isSearchStatsEnabled(context))
-                    put("searchSourceAppsEnabled", AppPrefs.isSearchSourceAppsEnabled(context))
-                    put("searchSourceCategoriesEnabled", AppPrefs.isSearchSourceCategoriesEnabled(context))
-                    put("searchSourceSettingsEnabled", AppPrefs.isSearchSourceSettingsEnabled(context))
-                    put("searchSourceContactsEnabled", AppPrefs.isSearchSourceContactsEnabled(context))
-                    put("searchSourceFilesEnabled", AppPrefs.isSearchSourceFilesEnabled(context))
-                    put("smartNotifEnabled", AppPrefs.isSmartNotifEnabled(context))
-                    put("smartNotifDailyUsage", AppPrefs.isSmartNotifDailyUsage(context))
-                    put("smartNotifUnusedApps", AppPrefs.isSmartNotifUnusedApps(context))
-                    put("smartNotifCatStats", AppPrefs.isSmartNotifCatStats(context))
-                    put("smartNotifHour", AppPrefs.getSmartNotifHour(context))
-                    // P0.6: tek siniflandirma modu — eski manufacturerClassifyEnabled alaninin yerine gecti
-                    put("classificationMode", AppPrefs.getClassificationMode(context).name)
-                })
+                put(
+                    "settings",
+                    JSONObject().apply {
+                        put("allAppsSortMode", AppPrefs.getAllAppsSortMode(context))
+                        put("folderSortMode", AppPrefs.getFolderSortMode(context))
+                        put("folderCarouselEnabled", AppPrefs.isFolderCarouselEnabled(context))
+                        put("folderCarouselPosition", AppPrefs.getFolderCarouselPosition(context))
+                        put("autoBackupEnabled", AppPrefs.isAutoBackupEnabled(context))
+                        put("backupDayOfWeek", AppPrefs.getBackupDayOfWeek(context))
+                        put("backupHour", AppPrefs.getBackupHour(context))
+                        put("backupMinute", AppPrefs.getBackupMinute(context))
+                        put("driveFolderUri", AppPrefs.getDriveFolderUri(context) ?: "")
+                        put("iconPack", AppPrefs.getIconPack(context))
+                        put("labelColor", AppPrefs.getLabelColor(context))
+                        put("folderShape", AppPrefs.getFolderShape(context))
+                        put("folderSizeDp", AppPrefs.getFolderSizeDp(context))
+                        put("bgType", AppPrefs.getBgType(context))
+                        put("bgColor", AppPrefs.getBgColor(context))
+                        put("homeObjectColorMode", AppPrefs.getHomeObjectColorMode(context))
+                        put("homeObjectCustomColor", AppPrefs.getHomeObjectCustomColor(context))
+                        put("textAlpha", AppPrefs.getTextAlpha(context))
+                        put("iconScale", AppPrefs.getIconScale(context))
+                        put("pageSize", AppPrefs.getPageSize(context))
+                        put("homeSearchEnabled", AppPrefs.isHomeSearchEnabled(context))
+                        put("homeAppSearchEnabled", AppPrefs.isHomeAppSearchEnabled(context))
+                        put("fullscreenSearchEnabled", AppPrefs.isFullscreenSearchEnabled(context))
+                        put("folderSearchEnabled", AppPrefs.isFolderSearchEnabled(context))
+                        put("tickerEnabled", AppPrefs.isTickerEnabled(context))
+                        put("widgetAreaEnabled", AppPrefs.isWidgetAreaEnabled(context))
+                        put("widgetAutoResizeEnabled", AppPrefs.isWidgetAutoResizeEnabled(context))
+                        put("favoritesEnabled", AppPrefs.isFavoritesEnabled(context))
+                        put("favoritesEnabledAllApps", AppPrefs.isFavoritesEnabledAllApps(context))
+                        put("recentAppsEnabled", AppPrefs.isRecentAppsEnabled(context))
+                        put("recentAppsEnabledAllApps", AppPrefs.isRecentAppsEnabledAllApps(context))
+                        put("notifAnalyticsEnabled", AppPrefs.isNotifAnalyticsEnabled(context))
+                        put("suggestionsEnabled", AppPrefs.isSuggestionsEnabled(context))
+                        put("searchBarPosition", AppPrefs.getSearchBarPosition(context))
+                        put("searchFuzzyEnabled", AppPrefs.isSearchFuzzyEnabled(context))
+                        put("searchPhoneticEnabled", AppPrefs.isSearchPhoneticEnabled(context))
+                        put("searchInstantEnabled", AppPrefs.isSearchInstantEnabled(context))
+                        put("searchSortByUsage", AppPrefs.isSearchSortByUsage(context))
+                        put("searchMaxResults", AppPrefs.getSearchMaxResults(context))
+                        put("searchShowIcons", AppPrefs.isSearchShowIcons(context))
+                        put("searchShowContactAvatar", AppPrefs.isSearchShowContactAvatar(context))
+                        put("weeklyDigestEnabled", AppPrefs.isWeeklyDigestEnabled(context))
+                        put("wrappedEnabled", AppPrefs.isWrappedEnabled(context))
+                        put("wrappedAiCoachEnabled", AppPrefs.isWrappedAiCoachEnabled(context))
+                        put("goalsEnabled", AppPrefs.isGoalsEnabled(context))
+                        put("privacyReportEnabled", AppPrefs.isPrivacyReportEnabled(context))
+                        put("contextualDockEnabled", AppPrefs.isContextualDockEnabled(context))
+                        put("assistantCardsEnabled", AppPrefs.isAssistantCardsEnabled(context))
+                        put("clockStyle", AppPrefs.getClockStyle(context))
+                        put("folderTransitionEffect", AppPrefs.getFolderTransitionEffect(context))
+                        put("homeScoreVisible", AppPrefs.isHomeScoreVisible(context))
+                        put("digitalLifeCardVisible", AppPrefs.isDigitalLifeCardVisible(context))
+                        put("homeInsightVisible", AppPrefs.isHomeInsightVisible(context))
+                        put("homeUsageChartVisible", AppPrefs.isHomeUsageChartVisible(context))
+                        put("missionsEnabled", AppPrefs.isMissionsEnabled(context))
+                        put("homeWeatherEnabled", AppPrefs.isHomeWeatherEnabled(context))
+                        put("homeWeatherUseLocation", AppPrefs.isHomeWeatherUseLocation(context))
+                        put("homeWeatherManualCity", AppPrefs.getHomeWeatherManualCity(context))
+                        put("searchShineEnabled", AppPrefs.isSearchShineEnabled(context))
+                        put("autoFolderColorEnabled", AppPrefs.isAutoFolderColorEnabled(context))
+                        put("biometricSettingsLockEnabled", AppPrefs.isBiometricSettingsLockEnabled(context))
+                        put("quickWheelEnabled", AppPrefs.isQuickWheelEnabled(context))
+                        put("focusModeEnabled", AppPrefs.isFocusModeEnabled(context))
+                        put("searchWebFallbackEnabled", AppPrefs.isSearchWebFallbackEnabled(context))
+                        put("searchStatsEnabled", AppPrefs.isSearchStatsEnabled(context))
+                        put("searchSourceAppsEnabled", AppPrefs.isSearchSourceAppsEnabled(context))
+                        put("searchSourceCategoriesEnabled", AppPrefs.isSearchSourceCategoriesEnabled(context))
+                        put("searchSourceSettingsEnabled", AppPrefs.isSearchSourceSettingsEnabled(context))
+                        put("searchSourceContactsEnabled", AppPrefs.isSearchSourceContactsEnabled(context))
+                        put("searchSourceFilesEnabled", AppPrefs.isSearchSourceFilesEnabled(context))
+                        put("smartNotifEnabled", AppPrefs.isSmartNotifEnabled(context))
+                        put("smartNotifDailyUsage", AppPrefs.isSmartNotifDailyUsage(context))
+                        put("smartNotifUnusedApps", AppPrefs.isSmartNotifUnusedApps(context))
+                        put("smartNotifCatStats", AppPrefs.isSmartNotifCatStats(context))
+                        put("smartNotifHour", AppPrefs.getSmartNotifHour(context))
+                        // P0.6: tek siniflandirma modu — eski manufacturerClassifyEnabled alaninin yerine gecti
+                        put("classificationMode", AppPrefs.getClassificationMode(context).name)
+                    },
+                )
                 put("homeLayout", homeLayoutToJson(HomeLayoutPrefs.read(context)))
                 put("homePagePrefs", homePagePrefsToJson(HomePagePrefs.toBackupFields(context)))
                 put(
@@ -176,19 +187,24 @@ object BackupManager {
             JSONObject().apply {
                 put("version", 2)
                 put("exportedAt", System.currentTimeMillis())
-                put("apps", JSONArray().apply {
-                    apps.forEach { app ->
-                        put(JSONObject().apply {
-                            put("packageName", app.packageName)
-                            put("categoryId", app.categoryId)
-                            put("isHidden", app.isHidden)
-                            put("usageCount", app.usageCount)
-                            put("launchCount", app.launchCount)
-                            put("lastUsedTimestamp", app.lastUsedTimestamp)
-                            put("notificationCount", app.notificationCount)
-                        })
-                    }
-                })
+                put(
+                    "apps",
+                    JSONArray().apply {
+                        apps.forEach { app ->
+                            put(
+                                JSONObject().apply {
+                                    put("packageName", app.packageName)
+                                    put("categoryId", app.categoryId)
+                                    put("isHidden", app.isHidden)
+                                    put("usageCount", app.usageCount)
+                                    put("launchCount", app.launchCount)
+                                    put("lastUsedTimestamp", app.lastUsedTimestamp)
+                                    put("notificationCount", app.notificationCount)
+                                },
+                            )
+                        }
+                    },
+                )
             }.toString(2)
         }
 
@@ -203,7 +219,7 @@ object BackupManager {
                 val uri = FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider",
-                    file
+                    file,
                 )
                 Intent(Intent.ACTION_SEND).apply {
                     type = "application/json"
@@ -222,7 +238,7 @@ object BackupManager {
         context: Context,
         json: String,
         repository: AppRepository,
-        searchRepository: SearchRepository? = null
+        searchRepository: SearchRepository? = null,
     ): ImportResult = withContext(Dispatchers.IO) {
         runCatching {
             val root = JSONObject(json)
@@ -249,22 +265,25 @@ object BackupManager {
                                     classificationSource = obj.optString("classificationSource", current.classificationSource),
                                     classificationConfidence = obj.optInt("classificationConfidence", current.classificationConfidence),
                                     classificationReason = obj.optString("classificationReason", current.classificationReason),
-                                    classificationReviewState = obj.optString("classificationReviewState", current.classificationReviewState),
+                                    classificationReviewState = obj.optString(
+                                        "classificationReviewState",
+                                        current.classificationReviewState,
+                                    ),
                                     isCategoryLocked = obj.optBoolean("isCategoryLocked", current.isCategoryLocked),
                                     classificationVersion = obj.optInt("classificationVersion", current.classificationVersion),
                                     lastClassifiedAt = obj.optLong("lastClassifiedAt", current.lastClassifiedAt),
                                     lastReviewedAt = obj.optLong("lastReviewedAt", current.lastReviewedAt),
                                     reviewSnoozedUntil = obj.optLong("reviewSnoozedUntil", current.reviewSnoozedUntil),
                                 ),
-                                cat
+                                cat,
                             )
                         } else {
                             repository.updateAppCategory(pkg, cat)
                         }
                         repository.updateAppHidden(pkg, hidden)
-                        val usageCount = obj.optLong("usageCount", 0L)   // ms (eski yedekler de ms tutar)
+                        val usageCount = obj.optLong("usageCount", 0L) // ms (eski yedekler de ms tutar)
                         val launchCount = obj.optLong("launchCount", 0L)
-                        val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
+                        val lastUsed = obj.optLong("lastUsedTimestamp", 0L)
                         val notificationCount = obj.optInt("notificationCount", 0)
                         if (obj.has("usageCount")) repository.updateUsageTimeMs(pkg, usageCount)
                         if (obj.has("launchCount")) repository.updateLaunchCount(pkg, launchCount)
@@ -305,13 +324,13 @@ object BackupManager {
                 root.optJSONArray("dismissedFolderSuggestions")?.let { arr ->
                     AppPrefs.setDismissedFolderSuggestions(
                         context,
-                        (0 until arr.length()).map { arr.getString(it) }.toSet()
+                        (0 until arr.length()).map { arr.getString(it) }.toSet(),
                     )
                 }
                 root.optJSONObject("snoozedFolderSuggestions")?.let { obj ->
                     AppPrefs.setSnoozedFolderSuggestions(
                         context,
-                        obj.keys().asSequence().associateWith { obj.getString(it) }
+                        obj.keys().asSequence().associateWith { obj.getString(it) },
                     )
                 }
 
@@ -359,16 +378,36 @@ object BackupManager {
                     if (s.has("pageSize")) AppPrefs.setPageSize(context, s.getInt("pageSize"))
                     if (s.has("homeSearchEnabled")) AppPrefs.setHomeSearchEnabled(context, s.getBoolean("homeSearchEnabled"))
                     if (s.has("homeAppSearchEnabled")) AppPrefs.setHomeAppSearchEnabled(context, s.getBoolean("homeAppSearchEnabled"))
-                    if (s.has("fullscreenSearchEnabled")) AppPrefs.setFullscreenSearchEnabled(context, s.getBoolean("fullscreenSearchEnabled"))
+                    if (s.has(
+                            "fullscreenSearchEnabled",
+                        )
+                    ) {
+                        AppPrefs.setFullscreenSearchEnabled(context, s.getBoolean("fullscreenSearchEnabled"))
+                    }
                     if (s.has("folderSearchEnabled")) AppPrefs.setFolderSearchEnabled(context, s.getBoolean("folderSearchEnabled"))
                     if (s.has("tickerEnabled")) AppPrefs.setTickerEnabled(context, s.getBoolean("tickerEnabled"))
                     if (s.has("widgetAreaEnabled")) AppPrefs.setWidgetAreaEnabled(context, s.getBoolean("widgetAreaEnabled"))
                     AppPrefs.clearLegacyFolderBlurPreference(context)
-                    if (s.has("widgetAutoResizeEnabled")) AppPrefs.setWidgetAutoResizeEnabled(context, s.getBoolean("widgetAutoResizeEnabled"))
+                    if (s.has(
+                            "widgetAutoResizeEnabled",
+                        )
+                    ) {
+                        AppPrefs.setWidgetAutoResizeEnabled(context, s.getBoolean("widgetAutoResizeEnabled"))
+                    }
                     if (s.has("favoritesEnabled")) AppPrefs.setFavoritesEnabled(context, s.getBoolean("favoritesEnabled"))
-                    if (s.has("favoritesEnabledAllApps")) AppPrefs.setFavoritesEnabledAllApps(context, s.getBoolean("favoritesEnabledAllApps"))
+                    if (s.has(
+                            "favoritesEnabledAllApps",
+                        )
+                    ) {
+                        AppPrefs.setFavoritesEnabledAllApps(context, s.getBoolean("favoritesEnabledAllApps"))
+                    }
                     if (s.has("recentAppsEnabled")) AppPrefs.setRecentAppsEnabled(context, s.getBoolean("recentAppsEnabled"))
-                    if (s.has("recentAppsEnabledAllApps")) AppPrefs.setRecentAppsEnabledAllApps(context, s.getBoolean("recentAppsEnabledAllApps"))
+                    if (s.has(
+                            "recentAppsEnabledAllApps",
+                        )
+                    ) {
+                        AppPrefs.setRecentAppsEnabledAllApps(context, s.getBoolean("recentAppsEnabledAllApps"))
+                    }
                     if (s.has("notifAnalyticsEnabled")) AppPrefs.setNotifAnalyticsEnabled(context, s.getBoolean("notifAnalyticsEnabled"))
                     if (s.has("suggestionsEnabled")) AppPrefs.setSuggestionsEnabled(context, s.getBoolean("suggestionsEnabled"))
                     s.optString("searchBarPosition").takeIf { it.isNotEmpty() }
@@ -379,7 +418,12 @@ object BackupManager {
                     if (s.has("searchSortByUsage")) AppPrefs.setSearchSortByUsage(context, s.getBoolean("searchSortByUsage"))
                     if (s.has("searchMaxResults")) AppPrefs.setSearchMaxResults(context, s.getInt("searchMaxResults"))
                     if (s.has("searchShowIcons")) AppPrefs.setSearchShowIcons(context, s.getBoolean("searchShowIcons"))
-                    if (s.has("searchShowContactAvatar")) AppPrefs.setSearchShowContactAvatar(context, s.getBoolean("searchShowContactAvatar"))
+                    if (s.has(
+                            "searchShowContactAvatar",
+                        )
+                    ) {
+                        AppPrefs.setSearchShowContactAvatar(context, s.getBoolean("searchShowContactAvatar"))
+                    }
                     if (s.has("weeklyDigestEnabled")) AppPrefs.setWeeklyDigestEnabled(context, s.getBoolean("weeklyDigestEnabled"))
                     if (s.has("wrappedEnabled")) AppPrefs.setWrappedEnabled(context, s.getBoolean("wrappedEnabled"))
                     if (s.has("wrappedAiCoachEnabled")) AppPrefs.setWrappedAiCoachEnabled(context, s.getBoolean("wrappedAiCoachEnabled"))
@@ -401,16 +445,51 @@ object BackupManager {
                     if (s.has("homeWeatherManualCity")) AppPrefs.setHomeWeatherManualCity(context, s.optString("homeWeatherManualCity"))
                     if (s.has("searchShineEnabled")) AppPrefs.setSearchShineEnabled(context, s.getBoolean("searchShineEnabled"))
                     if (s.has("autoFolderColorEnabled")) AppPrefs.setAutoFolderColorEnabled(context, s.getBoolean("autoFolderColorEnabled"))
-                    if (s.has("biometricSettingsLockEnabled")) AppPrefs.setBiometricSettingsLockEnabled(context, s.getBoolean("biometricSettingsLockEnabled"))
+                    if (s.has(
+                            "biometricSettingsLockEnabled",
+                        )
+                    ) {
+                        AppPrefs.setBiometricSettingsLockEnabled(context, s.getBoolean("biometricSettingsLockEnabled"))
+                    }
                     if (s.has("quickWheelEnabled")) AppPrefs.setQuickWheelEnabled(context, s.getBoolean("quickWheelEnabled"))
                     if (s.has("focusModeEnabled")) AppPrefs.setFocusModeEnabled(context, s.getBoolean("focusModeEnabled"))
-                    if (s.has("searchWebFallbackEnabled")) AppPrefs.setSearchWebFallbackEnabled(context, s.getBoolean("searchWebFallbackEnabled"))
+                    if (s.has(
+                            "searchWebFallbackEnabled",
+                        )
+                    ) {
+                        AppPrefs.setSearchWebFallbackEnabled(context, s.getBoolean("searchWebFallbackEnabled"))
+                    }
                     if (s.has("searchStatsEnabled")) AppPrefs.setSearchStatsEnabled(context, s.getBoolean("searchStatsEnabled"))
-                    if (s.has("searchSourceAppsEnabled")) AppPrefs.setSearchSourceAppsEnabled(context, s.getBoolean("searchSourceAppsEnabled"))
-                    if (s.has("searchSourceCategoriesEnabled")) AppPrefs.setSearchSourceCategoriesEnabled(context, s.getBoolean("searchSourceCategoriesEnabled"))
-                    if (s.has("searchSourceSettingsEnabled")) AppPrefs.setSearchSourceSettingsEnabled(context, s.getBoolean("searchSourceSettingsEnabled"))
-                    if (s.has("searchSourceContactsEnabled")) AppPrefs.setSearchSourceContactsEnabled(context, s.getBoolean("searchSourceContactsEnabled"))
-                    if (s.has("searchSourceFilesEnabled")) AppPrefs.setSearchSourceFilesEnabled(context, s.getBoolean("searchSourceFilesEnabled"))
+                    if (s.has(
+                            "searchSourceAppsEnabled",
+                        )
+                    ) {
+                        AppPrefs.setSearchSourceAppsEnabled(context, s.getBoolean("searchSourceAppsEnabled"))
+                    }
+                    if (s.has(
+                            "searchSourceCategoriesEnabled",
+                        )
+                    ) {
+                        AppPrefs.setSearchSourceCategoriesEnabled(context, s.getBoolean("searchSourceCategoriesEnabled"))
+                    }
+                    if (s.has(
+                            "searchSourceSettingsEnabled",
+                        )
+                    ) {
+                        AppPrefs.setSearchSourceSettingsEnabled(context, s.getBoolean("searchSourceSettingsEnabled"))
+                    }
+                    if (s.has(
+                            "searchSourceContactsEnabled",
+                        )
+                    ) {
+                        AppPrefs.setSearchSourceContactsEnabled(context, s.getBoolean("searchSourceContactsEnabled"))
+                    }
+                    if (s.has(
+                            "searchSourceFilesEnabled",
+                        )
+                    ) {
+                        AppPrefs.setSearchSourceFilesEnabled(context, s.getBoolean("searchSourceFilesEnabled"))
+                    }
                     if (s.has("smartNotifEnabled")) AppPrefs.setSmartNotifEnabled(context, s.getBoolean("smartNotifEnabled"))
                     if (s.has("smartNotifDailyUsage")) AppPrefs.setSmartNotifDailyUsage(context, s.getBoolean("smartNotifDailyUsage"))
                     if (s.has("smartNotifUnusedApps")) AppPrefs.setSmartNotifUnusedApps(context, s.getBoolean("smartNotifUnusedApps"))
@@ -435,7 +514,7 @@ object BackupManager {
                             AppPrefs.getLlmCategoryCache(context).isNotEmpty()
                         AppPrefs.setClassificationMode(
                             context,
-                            AppPrefs.deriveClassificationMode(manufacturerEnabled, llmEverUsed)
+                            AppPrefs.deriveClassificationMode(manufacturerEnabled, llmEverUsed),
                         )
                     }
                 }
@@ -492,7 +571,7 @@ object BackupManager {
                 contentOrder = json.opt("homeContentOrder") as? String,
                 hiddenSections = json.opt("homeHiddenSections") as? String,
                 customized = json.opt("homeLayoutCustomized") as? Boolean,
-            )
+            ),
         )
 
     // P02: Semantik sayfa preference'ları — categoryId gibi klasör kimlikleri backup içeriğine
@@ -527,9 +606,9 @@ object BackupManager {
                     if (repository.appExists(pkg)) {
                         repository.updateAppCategory(pkg, cat)
                         repository.updateAppHidden(pkg, hidden)
-                        val usageCount = obj.optLong("usageCount", 0L)   // ms (eski yedekler de ms tutar)
+                        val usageCount = obj.optLong("usageCount", 0L) // ms (eski yedekler de ms tutar)
                         val launchCount = obj.optLong("launchCount", 0L)
-                        val lastUsed   = obj.optLong("lastUsedTimestamp", 0L)
+                        val lastUsed = obj.optLong("lastUsedTimestamp", 0L)
                         if (obj.has("usageCount")) repository.updateUsageTimeMs(pkg, usageCount)
                         if (obj.has("launchCount")) repository.updateLaunchCount(pkg, launchCount)
                         if (obj.has("lastUsedTimestamp")) repository.updateLastUsedTimestamp(pkg, lastUsed)
@@ -547,7 +626,7 @@ object BackupManager {
 
     private suspend fun syncSearchSourcesAfterRestore(
         context: Context,
-        searchRepository: SearchRepository?
+        searchRepository: SearchRepository?,
     ) {
         if (searchRepository == null) {
             Timber.w("Backup restore: SearchRepository yok, arama kaynak lifecycle senkronu atlandi")
@@ -572,6 +651,6 @@ object BackupManager {
         val updatedCount: Int = 0,
         val error: String? = null,
         val missingPackages: List<String> = emptyList(),
-        val restoredVersion: Int = 0
+        val restoredVersion: Int = 0,
     )
 }

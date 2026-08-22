@@ -106,7 +106,7 @@ fun SettingsLockGate(content: @Composable () -> Unit) {
                 unlocked = true
                 SettingsLockSession.unlocked = true
             },
-            onFailure = { /* kullanıcı "Tekrar dene" ile yeniden deneyebilir */ }
+            onFailure = { /* kullanıcı "Tekrar dene" ile yeniden deneyebilir */ },
         )
     }
 
@@ -124,19 +124,19 @@ private fun SettingsLockPlaceholder(onRetry: () -> Unit) {
             .fillMaxSize()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
     ) {
         Icon(
             imageVector = Icons.Default.Lock,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.height(48.dp)
+            modifier = Modifier.height(48.dp),
         )
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.settings_lock_waiting_title),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(20.dp))
         Button(onClick = onRetry) {

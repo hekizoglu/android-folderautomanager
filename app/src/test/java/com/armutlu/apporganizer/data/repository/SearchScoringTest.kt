@@ -64,6 +64,6 @@ class SearchScoringTest {
     @Test
     fun `subtitle da arama yapilir`() {
         val score = SearchRepository.calculateScore("messaging", "Telegram", "messaging app")
-        assertTrue(score.score > 0)  // subtitle'da bulunur
+        assertTrue(score.score > 0) // subtitle'da bulunur
     }
 }

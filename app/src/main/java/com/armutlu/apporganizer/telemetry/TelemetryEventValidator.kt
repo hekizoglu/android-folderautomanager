@@ -4,7 +4,8 @@ object TelemetryEventValidator {
     private const val MAX_PARAMETER_VALUE_LENGTH = 40
     private val snakeCase = Regex("^[a-z][a-z0-9_]{0,39}$")
     private val reservedPrefixes = listOf("firebase_", "google_", "ga_")
-    private val forbiddenKeys = setOf("query", "name", "phone", "path", "package", "package_name", "notification_text", "folder_name", "category_name", "file_name", "email")
+    private val forbiddenKeys =
+        setOf("query", "name", "phone", "path", "package", "package_name", "notification_text", "folder_name", "category_name", "file_name", "email")
 
     private fun values(entries: Array<out TelemetryEvent.WireValue>) = entries.map { it.wireValue }.toSet()
     internal val catalog: Map<String, Map<String, Set<String>>> = mapOf(
@@ -24,15 +25,27 @@ object TelemetryEventValidator {
         "widget_added" to mapOf("widget_type" to values(TelemetryEvent.WidgetType.entries.toTypedArray())),
         "health_warning" to mapOf("warning_code" to values(TelemetryEvent.WarningCode.entries.toTypedArray()), "severity" to values(TelemetryEvent.Severity.entries.toTypedArray()), "version" to values(TelemetryEvent.VersionBucket.entries.toTypedArray())),
         "daily_usage_summary" to mapOf(
-            "search_count_bucket" to CountBucket.entries.map { it.wireValue }.toSet(), "folder_open_count_bucket" to CountBucket.entries.map { it.wireValue }.toSet(),
-            "mission_complete_bucket" to CountBucket.entries.map { it.wireValue }.toSet(), "report_view_bucket" to CountBucket.entries.map { it.wireValue }.toSet(),
-            "widget_active" to setOf("true", "false"), "top_feature" to setOf("search", "folder", "mission", "report", "none")
+            "search_count_bucket" to CountBucket.entries.map {
+                it.wireValue
+            }.toSet(),
+            "folder_open_count_bucket" to CountBucket.entries.map { it.wireValue }.toSet(),
+            "mission_complete_bucket" to CountBucket.entries.map {
+                it.wireValue
+            }.toSet(),
+            "report_view_bucket" to CountBucket.entries.map { it.wireValue }.toSet(),
+            "widget_active" to setOf("true", "false"), "top_feature" to setOf("search", "folder", "mission", "report", "none"),
         ),
         "daily_health_summary" to mapOf(
             "health_score_bucket" to setOf("0_9", "10_19", "20_29", "30_39", "40_49", "50_59", "60_69", "70_79", "80_89", "90_100", "unknown"),
-            "warning_count_bucket" to CountBucket.entries.map { it.wireValue }.toSet(), "classification_consistent" to setOf("true", "false", "unknown"),
-            "worker_failure_bucket" to CountBucket.entries.map { it.wireValue }.toSet(), "search_latency_bucket" to setOf("under_50_ms", "50_99_ms", "100_249_ms", "250_499_ms", "500_999_ms", "1_3_sec", "over_3_sec", "unknown"),
-            "file_index_age_bucket" to setOf("under_24_hours", "1_3_days", "4_7_days", "over_7_days", "unknown")
+            "warning_count_bucket" to CountBucket.entries.map {
+                it.wireValue
+            }.toSet(),
+            "classification_consistent" to setOf("true", "false", "unknown"),
+            "worker_failure_bucket" to CountBucket.entries.map {
+                it.wireValue
+            }.toSet(),
+            "search_latency_bucket" to setOf("under_50_ms", "50_99_ms", "100_249_ms", "250_499_ms", "500_999_ms", "1_3_sec", "over_3_sec", "unknown"),
+            "file_index_age_bucket" to setOf("under_24_hours", "1_3_days", "4_7_days", "over_7_days", "unknown"),
         ),
         // Döngü U02 — ana ekran görev/skor/şerit telemetrisi (roadmap satır 1992-2055).
         "home_mission_card_viewed" to mapOf("mission_type" to values(TelemetryEvent.HomeMissionType.entries.toTypedArray()), "status" to values(TelemetryEvent.HomeMissionStatus.entries.toTypedArray())),

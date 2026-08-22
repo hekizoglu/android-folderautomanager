@@ -58,13 +58,13 @@ fun SettingsStatsScreen(
     val otherApps by viewModel.otherApps.collectAsState()
 
     SettingsSubScreenScaffold(title = "İstatistikler & Raporlar", onNavigateBack = onNavigateBack) {
-
         // ── İstatistikler ─────────────────────────────────────────────────
         item { SettingsSectionTitle("İstatistikler") }
         item {
             val lastBackupMs = AppPrefs.getLastBackupTime(context)
-            val lastBackupText = if (lastBackupMs == 0L) "Henüz yedeklenmedi"
-            else {
+            val lastBackupText = if (lastBackupMs == 0L) {
+                "Henüz yedeklenmedi"
+            } else {
                 val sdf = java.text.SimpleDateFormat("dd MMM yyyy HH:mm", java.util.Locale("tr"))
                 sdf.format(java.util.Date(lastBackupMs))
             }
@@ -78,15 +78,35 @@ fun SettingsStatsScreen(
             }
             SettingsCard {
                 SettingsInfoRow(icon = Icons.Default.Apps, title = "Toplam Uygulama", subtitle = "${state.totalAppsCount}")
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsInfoRow(icon = Icons.Default.Folder, title = "Kategori Sayısı", subtitle = "${state.categories.size}")
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                SettingsButtonRow(icon = Icons.AutoMirrored.Filled.HelpOutline, title = "Sınıflandırılmamış", subtitle = "${otherApps.size} uygulama", onClick = onNavigateToClassificationReview)
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
+                SettingsButtonRow(
+                    icon = Icons.AutoMirrored.Filled.HelpOutline,
+                    title = "Sınıflandırılmamış",
+                    subtitle = "${otherApps.size} uygulama",
+                    onClick = onNavigateToClassificationReview,
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsInfoRow(icon = Icons.Default.VisibilityOff, title = "Gizli Uygulama", subtitle = "${hiddenApps.size}")
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsInfoRow(icon = Icons.Default.BarChart, title = "En Çok Dolu Kategori", subtitle = topCategory)
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsInfoRow(icon = Icons.Default.Backup, title = "Son Yedekleme", subtitle = lastBackupText)
             }
         }
@@ -100,12 +120,19 @@ fun SettingsStatsScreen(
 
             if (summary.totalSearches == 0) {
                 SettingsCard {
-                    SettingsInfoRow(icon = Icons.Default.Search, title = stringResource(R.string.settings_stats_search_empty_title), subtitle = stringResource(R.string.settings_stats_search_empty_subtitle))
+                    SettingsInfoRow(
+                        icon = Icons.Default.Search,
+                        title = stringResource(R.string.settings_stats_search_empty_title),
+                        subtitle = stringResource(R.string.settings_stats_search_empty_subtitle),
+                    )
                 }
             } else {
                 val zeroResultPct = (summary.zeroResultCount * 100.0 / summary.totalSearches).roundToInt()
-                val firstResultPct = if (summary.totalClicks > 0)
-                    (summary.firstResultClicks * 100.0 / summary.totalClicks).roundToInt() else 0
+                val firstResultPct = if (summary.totalClicks > 0) {
+                    (summary.firstResultClicks * 100.0 / summary.totalClicks).roundToInt()
+                } else {
+                    0
+                }
                 val typeDistribution = summary.clickCountsByType.entries
                     .sortedByDescending { it.value }
                     .joinToString(", ") { (type, count) ->
@@ -116,17 +143,56 @@ fun SettingsStatsScreen(
                     ?.let { (type, count) -> "${actionTypeLabel(type)} ($count)" } ?: "-"
 
                 SettingsCard {
-                    SettingsInfoRow(icon = Icons.Default.Search, title = stringResource(R.string.settings_stats_search_total), subtitle = "${summary.totalSearches}")
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.AutoMirrored.Filled.HelpOutline, title = stringResource(R.string.settings_stats_search_zero_result_rate), subtitle = "%$zeroResultPct")
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.Timer, title = stringResource(R.string.settings_stats_search_avg_latency), subtitle = stringResource(R.string.settings_stats_search_avg_latency_value, summary.avgLatencyMs))
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.TouchApp, title = stringResource(R.string.settings_stats_search_first_click_rate), subtitle = "%$firstResultPct")
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.PieChart, title = stringResource(R.string.settings_stats_search_type_distribution), subtitle = typeDistribution)
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    SettingsInfoRow(icon = Icons.Default.Bolt, title = stringResource(R.string.settings_stats_search_top_action), subtitle = topAction)
+                    SettingsInfoRow(
+                        icon = Icons.Default.Search,
+                        title = stringResource(R.string.settings_stats_search_total),
+                        subtitle = "${summary.totalSearches}",
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.AutoMirrored.Filled.HelpOutline,
+                        title = stringResource(R.string.settings_stats_search_zero_result_rate),
+                        subtitle = "%$zeroResultPct",
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Default.Timer,
+                        title = stringResource(R.string.settings_stats_search_avg_latency),
+                        subtitle = stringResource(R.string.settings_stats_search_avg_latency_value, summary.avgLatencyMs),
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Default.TouchApp,
+                        title = stringResource(R.string.settings_stats_search_first_click_rate),
+                        subtitle = "%$firstResultPct",
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Default.PieChart,
+                        title = stringResource(R.string.settings_stats_search_type_distribution),
+                        subtitle = typeDistribution,
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
+                    SettingsInfoRow(
+                        icon = Icons.Default.Bolt,
+                        title = stringResource(R.string.settings_stats_search_top_action),
+                        subtitle = topAction,
+                    )
                 }
             }
 
@@ -148,7 +214,7 @@ fun SettingsStatsScreen(
             var notifAnalytics by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_NOTIF_ANALYTICS_ENABLED,
-                read = { AppPrefs.isNotifAnalyticsEnabled(context) }
+                read = { AppPrefs.isNotifAnalyticsEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -161,14 +227,20 @@ fun SettingsStatsScreen(
                         AppPrefs.setNotifAnalyticsEnabled(context, it)
                     },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsButtonRow(
                     icon = Icons.Default.Dashboard,
                     title = "Raporlar Merkezi",
                     subtitle = "Genel bakış ve kullanım raporlarını tek yerden aç",
                     onClick = onNavigateToReportsCenter,
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsButtonRow(
                     icon = Icons.Default.Notifications,
                     title = "Bildirim Raporu",
@@ -184,7 +256,7 @@ fun SettingsStatsScreen(
             var missionsEnabled by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_MISSIONS_ENABLED,
-                read = { AppPrefs.isMissionsEnabled(context) }
+                read = { AppPrefs.isMissionsEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -198,7 +270,10 @@ fun SettingsStatsScreen(
                     },
                 )
                 if (missionsEnabled) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     SettingsButtonRow(
                         icon = Icons.Default.EmojiEvents,
                         title = stringResource(R.string.missions_settings_open_title),
@@ -208,11 +283,14 @@ fun SettingsStatsScreen(
                     // Dongu G5 — Kutlama & Mikro-etkilesim: gorev sistemi kapaliyken bu toggle
                     // zaten anlamsiz (gorevler hic gorunmuyor), bu yuzden SADECE missionsEnabled
                     // acikken gosterilir.
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     var celebrationsEnabled by rememberBooleanPreferenceState(
                         context = context,
                         key = AppPrefs.KEY_MISSION_CELEBRATIONS,
-                        read = { AppPrefs.isMissionCelebrationsEnabled(context) }
+                        read = { AppPrefs.isMissionCelebrationsEnabled(context) },
                     )
                     SettingsSwitchRow(
                         icon = Icons.Default.AutoAwesome,
@@ -228,11 +306,14 @@ fun SettingsStatsScreen(
                     // Zaman-Kisitli Gorev — DAILY_NO_LATE_NIGHT'in kullanici-tanimli saat
                     // araligina genellenmis hali. Kapaliyken TYPE_NO_USAGE_IN_TIME_WINDOW gorev
                     // havuzuna girmez (MissionEngine.isEligible()).
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    )
                     var timeWindowMissionEnabled by rememberBooleanPreferenceState(
                         context = context,
                         key = AppPrefs.KEY_TIME_WINDOW_MISSION_ENABLED,
-                        read = { AppPrefs.isTimeWindowMissionEnabled(context) }
+                        read = { AppPrefs.isTimeWindowMissionEnabled(context) },
                     )
                     SettingsSwitchRow(
                         icon = Icons.Default.NightsStay,
@@ -245,7 +326,10 @@ fun SettingsStatsScreen(
                         },
                     )
                     if (timeWindowMissionEnabled) {
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        )
                         var timeWindowStartHour by remember { mutableIntStateOf(AppPrefs.getTimeWindowStartHour(context)) }
                         var timeWindowEndHour by remember { mutableIntStateOf(AppPrefs.getTimeWindowEndHour(context)) }
                         var startHourMenuExpanded by remember { mutableStateOf(false) }
@@ -273,7 +357,12 @@ fun SettingsStatsScreen(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
-                                    Icon(Icons.Default.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                    Icon(
+                                        Icons.Default.ExpandMore,
+                                        null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(20.dp),
+                                    )
                                 }
                                 DropdownMenu(expanded = startHourMenuExpanded, onDismissRequest = { startHourMenuExpanded = false }) {
                                     hourOptions.forEach { hour ->
@@ -283,7 +372,7 @@ fun SettingsStatsScreen(
                                                 timeWindowStartHour = hour
                                                 AppPrefs.setTimeWindowStartHour(context, hour)
                                                 startHourMenuExpanded = false
-                                            }
+                                            },
                                         )
                                     }
                                 }
@@ -308,7 +397,12 @@ fun SettingsStatsScreen(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
-                                    Icon(Icons.Default.ExpandMore, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                                    Icon(
+                                        Icons.Default.ExpandMore,
+                                        null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(20.dp),
+                                    )
                                 }
                                 DropdownMenu(expanded = endHourMenuExpanded, onDismissRequest = { endHourMenuExpanded = false }) {
                                     hourOptions.forEach { hour ->
@@ -318,7 +412,7 @@ fun SettingsStatsScreen(
                                                 timeWindowEndHour = hour
                                                 AppPrefs.setTimeWindowEndHour(context, hour)
                                                 endHourMenuExpanded = false
-                                            }
+                                            },
                                         )
                                     }
                                 }
@@ -335,7 +429,7 @@ fun SettingsStatsScreen(
             var recentInstallsEnabled by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_RECENT_INSTALLS_ENABLED,
-                read = { AppPrefs.isRecentInstallsEnabled(context) }
+                read = { AppPrefs.isRecentInstallsEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -357,17 +451,17 @@ fun SettingsStatsScreen(
             var wrappedEnabled by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_WRAPPED_ENABLED,
-                read = { AppPrefs.isWrappedEnabled(context) }
+                read = { AppPrefs.isWrappedEnabled(context) },
             )
             var wrappedAiCoachEnabled by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_WRAPPED_AI_COACH_ENABLED,
-                read = { AppPrefs.isWrappedAiCoachEnabled(context) }
+                read = { AppPrefs.isWrappedAiCoachEnabled(context) },
             )
             var goalsEnabled by rememberBooleanPreferenceState(
                 context = context,
                 key = AppPrefs.KEY_GOALS_ENABLED,
-                read = { AppPrefs.isGoalsEnabled(context) }
+                read = { AppPrefs.isGoalsEnabled(context) },
             )
             SettingsCard {
                 SettingsSwitchRow(
@@ -380,7 +474,10 @@ fun SettingsStatsScreen(
                         AppPrefs.setWrappedEnabled(context, it)
                     },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsSwitchRow(
                     icon = Icons.Default.Psychology,
                     title = "AI Koçu Haftalık Yorumu",
@@ -391,7 +488,10 @@ fun SettingsStatsScreen(
                         AppPrefs.setWrappedAiCoachEnabled(context, it)
                     },
                 )
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
                 SettingsSwitchRow(
                     icon = Icons.Default.Flag,
                     title = "Haftalik Hedef Sistemi",

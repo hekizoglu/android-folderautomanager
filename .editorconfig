@@ -1,0 +1,10 @@
+# ktlint/detekt-formatting stil zemini (tur 17).
+# detekt.yml'deki maxLineLength: 140 ile hizalıdır.
+root = true
+
+[*.{kt,kts}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+max_line_length = 140
+insert_final_newline = true

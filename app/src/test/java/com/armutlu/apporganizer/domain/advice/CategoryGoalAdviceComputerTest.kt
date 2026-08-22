@@ -4,22 +4,21 @@ import android.content.Context
 import com.armutlu.apporganizer.data.local.AppDao
 import com.armutlu.apporganizer.data.local.NotificationEventDao
 import com.armutlu.apporganizer.data.local.PackageNotifCount
+import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
-import com.armutlu.apporganizer.domain.models.WeeklyGoal
 import com.armutlu.apporganizer.domain.usecase.goals.CategoryUsageSnapshot
-import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.usecase.missions.MissionUsageStatsSource
 import com.armutlu.apporganizer.domain.usecase.usage.DailyPackageUsage
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 /**
  * P9-takip — [computeDigitalAdvice]'ın bildirim gürültüsü (notificationNoiseTopSourceShare)

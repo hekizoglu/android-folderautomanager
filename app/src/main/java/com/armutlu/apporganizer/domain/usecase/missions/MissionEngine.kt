@@ -364,7 +364,7 @@ object MissionEngine {
         DAILY_CUSTOMIZE_FOLDER -> evaluateActionFlag(input.taskEvents.folderCustomizedToday)
         DAILY_MORNING_CALM -> evaluateAvoidBeforeTime(input.socialAppOpenedInFirst30MinToday)
         DAILY_FOCUS_SESSION -> evaluateActionFlag(
-            (input.focusModeMinutesToday ?: 0L) >= FOCUS_SESSION_TARGET_MINUTES
+            (input.focusModeMinutesToday ?: 0L) >= FOCUS_SESSION_TARGET_MINUTES,
         )
         DISCOVER_WEEKLY -> evaluateActionFlag(input.taskEvents.wrappedReportViewedThisWeek)
         // Dongu G3b — uygulama-spesifik ust sinir. Hedef/kullanim ikisi de veri gerektirir

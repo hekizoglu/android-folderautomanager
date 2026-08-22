@@ -1,9 +1,9 @@
 package com.armutlu.apporganizer.domain.home
 
+import com.armutlu.apporganizer.R
 import com.armutlu.apporganizer.domain.advice.DigitalAdvice
 import com.armutlu.apporganizer.domain.common.DataFreshness
 import com.armutlu.apporganizer.domain.usecase.pulse.PulseReasonId
-import com.armutlu.apporganizer.R
 
 /**
  * Görev S1 — Dashboard'da ayrı ayrı çizilen zeka kartlarının (HomeMissionCard, DigitalLifeCard,

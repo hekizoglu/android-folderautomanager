@@ -14,7 +14,6 @@ import com.armutlu.apporganizer.domain.models.SmartNotification
 import com.armutlu.apporganizer.domain.usecase.notification.NotificationClassifierUseCase
 import com.armutlu.apporganizer.utils.AppPrefs
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -24,14 +23,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 open class AppNotificationListenerService : NotificationListenerService() {
 
     @Inject lateinit var notificationEventDao: NotificationEventDao
+
     @Inject lateinit var notificationHistoryDao: NotificationHistoryDao
+
     @Inject lateinit var appDao: com.armutlu.apporganizer.data.local.AppDao
+
     @Inject lateinit var notificationClassifier: NotificationClassifierUseCase
+
     @Inject lateinit var smartNotificationRepository: SmartNotificationRepository
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -60,7 +64,7 @@ open class AppNotificationListenerService : NotificationListenerService() {
                                     importanceScore = classified.smart.importanceScore,
                                     wasSuppressed = classified.smart.shouldSuppress,
                                     systemPriority = classified.systemPriority,
-                                )
+                                ),
                             )
                         }
                     }
@@ -77,10 +81,10 @@ open class AppNotificationListenerService : NotificationListenerService() {
                                         title = title,
                                         text = preview.body.takeIf { it.isNotBlank() } ?: preview.text,
                                         postedAt = timestamp,
-                                    )
+                                    ),
                                 )
                                 notificationHistoryDao.deleteOlderThan(
-                                    System.currentTimeMillis() - NOTIFICATION_HISTORY_RETENTION_MS
+                                    System.currentTimeMillis() - NOTIFICATION_HISTORY_RETENTION_MS,
                                 )
                                 notificationHistoryDao.trimToLatest(NOTIFICATION_HISTORY_MAX_ROWS)
                             }
@@ -105,7 +109,7 @@ open class AppNotificationListenerService : NotificationListenerService() {
                 // engeller; canlı özet yalnız servis belleğindeki latestTexts akışında yaşar.
                 appDao.clearAllNotificationTexts()
                 notificationEventDao.deleteOlderThan(
-                    System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000
+                    System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000,
                 )
             }
         }
@@ -166,7 +170,7 @@ open class AppNotificationListenerService : NotificationListenerService() {
         }
         val ranked = smartItems.sortedWith(
             compareByDescending<SmartNotification> { it.importanceScore }
-                .thenByDescending { it.timestamp }
+                .thenByDescending { it.timestamp },
         )
 
         _previewItems.value = previews

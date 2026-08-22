@@ -13,7 +13,7 @@ import com.github.skydoves.colorpicker.compose.*
 fun ColorPickerDialog(
     initialColor: Color,
     onColorSelected: (Color) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val controller = rememberColorPickerController()
 
@@ -25,22 +25,22 @@ fun ColorPickerDialog(
                 HsvColorPicker(
                     modifier = Modifier.fillMaxWidth().height(250.dp),
                     controller = controller,
-                    initialColor = initialColor
+                    initialColor = initialColor,
                 )
                 Spacer(Modifier.height(8.dp))
                 BrightnessSlider(
                     modifier = Modifier.fillMaxWidth().height(35.dp),
-                    controller = controller
+                    controller = controller,
                 )
                 Spacer(Modifier.height(8.dp))
                 AlphaSlider(
                     modifier = Modifier.fillMaxWidth().height(35.dp),
-                    controller = controller
+                    controller = controller,
                 )
                 Spacer(Modifier.height(8.dp))
                 AlphaTile(
                     modifier = Modifier.fillMaxWidth().height(35.dp),
-                    controller = controller
+                    controller = controller,
                 )
             }
         },
@@ -52,6 +52,6 @@ fun ColorPickerDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("İptal") }
-        }
+        },
     )
 }

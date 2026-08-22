@@ -2,7 +2,6 @@ package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -91,9 +90,9 @@ fun TickerHistoryScreen(
                             )
                         }
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         if (items.isEmpty()) {
             Box(
@@ -141,7 +140,7 @@ fun TickerHistoryScreen(
                         if (item.action != TickerAction.None) {
                             viewModel.resolveRoute(item.action)?.let { route -> onNavigateToRoute(route) }
                         }
-                    }
+                    },
                 )
             }
         }

@@ -108,7 +108,7 @@ object CategorySuggestionEngine {
             .maxWithOrNull(
                 compareBy<KeywordMatch> { it.keywordLength }
                     .thenBy { it.bothSources }
-                    .thenBy { it.categoryId }
+                    .thenBy { it.categoryId },
             ) ?: return null
 
         return Suggestion(

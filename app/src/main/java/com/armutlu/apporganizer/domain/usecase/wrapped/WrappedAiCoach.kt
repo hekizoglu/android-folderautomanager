@@ -30,12 +30,17 @@ class WrappedAiCoach @Inject constructor() {
         withContext(Dispatchers.IO) {
             val requestBody = JSONObject().apply {
                 put("model", "deepseek-chat")
-                put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", buildPrompt(report))
-                    })
-                })
+                put(
+                    "messages",
+                    JSONArray().apply {
+                        put(
+                            JSONObject().apply {
+                                put("role", "user")
+                                put("content", buildPrompt(report))
+                            },
+                        )
+                    },
+                )
                 put("temperature", 0.4)
                 put("max_tokens", 120)
             }.toString()

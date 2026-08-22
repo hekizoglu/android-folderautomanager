@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,7 +41,7 @@ internal fun OnboardingStepIcon(steps: List<OnboardingStep>, stepIndex: Int) {
         transitionSpec = {
             fadeIn() + slideInHorizontally { it / 3 } togetherWith fadeOut() + slideOutHorizontally { -it / 3 }
         },
-        label = "icon"
+        label = "icon",
     ) { idx ->
         val s = steps.getOrElse(idx) { steps.last() }
         val isLauncher = s == OnboardingStep.SET_LAUNCHER
@@ -52,14 +51,19 @@ internal fun OnboardingStepIcon(steps: List<OnboardingStep>, stepIndex: Int) {
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
-                    .border(1.5.dp,
+                    .border(
+                        1.5.dp,
                         if (isLauncher) Color(0xFF00897B).copy(0.6f) else OnboardingAccentPurple.copy(0.4f),
-                        CircleShape)
+                        CircleShape,
+                    )
                     .then(
-                        if (iconBg != null) Modifier.background(iconBg)
-                        else Modifier.background(OnboardingAccentPurple.copy(0.25f))
+                        if (iconBg != null) {
+                            Modifier.background(iconBg)
+                        } else {
+                            Modifier.background(OnboardingAccentPurple.copy(0.25f))
+                        },
                     ),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(s.icon, null, modifier = Modifier.size(52.dp), tint = Color.White)
             }
@@ -77,9 +81,12 @@ internal fun OnboardingStepDots(steps: List<OnboardingStep>, stepIndex: Int) {
                     .size(if (i == stepIndex) 24.dp else 7.dp, 7.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(
-                        if (i == stepIndex) OnboardingAccentPurple
-                        else Color.White.copy(0.20f)
-                    )
+                        if (i == stepIndex) {
+                            OnboardingAccentPurple
+                        } else {
+                            Color.White.copy(0.20f)
+                        },
+                    ),
             )
         }
     }
@@ -92,10 +99,22 @@ internal fun OnboardingStepHeader(steps: List<OnboardingStep>, stepIndex: Int) {
         val s = steps.getOrElse(idx) { steps.last() }
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(s.titleRes), fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center)
-            Text(stringResource(s.descriptionRes), fontSize = 16.sp, color = Color.White.copy(0.75f), textAlign = TextAlign.Center, lineHeight = 26.sp)
+            Text(
+                stringResource(s.titleRes),
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                stringResource(s.descriptionRes),
+                fontSize = 16.sp,
+                color = Color.White.copy(0.75f),
+                textAlign = TextAlign.Center,
+                lineHeight = 26.sp,
+            )
         }
     }
 }
@@ -110,9 +129,13 @@ internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
     Box(
         modifier = Modifier.fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.White.copy(0.08f))
+            .background(Color.White.copy(0.08f)),
     ) {
-        Row(Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+        Row(
+            Modifier.fillMaxWidth().padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
             Box(Modifier.width(3.dp).height(48.dp).clip(RoundedCornerShape(2.dp)).background(accentColor))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 Icon(Icons.Default.Info, null, tint = accentColor, modifier = Modifier.size(18.dp).padding(top = 2.dp))
@@ -126,9 +149,13 @@ internal fun OnboardingWhyBox(currentStep: OnboardingStep) {
         Box(
             modifier = Modifier.fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF00897B).copy(alpha = 0.15f))
+                .background(Color(0xFF00897B).copy(alpha = 0.15f)),
         ) {
-            Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth().padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Icon(Icons.Default.Lock, null, tint = Color(0xFF26C6DA), modifier = Modifier.size(16.dp))
                 Text(privacyText, fontSize = 12.sp, color = Color(0xFF26C6DA), lineHeight = 18.sp)
             }
@@ -142,9 +169,14 @@ internal fun OnboardingThemeSelector(
     selectedTheme: AppTheme,
     selectedFont: AppFont,
     onThemeChange: (AppTheme) -> Unit,
-    onFontChange: (AppFont) -> Unit
+    onFontChange: (AppFont) -> Unit,
 ) {
-    Text(stringResource(R.string.appearance_color_theme), fontSize = 13.sp, color = Color.White.copy(0.6f), modifier = Modifier.fillMaxWidth())
+    Text(
+        stringResource(R.string.appearance_color_theme),
+        fontSize = 13.sp,
+        color = Color.White.copy(0.6f),
+        modifier = Modifier.fillMaxWidth(),
+    )
     Spacer(Modifier.height(8.dp))
     // DYNAMIC (Material You) yalnızca Android 12+ cihazlarda listelenir
     val onboardingThemes = AppTheme.entries.filter {
@@ -156,13 +188,16 @@ internal fun OnboardingThemeSelector(
             val isSelected = selectedTheme == theme
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.clickable { onThemeChange(theme) }.padding(4.dp)
+                modifier = Modifier.clickable { onThemeChange(theme) }.padding(4.dp),
             ) {
                 Box(
                     modifier = Modifier.size(52.dp).clip(CircleShape)
                         .background(theme.previewBrush)
-                        .border(if (isSelected) 3.dp else 1.dp,
-                            if (isSelected) Color.White else Color.White.copy(0.3f), CircleShape)
+                        .border(
+                            if (isSelected) 3.dp else 1.dp,
+                            if (isSelected) Color.White else Color.White.copy(0.3f),
+                            CircleShape,
+                        ),
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(stringResource(theme.labelRes), fontSize = 11.sp, color = if (isSelected) Color.White else Color.White.copy(0.5f))
@@ -181,10 +216,14 @@ internal fun OnboardingThemeSelector(
                     .background(if (isSelected) OnboardingAccentPurple else Color.White.copy(0.12f))
                     .clickable { onFontChange(font) }
                     .padding(horizontal = 14.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
-                Text(stringResource(font.labelRes), fontSize = 13.sp, color = Color.White,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                Text(
+                    stringResource(font.labelRes),
+                    fontSize = 13.sp,
+                    color = Color.White,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                )
             }
         }
     }
@@ -195,10 +234,16 @@ internal fun OnboardingThemeSelector(
 @Composable
 internal fun OnboardingGreyDayChips(unusedGreyDays: Int, onSelect: (Int) -> Unit) {
     val offLabel = stringResource(R.string.onb_off)
-    val options = listOf(0 to offLabel, 7 to "7 ${stringResource(R.string.onb_days)}", 14 to "14 ${stringResource(R.string.onb_days)}", 30 to "30 ${stringResource(R.string.onb_days)}")
+    val options =
+        listOf(
+            0 to offLabel,
+            7 to "7 ${stringResource(R.string.onb_days)}",
+            14 to "14 ${stringResource(R.string.onb_days)}",
+            30 to "30 ${stringResource(R.string.onb_days)}",
+        )
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
     ) {
         options.forEach { (days, label) ->
             val selected = unusedGreyDays == days
@@ -208,10 +253,14 @@ internal fun OnboardingGreyDayChips(unusedGreyDays: Int, onSelect: (Int) -> Unit
                     .background(if (selected) Color(0xFF00897B) else Color.White.copy(0.15f))
                     .clickable { onSelect(days) }
                     .padding(horizontal = 16.dp, vertical = 10.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
-                Text(label, color = Color.White, fontSize = 14.sp,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                Text(
+                    label,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                )
             }
         }
     }
@@ -226,15 +275,21 @@ internal fun OnboardingToggleRow(value: Boolean, onValueChange: (Boolean) -> Uni
             .background(Color.White.copy(0.08f))
             .padding(horizontal = 20.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(stringResource(if (value) R.string.onb_on else R.string.onb_off), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Text(
+            stringResource(if (value) R.string.onb_on else R.string.onb_off),
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+        )
         androidx.compose.material3.Switch(
-            checked = value, onCheckedChange = onValueChange,
+            checked = value,
+            onCheckedChange = onValueChange,
             colors = androidx.compose.material3.SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = OnboardingAccentPurple
-            )
+                checkedTrackColor = OnboardingAccentPurple,
+            ),
         )
     }
 }

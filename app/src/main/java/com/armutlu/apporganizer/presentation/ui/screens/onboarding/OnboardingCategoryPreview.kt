@@ -1,9 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.screens.onboarding
 
 import android.content.Context
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -26,14 +22,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -49,7 +40,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -72,7 +62,7 @@ fun OnboardingCategoryPreview(
     onUseLayout: () -> Unit,
     onEditFolders: () -> Unit,
     onReviewPending: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.screenState.collectAsState()
     val pendingApps by viewModel.classificationAttentionApps.collectAsState()
@@ -89,7 +79,7 @@ fun OnboardingCategoryPreview(
 
     Column(
         modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
         // 1. Üst Alan (Kompakt Başlık)
         OnboardingPreviewHeader(uiModel = uiModel)
@@ -100,7 +90,7 @@ fun OnboardingCategoryPreview(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .fillMaxWidth(),
         ) {
             when (uiModel.state) {
                 OnboardingPreviewState.LOADING -> {
@@ -126,15 +116,15 @@ fun OnboardingCategoryPreview(
                             contentPadding = PaddingValues(vertical = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         ) {
                             items(
                                 items = displayedCategories,
-                                key = { it.categoryId }
+                                key = { it.categoryId },
                             ) { categoryCardModel ->
                                 OnboardingCategoryCard(
                                     model = categoryCardModel,
-                                    modifier = Modifier.height(160.dp)
+                                    modifier = Modifier.height(160.dp),
                                 )
                             }
                         }
@@ -149,13 +139,13 @@ fun OnboardingCategoryPreview(
                                     .background(Color.White.copy(alpha = 0.08f))
                                     .clickable { showAllCategories = true }
                                     .padding(vertical = 10.dp),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     text = stringResource(R.string.onb_preview_show_all_folders, uiModel.categories.size),
                                     color = Color.White.copy(alpha = 0.90f),
                                     fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Medium,
                                 )
                             }
                         }
@@ -165,7 +155,7 @@ fun OnboardingCategoryPreview(
                             Spacer(modifier = Modifier.height(10.dp))
                             OnboardingPendingAttentionCard(
                                 pendingCount = uiModel.pendingCount,
-                                onReviewNow = onReviewPending
+                                onReviewNow = onReviewPending,
                             )
                         }
                     }
@@ -178,7 +168,7 @@ fun OnboardingCategoryPreview(
         // 4. Sabit Alt Eylem Alanı (Birincil & İkincil Butonlar)
         OnboardingBottomActionArea(
             onUseLayout = onUseLayout,
-            onEditFolders = onEditFolders
+            onEditFolders = onEditFolders,
         )
     }
 }
@@ -187,13 +177,13 @@ fun OnboardingCategoryPreview(
 private fun OnboardingPreviewHeader(uiModel: OnboardingCategoryPreviewUiModel) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
     ) {
         Text(
             text = stringResource(R.string.onb_preview_header_title),
             color = Color.White,
             fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
@@ -203,7 +193,7 @@ private fun OnboardingPreviewHeader(uiModel: OnboardingCategoryPreviewUiModel) {
                 stringResource(R.string.onb_preview_header_subtitle, uiModel.totalAppCount, uiModel.totalFolderCount)
             },
             color = Color.White.copy(alpha = 0.70f),
-            fontSize = 14.sp
+            fontSize = 14.sp,
         )
     }
 }
@@ -212,27 +202,27 @@ private fun OnboardingPreviewHeader(uiModel: OnboardingCategoryPreviewUiModel) {
 private fun OnboardingPreviewLoadingState() {
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             CircularProgressIndicator(
                 color = OnboardingAccentPurple,
                 modifier = Modifier.size(36.dp),
-                strokeWidth = 3.dp
+                strokeWidth = 3.dp,
             )
             Text(
                 text = stringResource(R.string.onb_preview_loading_title),
                 color = Color.White,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
             Text(
                 text = stringResource(R.string.onb_preview_loading_subtitle),
                 color = Color.White.copy(alpha = 0.60f),
-                fontSize = 13.sp
+                fontSize = 13.sp,
             )
         }
     }
@@ -242,25 +232,25 @@ private fun OnboardingPreviewLoadingState() {
 private fun OnboardingPreviewEmptyState(onRetry: () -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(24.dp)
+            modifier = Modifier.padding(24.dp),
         ) {
             Text(
                 text = stringResource(R.string.onb_preview_empty_title),
                 color = Color.White,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(R.string.onb_preview_empty_subtitle),
                 color = Color.White.copy(alpha = 0.65f),
                 fontSize = 13.sp,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }
@@ -269,7 +259,7 @@ private fun OnboardingPreviewEmptyState(onRetry: () -> Unit) {
 @Composable
 private fun OnboardingPendingAttentionCard(
     pendingCount: Int,
-    onReviewNow: () -> Unit
+    onReviewNow: () -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -278,30 +268,30 @@ private fun OnboardingPendingAttentionCard(
             .background(Color(0xFFFF9800).copy(alpha = 0.15f))
             .border(1.dp, Color(0xFFFF9800).copy(alpha = 0.35f), RoundedCornerShape(16.dp))
             .clickable { onReviewNow() }
-            .padding(14.dp)
+            .padding(14.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(Color(0xFFFF9800).copy(alpha = 0.25f)),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Warning,
                         contentDescription = null,
                         tint = Color(0xFFFFB74D),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                 }
 
@@ -310,32 +300,32 @@ private fun OnboardingPendingAttentionCard(
                         text = stringResource(R.string.onb_preview_attention_title, pendingCount),
                         color = Color.White,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = stringResource(R.string.onb_preview_attention_desc),
                         color = Color.White.copy(alpha = 0.75f),
                         fontSize = 12.sp,
-                        maxLines = 2
+                        maxLines = 2,
                     )
                 }
             }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
                     text = stringResource(R.string.onb_preview_attention_action),
                     color = Color(0xFFFFB74D),
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = null,
                     tint = Color(0xFFFFB74D),
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
             }
         }
@@ -345,11 +335,11 @@ private fun OnboardingPendingAttentionCard(
 @Composable
 private fun OnboardingBottomActionArea(
     onUseLayout: () -> Unit,
-    onEditFolders: () -> Unit
+    onEditFolders: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         // Birincil Buton: "Bu düzeni kullan"
         Box(
@@ -359,13 +349,13 @@ private fun OnboardingBottomActionArea(
                 .clip(RoundedCornerShape(16.dp))
                 .background(OnboardingButtonGradient)
                 .clickable { onUseLayout() },
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = stringResource(R.string.onb_preview_btn_use_layout),
                 color = Color.White,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
         }
 
@@ -378,13 +368,13 @@ private fun OnboardingBottomActionArea(
                 .background(Color.White.copy(alpha = 0.10f))
                 .border(1.dp, Color.White.copy(0.18f), RoundedCornerShape(16.dp))
                 .clickable { onEditFolders() },
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = stringResource(R.string.onb_preview_btn_edit_folders),
                 color = Color.White,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
             )
         }
     }
@@ -396,7 +386,7 @@ private fun OnboardingBottomActionArea(
 internal fun buildOnboardingCategoryPreviewUiModel(
     context: Context,
     state: AppListScreenState,
-    pendingApps: List<AppInfo>
+    pendingApps: List<AppInfo>,
 ): OnboardingCategoryPreviewUiModel {
     val apps = state.apps
     val isLoading = (state.isProcessing || state.isLoading) && apps.isEmpty()
@@ -408,7 +398,7 @@ internal fun buildOnboardingCategoryPreviewUiModel(
             categorizedAppCount = 0,
             pendingCount = 0,
             categories = emptyList(),
-            state = OnboardingPreviewState.LOADING
+            state = OnboardingPreviewState.LOADING,
         )
     }
 
@@ -419,7 +409,7 @@ internal fun buildOnboardingCategoryPreviewUiModel(
             categorizedAppCount = 0,
             pendingCount = 0,
             categories = emptyList(),
-            state = OnboardingPreviewState.EMPTY
+            state = OnboardingPreviewState.EMPTY,
         )
     }
 
@@ -452,8 +442,8 @@ internal fun buildOnboardingCategoryPreviewUiModel(
                 iconEmoji = cat.iconEmoji,
                 appCount = catApps.size,
                 previewApps = catApps.take(4),
-                pendingCount = pendingInCat
-            )
+                pendingCount = pendingInCat,
+            ),
         )
     }
 
@@ -465,7 +455,7 @@ internal fun buildOnboardingCategoryPreviewUiModel(
             it.categoryId == Category.CAT_UNCATEGORIZED
         }.thenByDescending {
             it.appCount
-        }
+        },
     )
 
     return OnboardingCategoryPreviewUiModel(
@@ -474,6 +464,6 @@ internal fun buildOnboardingCategoryPreviewUiModel(
         categorizedAppCount = categorizedCount,
         pendingCount = pendingApps.size,
         categories = sortedCards,
-        state = OnboardingPreviewState.SUCCESS
+        state = OnboardingPreviewState.SUCCESS,
     )
 }

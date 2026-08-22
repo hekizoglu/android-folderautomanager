@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
@@ -36,8 +35,9 @@ internal fun NiagaraLetterHeader(letter: Char, label: String? = null) {
     Text(
         text = label ?: letter.toString(),
         fontSize = if (label != null) 13.sp else 34.sp,
-        fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 18.dp, bottom = 2.dp)
+        fontWeight = FontWeight.Black,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.fillMaxWidth().padding(start = 24.dp, top = 18.dp, bottom = 2.dp),
     )
 }
 
@@ -53,14 +53,14 @@ fun NiagaraAppRow(
     unusedGreyDays: Int = 0,
     iconPackPkg: String = "",
     onClick: () -> Unit,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
 ) {
-    val context       = LocalContext.current
-    val primary       = MaterialTheme.colorScheme.primary
-    val secondary     = MaterialTheme.colorScheme.secondary
-    val onSurface     = MaterialTheme.colorScheme.onSurface
+    val context = LocalContext.current
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.secondary
+    val onSurface = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
-    val rowHover      = onSurface.copy(alpha = 0.08f)
+    val rowHover = onSurface.copy(alpha = 0.08f)
     val icon = rememberAppIcon(app.packageName, app.lastUpdatedTime, iconPackPkg)
     val notifColor = when {
         app.notificationCount == 0 -> null
@@ -91,23 +91,28 @@ fun NiagaraAppRow(
                     else -> ", ${app.notificationCount} bildirim"
                 }
                 contentDescription = "${app.appName}, $categoryLabel$notificationLabel"
-                onClick(label = context.getString(R.string.open_app)) { onClick(); true }
+                onClick(label = context.getString(R.string.open_app)) {
+                    onClick()
+                    true
+                }
             }
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .background(if (isActive) rowHover else Color.Transparent)
             .padding(horizontal = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         val saturation = when {
-            unusedGreyDays <= 0  -> 1f
+            unusedGreyDays <= 0 -> 1f
             app.usageCount == 0L -> 0f
-            app.usageCount < 5L  -> 0.4f + (app.usageCount * 0.12f)
-            else                 -> 1f
+            app.usageCount < 5L -> 0.4f + (app.usageCount * 0.12f)
+            else -> 1f
         }
         val iconAlpha = if (unusedGreyDays > 0 && app.usageCount == 0L) 0.5f else 1f
-        val greyFilter = if (saturation < 1f)
+        val greyFilter = if (saturation < 1f) {
             ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(saturation) })
-        else null
+        } else {
+            null
+        }
 
         Box(modifier = Modifier.size(iconSize + 8.dp), contentAlignment = Alignment.Center) {
             icon?.let { bmp ->
@@ -116,13 +121,13 @@ fun NiagaraAppRow(
                     contentDescription = app.appName,
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp)),
                     alpha = iconAlpha,
-                    colorFilter = greyFilter
+                    colorFilter = greyFilter,
                 )
             } ?: run {
                 Box(
                     modifier = Modifier.size(iconSize).clip(RoundedCornerShape(10.dp))
                         .background(primary.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(app.appName.firstOrNull()?.toString() ?: "?", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
@@ -134,9 +139,16 @@ fun NiagaraAppRow(
                         .align(Alignment.TopEnd)
                         .size(if (count > 9) 18.dp else 14.dp)
                         .clip(CircleShape).background(notifColor),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
-                    if (count > 0) Text(if (count > 99) "99+" else count.toString(), fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    if (count > 0) {
+                        Text(
+                            if (count > 99) "99+" else count.toString(),
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                        )
+                    }
                 }
             }
         }
@@ -145,14 +157,20 @@ fun NiagaraAppRow(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                app.appName, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = onSurface,
-                maxLines = 1, overflow = TextOverflow.Ellipsis
+                app.appName,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             if (notifTextEnabled && app.notificationText.isNotBlank()) {
                 Text(
                     app.notificationText,
-                    fontSize = 11.sp, color = textSecondary.copy(alpha = 0.8f), maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    fontSize = 11.sp,
+                    color = textSecondary.copy(alpha = 0.8f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             } else if (recentNotificationCount > 0) {
                 Text(
@@ -160,7 +178,7 @@ fun NiagaraAppRow(
                     fontSize = 11.sp,
                     color = secondary.copy(alpha = 0.82f),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             } else {
                 val catLabel = remember(app.categoryId) {
@@ -175,8 +193,11 @@ fun NiagaraAppRow(
 
         if (trailingText != null) {
             Text(
-                trailingText, fontSize = 11.sp, color = secondary, fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(start = 8.dp)
+                trailingText,
+                fontSize = 11.sp,
+                color = secondary,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(start = 8.dp),
             )
         }
     }

@@ -5,9 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.DashboardCustomize
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.filled.Widgets
@@ -46,29 +46,29 @@ fun HomeLongPressSheet(
         dragHandle = {
             Box(
                 Modifier.fillMaxWidth().padding(top = 10.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Box(
                     Modifier
                         .width(36.dp).height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(Color.White.copy(0.2f))
+                        .background(Color.White.copy(0.2f)),
                 )
             }
-        }
+        },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 16.dp),
         ) {
             Text(
                 "Ana Ekran",
                 color = Color.White.copy(0.5f),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
             )
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 
@@ -84,7 +84,7 @@ fun HomeLongPressSheet(
                 icon = Icons.Default.Image,
                 label = "Duvar Kagidi",
                 subtitle = "Arka plan gorselini degistir",
-                onClick = onWallpaper
+                onClick = onWallpaper,
             )
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 
@@ -92,7 +92,7 @@ fun HomeLongPressSheet(
                 icon = Icons.Default.Widgets,
                 label = "Widget Ekle",
                 subtitle = "Ana ekrana widget ekle",
-                onClick = onAddWidget
+                onClick = onAddWidget,
             )
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 
@@ -100,7 +100,7 @@ fun HomeLongPressSheet(
                 icon = Icons.Default.ViewModule,
                 label = "Dock Düzenle",
                 subtitle = "Alt kısımdaki uygulamaları seç",
-                onClick = onDockEdit
+                onClick = onDockEdit,
             )
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 
@@ -111,7 +111,7 @@ fun HomeLongPressSheet(
                 onClick = {
                     onDismiss()
                     onAddFolder()
-                }
+                },
             )
             Spacer(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(0.08f)))
 
@@ -119,7 +119,7 @@ fun HomeLongPressSheet(
                 icon = Icons.Default.Settings,
                 label = "Launcher Ayarları",
                 subtitle = "Görünüm, bildirim ve daha fazlası",
-                onClick = onSettings
+                onClick = onSettings,
             )
         }
     }
@@ -146,16 +146,21 @@ private fun HomeLongPressAction(
             .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = androidx.compose.material3.MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp),
+            )
         }
         Column {
             Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)

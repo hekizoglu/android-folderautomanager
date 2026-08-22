@@ -19,7 +19,7 @@ object NotificationListenerPermissionHelper {
         // (eski değer yanlışlıkla domain.usecase paketini gösteriyordu, servis .service'te).
         val componentName = ComponentName(
             context,
-            com.armutlu.apporganizer.service.AppNotificationListenerService::class.java
+            com.armutlu.apporganizer.service.AppNotificationListenerService::class.java,
         )
         val enabledListeners = Settings.Secure.getString(context.contentResolver, NOTIFICATION_LISTENER_SERVICE_ENABLED) ?: ""
         // Settings değeri kısa ("pkg/.service.X") veya uzun ("pkg/pkg.service.X") formda olabilir —
@@ -35,8 +35,8 @@ object NotificationListenerPermissionHelper {
      * - Aksi halde → gizle
      */
     fun shouldShowNotificationBadgePermissionCard(context: Context): Boolean {
-        if (isNotificationListenerEnabled(context)) return false  // İzin zaten var
-        if (com.armutlu.apporganizer.utils.AppPrefs.isNotificationBadgePermDismissed(context)) return false  // Kalıcı gizli
+        if (isNotificationListenerEnabled(context)) return false // İzin zaten var
+        if (com.armutlu.apporganizer.utils.AppPrefs.isNotificationBadgePermDismissed(context)) return false // Kalıcı gizli
 
         val snoozeUntil = com.armutlu.apporganizer.utils.AppPrefs.getNotificationBadgePermSnoozeUntil(context)
         return System.currentTimeMillis() >= snoozeUntil

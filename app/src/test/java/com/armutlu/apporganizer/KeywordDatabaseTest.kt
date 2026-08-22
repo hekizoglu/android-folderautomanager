@@ -3,7 +3,6 @@ package com.armutlu.apporganizer
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.domain.usecase.classify.KeywordDatabase
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -22,7 +21,7 @@ class KeywordDatabaseTest {
         val expected = listOf(
             Category.CAT_SOCIAL, Category.CAT_PRODUCTIVITY, Category.CAT_GAMES,
             Category.CAT_SHOPPING, Category.CAT_NEWS, Category.CAT_HEALTH,
-            Category.CAT_FINANCE, Category.CAT_EDUCATION, Category.CAT_UTILITIES
+            Category.CAT_FINANCE, Category.CAT_EDUCATION, Category.CAT_UTILITIES,
         )
         expected.forEach { cat ->
             assertNotNull("$cat keyword listesi eksik", map[cat])

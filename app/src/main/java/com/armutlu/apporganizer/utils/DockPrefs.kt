@@ -18,7 +18,7 @@ object DockPrefs {
         listOf("com.google.android.dialer", "com.android.dialer"),
         listOf("com.google.android.apps.messaging", "com.android.mms"),
         listOf("com.google.android.GoogleCamera", "com.android.camera2", "com.android.camera"),
-        listOf("com.android.chrome", "org.mozilla.firefox", "com.microsoft.emmx")
+        listOf("com.android.chrome", "org.mozilla.firefox", "com.microsoft.emmx"),
         // Slot 5: Resolved dynamically from device's default app (CATEGORY_DEFAULT)
     )
 
@@ -80,7 +80,7 @@ object DockPrefs {
         .filter(String::isNotBlank)
         .filter(isEligible)
         .distinct()
-        .take(4)  // İlk 4 slot döndür, 5. slot boş
+        .take(4) // İlk 4 slot döndür, 5. slot boş
 
     internal fun sanitizeHeroDockItems(items: List<String>): List<String> = items
         .filter(String::isNotBlank)
@@ -122,11 +122,11 @@ object DockPrefs {
         val pm = context.packageManager
         val dialer = resolveDefaultApp(
             context,
-            Intent(Intent.ACTION_DIAL, Uri.parse("tel:"))
+            Intent(Intent.ACTION_DIAL, Uri.parse("tel:")),
         )
         val sms = resolveDefaultApp(
             context,
-            Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:"))
+            Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:")),
         )
         val camera = DEFAULT_SLOTS[2].firstOrNull { pkg -> pm.getLaunchIntentForPackage(pkg) != null }
         val browser = resolveDefaultBrowser(context)
@@ -134,7 +134,7 @@ object DockPrefs {
         // Slot 5: Boş bırak (kullanıcı seçecek) — slot5 değişkeni kaldırıldı
         return listOfNotNull(dialer, sms, camera, browser)
             .distinct()
-            .take(4)  // İlk 4 slot döndür, 5. slot boş
+            .take(4) // İlk 4 slot döndür, 5. slot boş
             .ifEmpty {
                 DEFAULT_SLOTS.take(4).mapNotNull { candidates ->
                     candidates.firstOrNull { pkg -> pm.getLaunchIntentForPackage(pkg) != null }

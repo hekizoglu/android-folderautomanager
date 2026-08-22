@@ -26,17 +26,17 @@ import timber.log.Timber
 object StatsResetService {
 
     enum class Scope {
-        USAGE_COUNTERS,        // usageCount / launchCount
-        LAST_USED_TIMESTAMPS,  // lastUsedTimestamp
-        NOTIFICATION_HISTORY,  // notification_events tablosu + apps.notificationText/notificationCount + NotificationReadPrefs
-        WRAPPED_SNAPSHOTS,     // WrappedSnapshotPrefs (haftalık/günlük karşılaştırma verisi) — aynı dosyayı paylaşan PulseHistoryPrefs/MissionStreakPrefs (seri/streak) de birlikte silinir
-        MISSION_PROGRESS       // MissionPrefs (görev puanı ve geçmişi)
+        USAGE_COUNTERS, // usageCount / launchCount
+        LAST_USED_TIMESTAMPS, // lastUsedTimestamp
+        NOTIFICATION_HISTORY, // notification_events tablosu + apps.notificationText/notificationCount + NotificationReadPrefs
+        WRAPPED_SNAPSHOTS, // WrappedSnapshotPrefs (haftalık/günlük karşılaştırma verisi) — aynı dosyayı paylaşan PulseHistoryPrefs/MissionStreakPrefs (seri/streak) de birlikte silinir
+        MISSION_PROGRESS, // MissionPrefs (görev puanı ve geçmişi)
     }
 
     data class ScopeResult(
         val scope: Scope,
         val success: Boolean,
-        val error: Throwable? = null
+        val error: Throwable? = null,
     )
 
     /**
@@ -46,7 +46,7 @@ object StatsResetService {
     suspend fun reset(
         context: Context,
         repository: AppRepository,
-        scopes: Set<Scope>
+        scopes: Set<Scope>,
     ): List<ScopeResult> {
         if (scopes.isEmpty()) return emptyList()
         return scopes.map { scope -> resetScope(context, repository, scope) }
@@ -55,14 +55,14 @@ object StatsResetService {
     private suspend fun resetScope(
         context: Context,
         repository: AppRepository,
-        scope: Scope
+        scope: Scope,
     ): ScopeResult = runCatching {
         when (scope) {
             Scope.USAGE_COUNTERS -> resetUsageCounters(repository)
             Scope.LAST_USED_TIMESTAMPS -> resetLastUsedTimestamps(repository)
             Scope.NOTIFICATION_HISTORY -> resetNotificationHistory(context, repository)
             Scope.WRAPPED_SNAPSHOTS -> resetWrappedSnapshots(context)
-            Scope.MISSION_PROGRESS -> resetMissionProgress(context)  // P0.6: suspend oldu, runBlocking yok
+            Scope.MISSION_PROGRESS -> resetMissionProgress(context) // P0.6: suspend oldu, runBlocking yok
         }
         ScopeResult(scope, success = true)
     }.getOrElse { e ->
@@ -88,7 +88,7 @@ object StatsResetService {
             NotificationReadPrefs.clearAll(context)
         } catch (e: Exception) {
             Timber.e(e, "StatsResetService: resetNotificationHistory hatası")
-            throw e  // P0.6: Caller'a (resetScope) error döndür, sessiz başarısızlık yapma
+            throw e // P0.6: Caller'a (resetScope) error döndür, sessiz başarısızlık yapma
         }
     }
 

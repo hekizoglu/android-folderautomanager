@@ -25,7 +25,7 @@ fun SimilarAppsSuggestionDialog(
     apps: List<AppInfo>,
     categoryName: String,
     onConfirm: (Set<String>) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     var selected by remember(apps) {
         mutableStateOf(apps.map { it.packageName }.toSet())
@@ -40,7 +40,7 @@ fun SimilarAppsSuggestionDialog(
                     "\"$categoryName\" kategorisine taşıdığın uygulamaya benzeyen ${apps.size} uygulama bulundu. " +
                         "Bunlardan hangilerini de aynı kategoriye taşımak istersin?",
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -62,7 +62,7 @@ fun SimilarAppsSuggestionDialog(
                                     selected = if (isChecked) selected - app.packageName else selected + app.packageName
                                 }
                                 .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Checkbox(checked = isChecked, onCheckedChange = { checked ->
                                 selected = if (checked) selected + app.packageName else selected - app.packageName
@@ -77,13 +77,13 @@ fun SimilarAppsSuggestionDialog(
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(selected) },
-                enabled = selected.isNotEmpty()
+                enabled = selected.isNotEmpty(),
             ) {
                 Text("Seçilenleri Taşı (${selected.size})")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Vazgeç") }
-        }
+        },
     )
 }

@@ -19,7 +19,7 @@ object BiometricHelper {
         title: String = "Kimlik Doğrulama",
         subtitle: String = "Ayarlara erişmek için doğrulayın",
         onSuccess: () -> Unit,
-        onFailure: () -> Unit = {}
+        onFailure: () -> Unit = {},
     ) {
         val executor = ContextCompat.getMainExecutor(activity)
         val callback = object : BiometricPrompt.AuthenticationCallback() {

@@ -125,5 +125,4 @@ class AppPrefsSensitiveMigrationTest {
         assertEquals("sk-new-key", deepSeekStore["deepseek_api_key"])
         assertTrue(!mainStore.containsKey("deepseek_api_key"))
     }
-
 }

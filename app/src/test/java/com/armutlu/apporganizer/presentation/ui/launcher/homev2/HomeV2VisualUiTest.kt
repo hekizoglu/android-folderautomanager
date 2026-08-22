@@ -1,25 +1,23 @@
 package com.armutlu.apporganizer.presentation.ui.launcher.homev2
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.semantics.SemanticsNode
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertHasClickAction
-import androidx.compose.ui.test.click
-import androidx.compose.ui.test.hasClickAction
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.EditingCenterCard
@@ -30,7 +28,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
-import org.robolectric.annotation.GraphicsMode
 
 /**
  * Home V2 görsel regresyon testleri (tur 9).
@@ -172,7 +169,10 @@ class HomeV2VisualUiTest {
         rule.onNodeWithText("Klasör 3").assertHasClickAction()
         // NOT: kart MERKEZİ önizleme ikonlarına denk gelir (ikonların kendi onClick'i
         // vardır ve dokunuşu üstlenir); başlık bölgesine tıklanır.
-        rule.onNodeWithText("Klasör 3").performTouchInput { down(Offset(10f, 8f)); up() }
+        rule.onNodeWithText("Klasör 3").performTouchInput {
+            down(Offset(10f, 8f))
+            up()
+        }
         rule.waitForIdle()
         assertEquals("cat3", opened)
     }
@@ -336,15 +336,15 @@ class HomeV2VisualUiTest {
             MaterialTheme {
                 androidx.compose.foundation.layout.Box(
                     Modifier.pointerInput(Unit) {
-                            awaitEachGesture {
-                                val d = awaitFirstDown(requireUnconsumed = false)
-                                while (true) {
-                                    val e = awaitPointerEvent()
-                                    val c = e.changes.firstOrNull { it.id == d.id } ?: break
-                                    if (!c.pressed) break
-                                }
+                        awaitEachGesture {
+                            val d = awaitFirstDown(requireUnconsumed = false)
+                            while (true) {
+                                val e = awaitPointerEvent()
+                                val c = e.changes.firstOrNull { it.id == d.id } ?: break
+                                if (!c.pressed) break
                             }
                         }
+                    },
                 ) {
                     androidx.compose.material3.Card(onClick = { clicked = true }) {
                         androidx.compose.material3.Text("Tikla")
@@ -358,7 +358,6 @@ class HomeV2VisualUiTest {
         rule.waitForIdle()
         assertTrue("clickable nodes=$clickables, clicked=$clicked", clicked)
     }
-
 
     @Test
     @Config(qualifiers = "w320dp-h568dp")
@@ -392,7 +391,6 @@ class HomeV2VisualUiTest {
         assertNoOverflow("öneri merkezi kartı (uyarı yok)")
     }
 
-
     @Test
     fun `folder tile respects reduced text alpha without breaking layout`() {
         rule.setContent {
@@ -411,5 +409,4 @@ class HomeV2VisualUiTest {
         rule.onNodeWithText("Düşük Alfa Klasörü").assertIsDisplayed()
         assertNoOverflow("düşük metin alfası")
     }
-
 }

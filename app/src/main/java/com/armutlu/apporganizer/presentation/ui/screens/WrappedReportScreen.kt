@@ -21,18 +21,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -880,8 +880,16 @@ private fun InterestingStatsGrid(stats: WrappedEngine.InterestingStats) {
     val newestInstalledTitle = stringResource(R.string.wrapped_stat_newest_installed)
     val longestUnusedTitle = stringResource(R.string.wrapped_stat_longest_unused)
     val entries = buildList {
-        stats.mostOpenedApp?.let { add(Triple(mostOpenedTitle, it, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
-        stats.leastOpenedApp?.let { add(Triple(leastOpenedTitle, it, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt()))) }
+        stats.mostOpenedApp?.let {
+            add(
+                Triple(mostOpenedTitle, it, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt())),
+            )
+        }
+        stats.leastOpenedApp?.let {
+            add(
+                Triple(leastOpenedTitle, it, stringResource(R.string.wrapped_stat_usage_count, it.usageCount.toInt())),
+            )
+        }
         stats.largestApp?.let { add(Triple(largestAppTitle, it, formatSizeMb(it.appSizeBytes))) }
         stats.oldestInstalledApp?.let { add(Triple(oldestInstalledTitle, it, null)) }
         stats.newestInstalledApp?.let { add(Triple(newestInstalledTitle, it, null)) }
@@ -890,7 +898,12 @@ private fun InterestingStatsGrid(stats: WrappedEngine.InterestingStats) {
     if (entries.isEmpty()) return
 
     Column {
-        Text(stringResource(R.string.wrapped_stats_title), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, modifier = Modifier.padding(bottom = 10.dp))
+        Text(
+            stringResource(R.string.wrapped_stats_title),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp,
+            modifier = Modifier.padding(bottom = 10.dp),
+        )
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             entries.chunked(2).forEach { rowEntries ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -926,14 +939,14 @@ private fun StatTile(title: String, app: WrappedEngine.AppSnapshot, extra: Strin
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Icon(
                     imageVector = Icons.Default.Launch,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    modifier = Modifier.size(12.dp)
+                    modifier = Modifier.size(12.dp),
                 )
             }
             Spacer(Modifier.height(4.dp))
@@ -956,7 +969,12 @@ private fun formatSizeMb(bytes: Long): String {
 private fun BadgesGrid(badges: List<WrappedEngine.Badge>) {
     if (badges.isEmpty()) return
     Column {
-        Text(stringResource(R.string.wrapped_badges_title), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, modifier = Modifier.padding(bottom = 10.dp))
+        Text(
+            stringResource(R.string.wrapped_badges_title),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp,
+            modifier = Modifier.padding(bottom = 10.dp),
+        )
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             badges.chunked(2).forEach { rowBadges ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

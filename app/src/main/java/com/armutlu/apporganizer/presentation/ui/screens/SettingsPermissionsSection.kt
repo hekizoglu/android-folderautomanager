@@ -58,9 +58,11 @@ private val WarnColor = Color(0xFFFFB300)
 data class PermissionIssue(val label: String, val action: () -> Unit)
 
 fun isNotifGranted(context: Context): Boolean =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PermissionChecker.PERMISSION_GRANTED
-    else true
+    } else {
+        true
+    }
 
 fun isNotificationListenerGranted(context: Context): Boolean {
     return NotificationAccessUtils.isNotificationListenerEnabled(context)
@@ -76,18 +78,18 @@ fun isDefaultLauncher(context: Context): Boolean {
 fun SettingsPermissionsCard(modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
-    var notifGranted      by remember { mutableStateOf(isNotifGranted(context)) }
-    var launcherSet       by remember { mutableStateOf(isDefaultLauncher(context)) }
-    var notifListenerOk   by remember { mutableStateOf(isNotificationListenerGranted(context)) }
+    var notifGranted by remember { mutableStateOf(isNotifGranted(context)) }
+    var launcherSet by remember { mutableStateOf(isDefaultLauncher(context)) }
+    var notifListenerOk by remember { mutableStateOf(isNotificationListenerGranted(context)) }
     var usageStatsGranted by remember { mutableStateOf(UsageStatsHelper.hasPermission(context)) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                notifGranted      = isNotifGranted(context)
-                launcherSet       = isDefaultLauncher(context)
-                notifListenerOk   = isNotificationListenerGranted(context)
+                notifGranted = isNotifGranted(context)
+                launcherSet = isDefaultLauncher(context)
+                notifListenerOk = isNotificationListenerGranted(context)
                 usageStatsGranted = UsageStatsHelper.hasPermission(context)
             }
         }
@@ -96,32 +98,52 @@ fun SettingsPermissionsCard(modifier: Modifier = Modifier) {
     }
 
     val notifLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
+        ActivityResultContracts.RequestPermission(),
     ) { notifGranted = it }
 
     val issues = buildList {
-        if (!launcherSet) add(PermissionIssue("Varsayılan launcher ayarlı değil") {
-            runCatching {
-                context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                })
-            }
-        })
-        if (!notifGranted) add(PermissionIssue("Bildirim izni verilmemiş") {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        })
-        if (!notifListenerOk) add(PermissionIssue("Bildirim badge'leri için erişim gerekli") {
-            runCatching {
-                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                })
-            }
-        })
-        if (!usageStatsGranted) add(PermissionIssue("Öneriler için kullanım erişimi gerekli") {
-            UsageStatsHelper.openPermissionSettings(context)
-        })
+        if (!launcherSet) {
+            add(
+                PermissionIssue("Varsayılan launcher ayarlı değil") {
+                    runCatching {
+                        context.startActivity(
+                            Intent(Settings.ACTION_HOME_SETTINGS).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            },
+                        )
+                    }
+                },
+            )
+        }
+        if (!notifGranted) {
+            add(
+                PermissionIssue("Bildirim izni verilmemiş") {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                },
+            )
+        }
+        if (!notifListenerOk) {
+            add(
+                PermissionIssue("Bildirim badge'leri için erişim gerekli") {
+                    runCatching {
+                        context.startActivity(
+                            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            },
+                        )
+                    }
+                },
+            )
+        }
+        if (!usageStatsGranted) {
+            add(
+                PermissionIssue("Öneriler için kullanım erişimi gerekli") {
+                    UsageStatsHelper.openPermissionSettings(context)
+                },
+            )
+        }
     }
 
     AnimatedVisibility(visible = issues.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
@@ -132,7 +154,7 @@ fun SettingsPermissionsCard(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(20.dp))
                 .background(WarnColor.copy(alpha = 0.12f))
                 .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Default.Warning, null, tint = WarnColor, modifier = Modifier.size(18.dp))
@@ -140,7 +162,7 @@ fun SettingsPermissionsCard(modifier: Modifier = Modifier) {
                     "  Eksik izinler",
                     color = WarnColor,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
             issues.forEach { issue ->
@@ -152,7 +174,7 @@ fun SettingsPermissionsCard(modifier: Modifier = Modifier) {
                         .clickable { issue.action() }
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(issue.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, modifier = Modifier.weight(1f))
                     Text("Düzelt →", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -162,7 +184,7 @@ fun SettingsPermissionsCard(modifier: Modifier = Modifier) {
                 Text(
                     "🔒 Tüm veriler yalnızca cihazınızda kalır — dışarı çıkmaz.",
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
-                    fontSize = 11.sp
+                    fontSize = 11.sp,
                 )
             }
         }

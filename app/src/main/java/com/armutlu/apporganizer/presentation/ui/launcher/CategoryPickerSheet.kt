@@ -24,11 +24,12 @@ import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 
-private val SheetBg     = Color(0xFF1A1A2A)
+private val SheetBg = Color(0xFF1A1A2A)
+
 // MaterialTheme.colorScheme.primary kaldırıldı — MaterialTheme.colorScheme.primary kullanılıyor
-private val RowHover    = Color.White.copy(alpha = 0.07f)
-private val TextPrim    = Color.White
-private val TextSec     = Color.White.copy(alpha = 0.55f)
+private val RowHover = Color.White.copy(alpha = 0.07f)
+private val TextPrim = Color.White
+private val TextSec = Color.White.copy(alpha = 0.55f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,23 +52,23 @@ fun CategoryPickerSheet(
             Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
                 Box(Modifier.width(36.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(Color.White.copy(0.2f)))
             }
-        }
+        },
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp),
         ) {
             Text(
                 "Kategori Seç",
                 color = TextPrim,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
             )
             Text(
                 app.appName,
                 color = TextSec,
                 fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 8.dp)
+                modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 8.dp),
             )
             HorizontalDivider(color = Color.White.copy(0.08f), modifier = Modifier.padding(horizontal = 16.dp))
             LazyColumn {
@@ -80,11 +81,14 @@ fun CategoryPickerSheet(
                                 role = Role.Button
                                 contentDescription = if (isCurrent) "${cat.categoryName}, seçili" else cat.categoryName
                             }
-                            .clickable { onCategorySelected(cat.categoryId); onDismiss() }
+                            .clickable {
+                                onCategorySelected(cat.categoryId)
+                                onDismiss()
+                            }
                             .background(if (isCurrent) MaterialTheme.colorScheme.primary.copy(0.12f) else Color.Transparent)
                             .padding(horizontal = 20.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
                         Text(cat.iconEmoji, fontSize = 24.sp)
                         Text(
@@ -92,7 +96,7 @@ fun CategoryPickerSheet(
                             color = if (isCurrent) MaterialTheme.colorScheme.primary else TextPrim,
                             fontSize = 15.sp,
                             fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         if (isCurrent) {
                             Icon(Icons.Default.Check, "Seçili", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))

@@ -2,15 +2,11 @@ package com.armutlu.apporganizer.presentation.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.R
-import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.FolderMergeViewModel
 
 @Composable
@@ -55,7 +50,7 @@ fun FolderMergeReviewScreen(
                         .fillMaxWidth()
                         .padding(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
                     ),
                 ) {
                     Row(
@@ -187,14 +182,14 @@ fun FolderMergeReviewScreen(
 
             items(
                 uiState.sourceFolderApps.filter { it.isCategoryLocked },
-                key = { it.packageName }
+                key = { it.packageName },
             ) { app ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     ),
                 ) {
                     Row(
@@ -225,7 +220,7 @@ fun FolderMergeReviewScreen(
                         .fillMaxWidth()
                         .padding(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
                     ),
                 ) {
                     Row(
@@ -257,13 +252,19 @@ fun FolderMergeReviewScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 OutlinedButton(
-                    onClick = { viewModel.rejectMerge(); onNavigateBack() },
+                    onClick = {
+                        viewModel.rejectMerge()
+                        onNavigateBack()
+                    },
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(stringResource(R.string.folder_merge_cancel))
                 }
                 Button(
-                    onClick = { viewModel.approveMerge(); onApproveComplete() },
+                    onClick = {
+                        viewModel.approveMerge()
+                        onApproveComplete()
+                    },
                     enabled = uiState.isReadyToApprove && uiState.selectedAppsToMove.isNotEmpty(),
                     modifier = Modifier.weight(1f),
                 ) {

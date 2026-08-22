@@ -38,7 +38,7 @@ import com.armutlu.apporganizer.presentation.ui.launcher.FolderMergeViewModel
 @Composable
 fun FolderMergeScreen(
     viewModel: FolderMergeViewModel = hiltViewModel(),
-    onClose: () -> Unit = {}
+    onClose: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val canUndo by viewModel.canUndo.collectAsState()
@@ -46,19 +46,19 @@ fun FolderMergeScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Header
             Text(
                 text = "Klasör Birleştirme",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
 
             // Compare Layout: 3-column
@@ -67,13 +67,13 @@ fun FolderMergeScreen(
                     uiState = uiState,
                     categories = categories,
                     onToggleApp = { viewModel.toggleAppSelection(it) },
-                    onSelectTarget = { viewModel.selectTargetFolder(it) }
+                    onSelectTarget = { viewModel.selectTargetFolder(it) },
                 )
             } else {
                 // Suggestions List
                 SuggestionsList(
                     suggestions = uiState.suggestions,
-                    onSelectSuggestion = { viewModel.selectSuggestion(it) }
+                    onSelectSuggestion = { viewModel.selectSuggestion(it) },
                 )
             }
 
@@ -83,12 +83,12 @@ fun FolderMergeScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (uiState.selectedSuggestionId != null) {
                     OutlinedButton(
                         onClick = { viewModel.rejectMerge() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("İptal")
                     }
@@ -96,7 +96,7 @@ fun FolderMergeScreen(
                     Button(
                         onClick = { viewModel.approveMerge() },
                         enabled = uiState.isReadyToApprove && !uiState.isProcessing,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("Birleştir")
                     }
@@ -106,7 +106,7 @@ fun FolderMergeScreen(
                     Button(
                         onClick = { viewModel.undoLastMerge() },
                         enabled = !uiState.isProcessing,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("Geri Al")
                     }
@@ -114,7 +114,7 @@ fun FolderMergeScreen(
 
                 OutlinedButton(
                     onClick = onClose,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     Text("Kapat")
                 }
@@ -126,12 +126,12 @@ fun FolderMergeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.errorContainer)
-                        .padding(8.dp)
+                        .padding(8.dp),
                 ) {
                     Text(
                         text = uiState.error!!,
                         color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(12.dp)
+                        modifier = Modifier.padding(12.dp),
                     )
                 }
             }
@@ -147,13 +147,13 @@ private fun CompareLayout(
     uiState: FolderMergeUiState,
     categories: List<Category>,
     onToggleApp: (String) -> Unit,
-    onSelectTarget: (String) -> Unit
+    onSelectTarget: (String) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // Left: Source Folder
         FolderCompareCard(
@@ -161,7 +161,7 @@ private fun CompareLayout(
             categoryId = uiState.sourceFolderApps.firstOrNull()?.categoryId ?: "unknown",
             appCount = uiState.sourceFolderApps.size,
             categories = categories,
-            title = "Kaynak"
+            title = "Kaynak",
         )
 
         // Center: Arrow + Apps
@@ -170,13 +170,13 @@ private fun CompareLayout(
                 .weight(1.2f)
                 .padding(horizontal = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "Transfer",
                 modifier = Modifier.padding(top = 24.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
             )
 
             // Selectable Apps List
@@ -185,7 +185,7 @@ private fun CompareLayout(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(uiState.selectableApps) { app ->
                         Row(
@@ -193,16 +193,16 @@ private fun CompareLayout(
                                 .fillMaxWidth()
                                 .padding(4.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Checkbox(
                                 checked = app.packageName in uiState.selectedAppsToMove,
-                                onCheckedChange = { onToggleApp(app.packageName) }
+                                onCheckedChange = { onToggleApp(app.packageName) },
                             )
                             Text(
                                 text = app.appName,
                                 style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }
@@ -211,7 +211,7 @@ private fun CompareLayout(
 
             Text(
                 text = "${uiState.selectedAppsToMove.size}/${uiState.selectableApps.size}",
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
             )
         }
 
@@ -221,7 +221,7 @@ private fun CompareLayout(
             categories = categories,
             selectedCategoryId = uiState.targetFolderId,
             onSelectTarget = onSelectTarget,
-            excludeCategoryId = uiState.sourceFolderApps.firstOrNull()?.categoryId
+            excludeCategoryId = uiState.sourceFolderApps.firstOrNull()?.categoryId,
         )
     }
 }
@@ -235,7 +235,7 @@ private fun FolderCompareCard(
     categoryId: String,
     appCount: Int,
     categories: List<Category>,
-    title: String
+    title: String,
 ) {
     val category = categories.find { it.categoryId == categoryId }
 
@@ -245,18 +245,18 @@ private fun FolderCompareCard(
                 .fillMaxWidth()
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(text = title, style = MaterialTheme.typography.labelSmall)
             Text(text = category?.iconEmoji ?: "📁", style = MaterialTheme.typography.displaySmall)
             Text(
                 text = category?.categoryName ?: categoryId,
                 style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = "$appCount uygulama",
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
             )
         }
     }
@@ -271,7 +271,7 @@ private fun TargetFolderSelector(
     categories: List<Category>,
     selectedCategoryId: String?,
     onSelectTarget: (String) -> Unit,
-    excludeCategoryId: String? = null
+    excludeCategoryId: String? = null,
 ) {
     val availableCategories = categories.filter {
         it.categoryId != excludeCategoryId && it.categoryId != "uncategorized"
@@ -282,16 +282,16 @@ private fun TargetFolderSelector(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = "Hedef",
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelSmall,
             )
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.weight(1f, fill = false)
+                modifier = Modifier.weight(1f, fill = false),
             ) {
                 items(availableCategories) { cat ->
                     Surface(
@@ -299,25 +299,26 @@ private fun TargetFolderSelector(
                             .fillMaxWidth()
                             .padding(4.dp)
                             .background(
-                                if (selectedCategoryId == cat.categoryId)
+                                if (selectedCategoryId == cat.categoryId) {
                                     MaterialTheme.colorScheme.primaryContainer
-                                else
+                                } else {
                                     MaterialTheme.colorScheme.surface
+                                },
                             ),
-                        onClick = { onSelectTarget(cat.categoryId) }
+                        onClick = { onSelectTarget(cat.categoryId) },
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(cat.iconEmoji)
                             Text(
                                 text = cat.categoryName,
                                 style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }
@@ -333,48 +334,48 @@ private fun TargetFolderSelector(
 @Composable
 private fun SuggestionsList(
     suggestions: List<com.armutlu.apporganizer.domain.usecase.folder.FolderSuggestion>,
-    onSelectSuggestion: (String) -> Unit
+    onSelectSuggestion: (String) -> Unit,
 ) {
     if (suggestions.isEmpty()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(32.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = "Birleştirme önerisi yok",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     } else {
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(suggestions) { suggestion ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    onClick = { onSelectSuggestion(suggestion.id) }
+                    onClick = { onSelectSuggestion(suggestion.id) },
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
                             text = suggestion.title,
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                         Text(
                             text = suggestion.description,
-                            style = MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall,
                         )
                         Text(
                             text = "Güven: %${suggestion.confidence}",
-                            style = MaterialTheme.typography.labelSmall
+                            style = MaterialTheme.typography.labelSmall,
                         )
                     }
                 }

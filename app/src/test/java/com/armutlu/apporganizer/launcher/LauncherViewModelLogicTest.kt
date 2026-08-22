@@ -4,8 +4,8 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.domain.models.Category
 import com.armutlu.apporganizer.presentation.ui.launcher.DOCK_MAX_SIZE
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeLayoutMath
-import com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPackages
 import com.armutlu.apporganizer.presentation.ui.launcher.buildAllApps
+import com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPackages
 import com.armutlu.apporganizer.presentation.ui.launcher.buildFolders
 import com.armutlu.apporganizer.presentation.ui.launcher.fillDockSuggestions
 import com.armutlu.apporganizer.presentation.ui.launcher.filterAllAppsByQuery
@@ -35,7 +35,7 @@ class LauncherViewModelLogicTest {
     fun `buildFolders_uygulamalari_kategoriye_gore_gruplar`() {
         val apps = listOf(
             app("com.instagram.android", "Instagram", "social"),
-            app("com.game1", "Game One", "games")
+            app("com.game1", "Game One", "games"),
         )
         val folders = buildFolders(apps, categories)
         val socialFolder = folders.first { it.category.categoryId == "social" }
@@ -47,8 +47,10 @@ class LauncherViewModelLogicTest {
     fun `buildFolders_bos_kategorileri_dislar`() {
         val apps = listOf(app("com.instagram", "Instagram", "social"))
         val folders = buildFolders(apps, categories)
-        assertFalse("Oyun uygulaması yokken sistem games klasörü olmamalı",
-            folders.any { it.category.categoryId == "games" })
+        assertFalse(
+            "Oyun uygulaması yokken sistem games klasörü olmamalı",
+            folders.any { it.category.categoryId == "games" },
+        )
     }
 
     @Test
@@ -56,23 +58,27 @@ class LauncherViewModelLogicTest {
         val customCat = Category(
             categoryId = "custom_1",
             categoryName = "Yeni Klasör",
-            isSystemCategory = false
+            isSystemCategory = false,
         )
         val allCategories = categories + customCat
         val apps = listOf(app("com.instagram", "Instagram", "social"))
 
         val folders = buildFolders(apps, allCategories)
 
-        assertTrue("Kullanıcı tarafından oluşturulan boş özel klasör listede olmalı",
-            folders.any { it.category.categoryId == "custom_1" })
-        assertFalse("Uygulaması olmayan sistem klasörleri listede olmamalı",
-            folders.any { it.category.categoryId == "games" })
+        assertTrue(
+            "Kullanıcı tarafından oluşturulan boş özel klasör listede olmalı",
+            folders.any { it.category.categoryId == "custom_1" },
+        )
+        assertFalse(
+            "Uygulaması olmayan sistem klasörleri listede olmamalı",
+            folders.any { it.category.categoryId == "games" },
+        )
     }
 
     @Test
     fun `buildFolders_uncategorized_klasor_olusturmaz`() {
         val apps = listOf(
-            app("com.x", "App X", Category.CAT_UNCATEGORIZED)
+            app("com.x", "App X", Category.CAT_UNCATEGORIZED),
         )
         val folders = buildFolders(apps, categories)
         assertFalse(folders.any { it.category.categoryId == Category.CAT_UNCATEGORIZED })
@@ -84,11 +90,13 @@ class LauncherViewModelLogicTest {
         val apps = listOf(
             app("pkg.z", "Zebra App", "games"),
             app("pkg.a", "Alpha App", "games"),
-            app("pkg.m", "Middle App", "games")
+            app("pkg.m", "Middle App", "games"),
         )
         val folder = buildFolders(apps, categories).first { it.category.categoryId == "games" }
-        assertEquals(listOf("Alpha App", "Middle App", "Zebra App"),
-            folder.apps.map { it.appName })
+        assertEquals(
+            listOf("Alpha App", "Middle App", "Zebra App"),
+            folder.apps.map { it.appName },
+        )
     }
 
     @Test
@@ -96,11 +104,11 @@ class LauncherViewModelLogicTest {
         // social displayOrder=1, games displayOrder=3
         val apps = listOf(
             app("p1", "App1", "games"),
-            app("p2", "App2", "social")
+            app("p2", "App2", "social"),
         )
         val folders = buildFolders(apps, categories)
         val socialIdx = folders.indexOfFirst { it.category.categoryId == "social" }
-        val gamesIdx  = folders.indexOfFirst { it.category.categoryId == "games" }
+        val gamesIdx = folders.indexOfFirst { it.category.categoryId == "games" }
         assertTrue("Social (order=1) games'ten (order=3) önce gelmeli", socialIdx < gamesIdx)
     }
 
@@ -109,7 +117,7 @@ class LauncherViewModelLogicTest {
         val apps = listOf(
             app("a", "App A", "social"),
             app("b", "App B", "social"),
-            app("c", "App C", "social")
+            app("c", "App C", "social"),
         )
         val folder = buildFolders(apps, categories).first { it.category.categoryId == "social" }
         assertEquals(3, folder.apps.size)
@@ -179,7 +187,7 @@ class LauncherViewModelLogicTest {
         val apps = listOf(
             app("c", "Charlie", "social"),
             app("a", "Alice", "social"),
-            app("b", "Bob", "social")
+            app("b", "Bob", "social"),
         )
         val sorted = buildAllApps(apps)
         assertEquals(listOf("Alice", "Bob", "Charlie"), sorted.map { it.appName })
@@ -190,7 +198,7 @@ class LauncherViewModelLogicTest {
         val apps = listOf(
             app("a", "App A", "social"),
             app("b", "App B", "games"),
-            app("c", "App C", Category.CAT_UNCATEGORIZED)
+            app("c", "App C", Category.CAT_UNCATEGORIZED),
         )
         assertEquals(3, buildAllApps(apps).size)
     }
@@ -199,7 +207,7 @@ class LauncherViewModelLogicTest {
     fun `buildAllApps_buyuk_harf_kucuk_harf_siralamayi_etkilemez`() {
         val apps = listOf(
             app("z", "zoom", "social"),
-            app("a", "Apple", "social")
+            app("a", "Apple", "social"),
         )
         // Kotlin sortedBy kullanır — unicode-aware, büyük/küçük harf bağımsız
         val sorted = buildAllApps(apps)
@@ -235,7 +243,7 @@ class LauncherViewModelLogicTest {
         val result = buildContextualDockPackages(
             fixed = fixed,
             suggested = suggested,
-            contextualEnabled = true
+            contextualEnabled = true,
         )
 
         assertEquals(listOf("fixed.1", "fixed.2", "fixed.3", "smart.1", "smart.2"), result)
@@ -249,7 +257,7 @@ class LauncherViewModelLogicTest {
         val result = buildContextualDockPackages(
             fixed = fixed,
             suggested = suggested,
-            contextualEnabled = false
+            contextualEnabled = false,
         )
 
         assertEquals(listOf("fixed.1", "fixed.2", "fixed.3", "fixed.4", "fixed.5"), result)
@@ -384,8 +392,8 @@ class LauncherViewModelLogicTest {
 
     private fun app(pkg: String, name: String, categoryId: String) = AppInfo(
         packageName = pkg,
-        appName     = name,
-        categoryId  = categoryId
+        appName = name,
+        categoryId = categoryId,
     )
 
     // ── filterTodayInstalledApps (EX01 — "Bugün Yüklenenler") ──────────────────

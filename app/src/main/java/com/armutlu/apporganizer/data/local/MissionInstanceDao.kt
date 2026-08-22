@@ -14,7 +14,7 @@ interface MissionInstanceDao {
         """
         SELECT * FROM mission_instances
         WHERE periodType = :periodType AND periodStartEpoch = :periodStartEpoch
-        """
+        """,
     )
     suspend fun getInstancesForPeriod(periodType: String, periodStartEpoch: Long): List<MissionInstanceEntity>
 
@@ -23,7 +23,7 @@ interface MissionInstanceDao {
         SELECT * FROM mission_instances
         WHERE status = 'assigned'
         ORDER BY periodStartEpoch DESC
-        """
+        """,
     )
     fun observeActiveInstances(): Flow<List<MissionInstanceEntity>>
 
@@ -37,7 +37,7 @@ interface MissionInstanceDao {
         """
         UPDATE mission_instances SET status = :status, settledAt = :settledAt
         WHERE instanceId = :instanceId
-        """
+        """,
     )
     suspend fun settleInstance(instanceId: String, status: String, settledAt: Long)
 
@@ -45,7 +45,7 @@ interface MissionInstanceDao {
         """
         SELECT * FROM mission_instances
         WHERE status = 'assigned' AND periodEndAt < :beforeEpochMillis
-        """
+        """,
     )
     suspend fun getUnsettledBefore(beforeEpochMillis: Long): List<MissionInstanceEntity>
 
@@ -59,7 +59,7 @@ interface MissionInstanceDao {
         """
         SELECT COUNT(*) FROM mission_instances
         WHERE status = 'assigned' AND periodEndAt < :beforeEpochMillis
-        """
+        """,
     )
     suspend fun countUnsettledBefore(beforeEpochMillis: Long): Int
 
@@ -76,7 +76,7 @@ interface MissionInstanceDao {
         SELECT COUNT(*) FROM mission_instances
         WHERE periodType = 'daily' AND periodStartEpoch = :epochDay
             AND status NOT IN ('assigned', 'data_unavailable')
-        """
+        """,
     )
     suspend fun countSettledForDay(epochDay: Long): Int
 
@@ -85,7 +85,7 @@ interface MissionInstanceDao {
         """
         SELECT COUNT(*) FROM mission_instances
         WHERE periodType = 'daily' AND periodStartEpoch = :epochDay AND status = 'completed'
-        """
+        """,
     )
     suspend fun countCompletedForDay(epochDay: Long): Int
 

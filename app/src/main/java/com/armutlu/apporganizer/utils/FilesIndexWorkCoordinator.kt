@@ -3,8 +3,8 @@ package com.armutlu.apporganizer.utils
 import android.content.Context
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.armutlu.apporganizer.data.local.FilesIndexer
 import com.armutlu.apporganizer.data.local.FilesIndexWorker
+import com.armutlu.apporganizer.data.local.FilesIndexer
 
 object FilesIndexWorkCoordinator {
     fun ensurePeriodicWorkScheduled(context: Context) {

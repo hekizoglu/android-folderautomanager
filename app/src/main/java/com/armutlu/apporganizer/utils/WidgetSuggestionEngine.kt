@@ -10,7 +10,7 @@ data class WidgetSuggestion(
     val packageName: String,
     val appName: String,
     val widgetCount: Int,
-    val launchCount: Long   // kez açıldı (adet) — gösterim için
+    val launchCount: Long, // kez açıldı (adet) — gösterim için
 )
 
 object WidgetSuggestionEngine {
@@ -29,14 +29,14 @@ object WidgetSuggestionEngine {
             // Kullanıcının en çok kullandığı uygulamaları sırala, widget'ı olanları filtrele
             apps
                 .filter { !it.isHidden && !it.isSystemApp && widgetsByPkg.containsKey(it.packageName) }
-                .sortedByDescending { it.usageCount }   // ms bazlı sıralama (gerçek kullanım büyüklüğü)
+                .sortedByDescending { it.usageCount } // ms bazlı sıralama (gerçek kullanım büyüklüğü)
                 .take(topN)
                 .map { app ->
                     WidgetSuggestion(
                         packageName = app.packageName,
                         appName = app.appName,
                         widgetCount = widgetsByPkg[app.packageName] ?: 0,
-                        launchCount = app.launchCount
+                        launchCount = app.launchCount,
                     )
                 }
         }
