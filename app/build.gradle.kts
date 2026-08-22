@@ -156,7 +156,12 @@ android {
             // Robolectric tabanlı Compose UI testleri (tur 9) kaynaklara erismeli.
             isIncludeAndroidResources = true
             all { test ->
-                test.jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
+                test.jvmArgs(
+                    "-XX:+EnableDynamicAgentLoading",
+                    "-Xshare:off",
+                    "-Duser.language=en",
+                    "-Duser.country=US"
+                )
             }
         }
     }

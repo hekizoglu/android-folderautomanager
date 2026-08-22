@@ -41,7 +41,6 @@ import org.robolectric.annotation.GraphicsMode
  * taranır. Not: test qualifier'ları px=dp (mdpi) kabulüyle deterministik koordinat verir.
  */
 @RunWith(AndroidJUnit4::class)
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w360dp-h800dp")
 class HomeV2VisualUiTest {
 
