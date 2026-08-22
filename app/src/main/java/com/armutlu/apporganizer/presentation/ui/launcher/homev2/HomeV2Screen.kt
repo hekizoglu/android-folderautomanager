@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -137,8 +138,32 @@ fun HomeV2Screen(
     }
 
     // Hero sayfasi (sayfa 0): eski ekranin Dashboard sayfasi. Layout siralamasi
-    // HomeLayoutPrefs'ten statik okunur (editör entegrasyonu HomeV2 v3 kapsaminda).
-    val heroContentOrder = remember { dashboardContentOrder(HomeLayoutPrefs.read(context).config) }
+    // HomeLayoutPrefs'ten REAKTIF okunur: "Ana Ekrani Duzenle" editorunden yapilan
+    // degisiklikler (siralama/gizlilik) aninda Hero'ya yansir — eski ekranla ayni
+    // SharedPreferences dinleyici mekanizmasi korunur.
+    var heroContentOrder by remember {
+        mutableStateOf(dashboardContentOrder(HomeLayoutPrefs.read(context).config))
+    }
+    DisposableEffect(context) {
+        val layoutPrefs = context.getSharedPreferences(
+            HomeLayoutPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val layoutListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key in setOf(
+                    HomeLayoutPrefs.KEY_HEADER_ORDER,
+                    HomeLayoutPrefs.KEY_FOOTER_ORDER,
+                    HomeLayoutPrefs.KEY_CONTENT_ORDER,
+                    HomeLayoutPrefs.KEY_HIDDEN_SECTIONS,
+                    HomeLayoutPrefs.KEY_LAYOUT_VERSION,
+                    HomeLayoutPrefs.KEY_CUSTOMIZED,
+                )
+            ) {
+                heroContentOrder = dashboardContentOrder(HomeLayoutPrefs.read(context).config)
+            }
+        }
+        layoutPrefs.registerOnSharedPreferenceChangeListener(layoutListener)
+        onDispose { layoutPrefs.unregisterOnSharedPreferenceChangeListener(layoutListener) }
+    }
     val notificationCount24h = safeRecentNotificationTotal(recentNotificationCounts)
     val dashboardActions = remember(context) {
         fun openRoute(route: String) {

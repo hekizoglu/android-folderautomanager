@@ -1,5 +1,12 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Home V2 tur 8: layout editörü reaktivitesi + build ortamı kalıcı çözümü)
+**Yapılanlar:**
+1. HomeV2'de `heroContentOrder` artık REAKTIF: "Ana Ekranı Düzenle" editöründe yapılan sıralama/gizlilik değişiklikleri SharedPreferences dinleyicisiyle anında Hero Dashboard'a yansır (eski ekranla aynı mekanizma; KEY_HEADER/FOOTER/CONTENT_ORDER, HIDDEN_SECTIONS, LAYOUT_VERSION, CUSTOMIZED izlenir).
+2. Build ortamı kota sorunu kökten çözüldü: JDK (apt openjdk-21) + Android SDK + GRADLE_USER_HOME artık workspace DIŞINDA (/usr/lib/jvm, /opt) — snapshot kotası (128MB) artık build araçlarıyla dolmuyor. Kurulum reçetesİ: /home/user/ENV_SETUP.sh (sandbox sıfırlanınca tek komutla yeniden kurulur). JDK 21 ile tam derleme+test doğrulandı.
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` (JDK 21, GRADLE_USER_HOME=/opt/gradle-home) → **1437 test, 0 fail, 0 hata** (19 skipped); BUILD SUCCESSFUL.
+**Sonraki:** klasör birleştirme önerisi yüzeyi, arka plan/tema ayarlarının HomeV2'ye taşınması, README güncellemesi.
+
 ## Döngü — 2026-08-21 (Home V2 tur 7: boş alana uzun basma yönetim menüsü + dock düzenleme)
 **Yapılanlar:** HomeV2'nin son eksik jest yüzeyi tamamlandı:
 - Boş ana ekran alanına UZUN BASMA → mevcut `HomeLongPressSheet` açılır: duvar kağıdı seçici, yönetici/ayarlar, dock düzenleme, widget ekleme (widget picker), klasör ekleme, Ana Ekranı Düzenle (layout editörü). Eski ekranla birebir aynı eylem eşlemeleri.
