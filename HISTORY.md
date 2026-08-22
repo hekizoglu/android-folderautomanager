@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 14: legacy HomeScreen god-dosyaları temizlendi)
+**Yapılanlar:** Kullanıcının seçtiği sıranın 2. maddesi. HomeV2 aktif olduktan sonra ölü kod kalan eski ana ekran tamamen kaldırıldı:
+- Silinen ana kaynak dosyaları (9 dosya, ~5.000 satır): HomeScreen.kt, HomeScreenComponents.kt, HomeScreenFolderPager.kt, HomeScreenOverlays.kt, HomeScreenPageIndicator.kt, HomeGestureCoordinator.kt, HomePagerHost.kt, HomeContentWidthTokens.kt, GlobalSearchHost.kt.
+- `homeRootBackground`/`homeBackgroundBrush` yeni `HomeBackground.kt`'ye taşındı (HomeV2 ve FolderScreen kullanmaya devam eder).
+- Silinen dosyaların legacy testleri de kaldırıldı: HomeGestureCoordinatorTest, FolderEditModeTest, HomePageIndicatorItemTest, HomePagerHostTest (57 test).
+- Yöntem: aday dosyalar dışarı taşınıp derleme hatalarıyla gerçek bağımlılık haritası çıkarıldı (ampirik); tek canlı bağımlılık GlobalSearchHost üzerinden bulundu, o da silindi; kalan referansların yorum olduğu doğrulandı.
+**Kanıt:** `testDebugUnitTest + assembleDebug + assembleDebugAndroidTest -PskipGoogleServices=true` → **1392 test, 0 fail, 0 hata**; BUILD SUCCESSFUL.
+**Sonraki:** Tur 15 — Maestro cihaz akışı dokümantasyonu/runbook.
+
 ## Döngü — 2026-08-22 (Tur 13: Kotlin 2.x'e geçiş — K2 derleyici)
 **Yapılanlar:** Kullanıcının seçtiği sıranın 1. maddesi: teknoloji yığını güncellendi.
 - Kotlin **1.9.25 → 2.1.20** (K2 derleyici) + `org.jetbrains.kotlin.plugin.compose` eklendi; `composeOptions.kotlinCompilerExtensionVersion` kaldırıldı (Kotlin 2.x'te Compose compiler'ı plugin yönetir).
