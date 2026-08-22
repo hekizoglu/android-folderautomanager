@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Home V2 tur 10: klasör birleştirme önerisi yüzeyi — Düzenleme/Öneri Merkezi)
+**Yapılanlar:** Eski ekranın "Düzenleme/Öneri Merkezi" kartı HomeV2'ye taşındı (backlog madde 1):
+- `EditingCenterCard` banner'ların altında, pager'ın üstünde render ediliyor; uyarı yoksa kart kendini gizler (`hasAnyAlert`), `isEditingCenterEnabled` ayarı korunur.
+- Beş navigasyon hedefi eski ekranla birebir aynı rotalara bağlandı: klasör birleştirme (Routes.FOLDER_MERGE → FolderMergeScreen), sınıflandırma incelemesi, uygulama düzeltmeleri (APP_LIST_UNCERTAIN), izin rehberi, eski uygulamalar — tek `openMainRoute` yardımcısıyla.
+- Görsel test kapsamı genişletildi: tüm uyarılar açıkken dar ekranda (320px) taşma kontrolü + uyarı yokken gizlenme durumu (+2 test).
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1448 test, 0 fail, 0 hata** (19 skipped); BUILD SUCCESSFUL.
+**Sonraki:** arka plan/tema ayarlarının HomeV2'ye taşınması, README güncellemesi.
+
 ## Döngü — 2026-08-22 (Home V2 tur 9: Robolectric görsel UI test altyapısı + taşma dedektörü)
 **Yapılanlar:** Kullanıcı arayüzü için otomatik GÖRSEL test yöntemi kuruldu (istem: kayma/ekrana sığmama gibi hataların testi):
 - `HomeV2VisualUiTest` (9 test): Robolectric + Compose UI ile bileşenler gerçek ölçüleriyle render ediliyor; semantics ağacı yürünerek her düğümün ekran sınırları içinde kaldığı doğrulanıyor (taşma dedektörü). Kapsam: uzun başlık/rozetli kart, 8 klasörlü grid (360x800), dar ekran (320x568), büyük font ölçeği (1.5x grid / 2.0x saat başlığı), 5 ikonlu dar dock, dokunma jestleri (açma, hızlı başlat swipe-up, uzun bas+sürükle sıralama).

@@ -22,6 +22,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.armutlu.apporganizer.domain.models.AppInfo
+import com.armutlu.apporganizer.presentation.ui.launcher.EditingCenterCard
+import com.armutlu.apporganizer.presentation.ui.launcher.EditingCenterState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -356,6 +358,39 @@ class HomeV2VisualUiTest {
         rule.onNodeWithText("Tikla").performClick()
         rule.waitForIdle()
         assertTrue("clickable nodes=$clickables, clicked=$clicked", clicked)
+    }
+
+
+    @Test
+    @Config(qualifiers = "w320dp-h568dp")
+    fun `editing center card with all alerts fits on narrow screen`() {
+        rule.setContent {
+            MaterialTheme {
+                EditingCenterCard(
+                    state = EditingCenterState(
+                        pendingClassificationCount = 7,
+                        folderMergeCandidates = 3,
+                        appCorrectionsCount = 2,
+                        missingPermissionsCount = 1,
+                        staleAppsCount = 12,
+                    ),
+                )
+            }
+        }
+        rule.waitForIdle()
+        assertNoOverflow("öneri merkezi kartı (320px, tüm uyarılar)")
+    }
+
+    @Test
+    fun `editing center card hidden when no alerts`() {
+        rule.setContent {
+            MaterialTheme {
+                EditingCenterCard(state = EditingCenterState())
+            }
+        }
+        rule.waitForIdle()
+        // Uyarı yokken kart render edilmez; kök boş kalır, taşma yine olmamalı.
+        assertNoOverflow("öneri merkezi kartı (uyarı yok)")
     }
 
 }

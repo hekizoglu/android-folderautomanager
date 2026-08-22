@@ -58,6 +58,7 @@ import com.armutlu.apporganizer.presentation.ui.launcher.AppContextMenu
 import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
 import com.armutlu.apporganizer.presentation.ui.launcher.CategoryPickerSheet
 import com.armutlu.apporganizer.presentation.ui.launcher.DockEditSheet
+import com.armutlu.apporganizer.presentation.ui.launcher.EditingCenterCard
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeLongPressSheet
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardActions
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardUiState
@@ -115,7 +116,22 @@ fun HomeV2Screen(
     val contextMenuApp = contextMenuPkg?.let { pkg -> allApps.find { it.packageName == pkg } }
     val favoritePackages = remember(favoriteApps) { favoriteApps.mapTo(mutableSetOf()) { it.packageName } }
 
+    // Düzenleme/Öneri Merkezi (tur 10): klasör birleştirme önerileri, bekleyen
+    // sınıflandırmalar, düzeltmeler, eksik izinler ve eski uygulamalar tek kartta.
+    // Kart, uyarı yoksa kendini gizler (hasAnyAlert).
+    val editingCenterState by vm.editingCenterState.collectAsState()
+    val editingCenterEnabled = remember { AppPrefs.isEditingCenterEnabled(context) }
+
     // Ana ekran boş alanına uzun basma → yönetim menüsü; dock düzenleme sheet'i — tur 7.
+    // MainActivity rota açıcı (öneri merkezi ve benzeri yüzeyleşmeler için).
+    val openMainRoute: (String) -> Unit = { route ->
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra(MainActivity.EXTRA_OPEN_ROUTE, route)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching { context.startActivity(intent) }
+    }
+
     var homeLongPressOpen by remember { mutableStateOf(false) }
     var dockEditOpen by remember { mutableStateOf(false) }
     val dockDefaultCategory by vm.dockDefaultCategory.collectAsState()
@@ -265,6 +281,19 @@ fun HomeV2Screen(
                     },
                     onDismiss = { dismissedBanners = dismissedBanners + it },
                 )
+                if (editingCenterEnabled) {
+                    EditingCenterCard(
+                        state = editingCenterState,
+                        onNavigateToClassificationReview = { openMainRoute(Routes.CLASSIFICATION_REVIEW) },
+                        onNavigateToFolderMerge = { openMainRoute(Routes.FOLDER_MERGE) },
+                        onNavigateToAppCorrections = { openMainRoute(Routes.APP_LIST_UNCERTAIN) },
+                        onNavigateToPermissions = { openMainRoute(Routes.PERMISSIONS_GUIDE) },
+                        onNavigateToStaleApps = { openMainRoute(Routes.APP_LIST) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                }
                 when {
                     // Hero sayfasi her zaman icerik sunar; ilk yukleme tamamlanana kadar
                     // klasör grid'i yerine yükleme göstergesi gösterilir.
