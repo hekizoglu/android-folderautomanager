@@ -11,6 +11,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -55,6 +56,8 @@ import com.armutlu.apporganizer.presentation.ui.launcher.AllAppsDrawer
 import com.armutlu.apporganizer.presentation.ui.launcher.AppContextMenu
 import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
 import com.armutlu.apporganizer.presentation.ui.launcher.CategoryPickerSheet
+import com.armutlu.apporganizer.presentation.ui.launcher.DockEditSheet
+import com.armutlu.apporganizer.presentation.ui.launcher.HomeLongPressSheet
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardActions
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardUiState
 import com.armutlu.apporganizer.presentation.ui.launcher.FolderScreen
@@ -110,6 +113,11 @@ fun HomeV2Screen(
     var categoryPickerApp by remember { mutableStateOf<AppInfo?>(null) }
     val contextMenuApp = contextMenuPkg?.let { pkg -> allApps.find { it.packageName == pkg } }
     val favoritePackages = remember(favoriteApps) { favoriteApps.mapTo(mutableSetOf()) { it.packageName } }
+
+    // Ana ekran boş alanına uzun basma → yönetim menüsü; dock düzenleme sheet'i — tur 7.
+    var homeLongPressOpen by remember { mutableStateOf(false) }
+    var dockEditOpen by remember { mutableStateOf(false) }
+    val dockDefaultCategory by vm.dockDefaultCategory.collectAsState()
 
     // Bağlamsal dock: sabitlenmiş uygulamalar + saat/kullanım bazlı öneriler.
     // Birleştirme SAF buildContextualDockPackages ile yapılır (orijinal dock motorunun
@@ -203,6 +211,14 @@ fun HomeV2Screen(
                         ) { _, dragAmount ->
                             if (dragAmount.y < 0) totalUp += -dragAmount.y
                         }
+                    }
+                    // Boş alana uzun basma → ana ekran yönetim menüsü (duvar kağıdı,
+                    // ayarlar, dock düzenleme, widget/klasör ekleme, layout editörü).
+                    // Hareket slop'u aşarsa drag kazanır ve uzun basma iptal olur.
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = { homeLongPressOpen = true },
+                        )
                     },
             ) {
                 ClockHeaderV2(pulse = state.pulse)
@@ -373,6 +389,54 @@ fun HomeV2Screen(
                     onCategorySelected = { catId ->
                         vm.updateAppCategory(app.packageName, catId)
                         categoryPickerApp = null
+                    },
+                )
+            }
+            if (dockEditOpen) {
+                DockEditSheet(
+                    allApps = allApps,
+                    dockPackages = dockPackages,
+                    dockDefaultCategory = dockDefaultCategory,
+                    onAdd = { vm.addToDock(context, it) },
+                    onRemove = { vm.removeFromDock(context, it) },
+                    onDismiss = { dockEditOpen = false },
+                )
+            }
+            if (homeLongPressOpen) {
+                HomeLongPressSheet(
+                    onDismiss = { homeLongPressOpen = false },
+                    onEditHomeLayout = {
+                        homeLongPressOpen = false
+                        onEditHomeLayout()
+                    },
+                    onWallpaper = {
+                        homeLongPressOpen = false
+                        val wallpaperIntent = Intent(Intent.ACTION_SET_WALLPAPER).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        runCatching {
+                            context.startActivity(
+                                Intent.createChooser(wallpaperIntent, "Duvar Kagidi Sec").apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                            )
+                        }
+                    },
+                    onSettings = {
+                        homeLongPressOpen = false
+                        vm.openManager(context)
+                    },
+                    onDockEdit = {
+                        homeLongPressOpen = false
+                        dockEditOpen = true
+                    },
+                    onAddWidget = {
+                        homeLongPressOpen = false
+                        onLaunchWidgetPicker()
+                    },
+                    onAddFolder = {
+                        homeLongPressOpen = false
+                        vm.createCustomFolder(context)
                     },
                 )
             }

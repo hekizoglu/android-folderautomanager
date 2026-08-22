@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-21 (Home V2 tur 7: boş alana uzun basma yönetim menüsü + dock düzenleme)
+**Yapılanlar:** HomeV2'nin son eksik jest yüzeyi tamamlandı:
+- Boş ana ekran alanına UZUN BASMA → mevcut `HomeLongPressSheet` açılır: duvar kağıdı seçici, yönetici/ayarlar, dock düzenleme, widget ekleme (widget picker), klasör ekleme, Ana Ekranı Düzenle (layout editörü). Eski ekranla birebir aynı eylem eşlemeleri.
+- `DockEditSheet` HomeV2 overlay'lerine bağlandı (dock'a uygulama ekleme/çıkarma, varsayılan kategori).
+- Kök jest işleyicisi swipe-up (çekmece) ile uzun basmayı gesture arena'da çakışmasız yürütür; klasör kartları ve dock kendi jestlerini korur.
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1437 test, 0 fail, 0 hata** (19 skipped); BUILD SUCCESSFUL.
+**Sonraki:** layout editörü reaktivitesi (heroContentOrder canlı okuma), klasör birleştirme önerisi yüzeyi, arka plan/tema ayarlarının HomeV2'ye taşınması.
+
 ## Döngü — 2026-08-21 (Home V2 tur 6: uygulama bağlam menüsü)
 **Yapılanlar:** HomeV2'de uygulamaya uzun basma → bağlam menüsü bağlandı (v1'den kalan son boş callback):
 - Mevcut `AppContextMenu` (bottom sheet: başlat, dock'a ekle/çıkar, kategori değiştir, gizle, not, favoriler, bildirim/son kullanılanlar/sıradakiler'den geçici kaldırma, kısayollar, versiyon) ve `CategoryPickerSheet` değişmeden yeniden kullanıldı.
