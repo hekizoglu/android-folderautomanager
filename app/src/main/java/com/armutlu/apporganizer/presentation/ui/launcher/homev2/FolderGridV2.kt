@@ -53,6 +53,7 @@ internal fun FolderPageV2(
     onQuickLaunch: (String) -> Unit,
     onAppClick: (String) -> Unit,
     onReorder: (from: Int, to: Int) -> Unit,
+    onAppLongClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -133,6 +134,7 @@ internal fun FolderPageV2(
                                 previewApps = tile.previewPackages.mapNotNull { appsByPackage[it] },
                                 onOpen = { onOpenFolder(tile) },
                                 onAppClick = onAppClick,
+                                onAppLongClick = onAppLongClick,
                                 lifted = isDragged,
                                 dropHighlight = dropTarget == index && dragIndex != null && dragIndex != index,
                                 interactionsEnabled = dragIndex == null,

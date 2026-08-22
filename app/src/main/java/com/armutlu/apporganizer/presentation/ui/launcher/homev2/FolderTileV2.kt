@@ -47,6 +47,7 @@ internal fun FolderTileV2(
     previewApps: List<AppInfo>,
     onOpen: () -> Unit,
     onAppClick: (String) -> Unit,
+    onAppLongClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     lifted: Boolean = false,
     dropHighlight: Boolean = false,
@@ -145,6 +146,7 @@ internal fun FolderTileV2(
                         AppIconView(
                             app = app,
                             onClick = { if (interactionsEnabled) onAppClick(app.packageName) },
+                            onLongClick = if (interactionsEnabled) onAppLongClick?.let { callback -> { callback(app.packageName) } } else null,
                             modifier = Modifier.size(38.dp),
                             showLabel = false,
                             iconSize = 38.dp,

@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-21 (Home V2 tur 6: uygulama bağlam menüsü)
+**Yapılanlar:** HomeV2'de uygulamaya uzun basma → bağlam menüsü bağlandı (v1'den kalan son boş callback):
+- Mevcut `AppContextMenu` (bottom sheet: başlat, dock'a ekle/çıkar, kategori değiştir, gizle, not, favoriler, bildirim/son kullanılanlar/sıradakiler'den geçici kaldırma, kısayollar, versiyon) ve `CategoryPickerSheet` değişmeden yeniden kullanıldı.
+- Uzun basma üç yüzeyden tetiklenir: dock ikonları, klasör kartı önizleme ikonları, uygulama çekmecesi.
+- Tüm eylemler eski ekranla birebir aynı VM çağrıları (addToDock/removeFromDock/setAppHidden/saveAppNote/toggleFavorite/updateAppCategory/hideAppFrom*); ViewModel'e dokunulmadı.
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1437 test, 0 fail, 0 hata** (19 skipped); BUILD SUCCESSFUL. (Bu tur salt wiring — yeni saf mantık yok, test sayısı korunur.)
+**Sonraki:** layout editörü reaktivitesi (heroContentOrder), klasör birleştirme önerisi yüzeyi, duvar kağıdı/arka plan ayarlarının HomeV2'ye taşınması.
+
 ## Döngü — 2026-08-21 (Home V2 tur 5: bağlamsal dock wiring'i + akıllı slot oranı ayarı)
 **Yapılanlar:** Yazılmış ve testli ama HİÇ BAĞLANMAMIŞ bağlamsal dock motoru ilk kez gerçek akışa bağlandı ve ayarlanabilir yapıldı:
 - `buildContextualDockPackages` artık `smartSlots` parametresi alıyor (varsayılan = eski davranış; mevcut testler değişmedi): bağlamsal önerilere ayrılan slot sayısı; sabitlenmiş uygulamalar her zaman öncelikli.

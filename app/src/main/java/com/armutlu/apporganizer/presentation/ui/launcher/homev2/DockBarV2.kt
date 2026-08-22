@@ -26,6 +26,7 @@ internal fun DockBarV2(
     dockPackages: List<String>,
     appsByPackage: Map<String, AppInfo>,
     onAppClick: (String) -> Unit,
+    onAppLongClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val dockApps = dockPackages.mapNotNull { appsByPackage[it] }
@@ -46,6 +47,7 @@ internal fun DockBarV2(
                 AppIconView(
                     app = app,
                     onClick = { onAppClick(app.packageName) },
+                    onLongClick = onAppLongClick?.let { callback -> { callback(app.packageName) } },
                     modifier = Modifier.size(52.dp),
                     showLabel = false,
                     iconSize = 52.dp,

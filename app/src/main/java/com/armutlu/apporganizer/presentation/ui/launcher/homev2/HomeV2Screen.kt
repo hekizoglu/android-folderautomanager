@@ -47,11 +47,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armutlu.apporganizer.domain.home.safeRecentNotificationTotal
+import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunchContract
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.launcher.AllAppsDrawer
+import com.armutlu.apporganizer.presentation.ui.launcher.AppContextMenu
 import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
+import com.armutlu.apporganizer.presentation.ui.launcher.CategoryPickerSheet
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardActions
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardUiState
 import com.armutlu.apporganizer.presentation.ui.launcher.FolderScreen
@@ -100,6 +103,13 @@ fun HomeV2Screen(
     val smartAccessState by vm.smartAccessState.collectAsState()
     val recentNotificationCounts by vm.recentNotificationCounts.collectAsState()
     val suggestedApps by vm.suggestedApps.collectAsState()
+    val favoriteApps by vm.favoriteApps.collectAsState()
+
+    // Bağlam menüsü + kategori seçici (uygulamaya uzun basma) — tur 6.
+    var contextMenuPkg by remember { mutableStateOf<String?>(null) }
+    var categoryPickerApp by remember { mutableStateOf<AppInfo?>(null) }
+    val contextMenuApp = contextMenuPkg?.let { pkg -> allApps.find { it.packageName == pkg } }
+    val favoritePackages = remember(favoriteApps) { favoriteApps.mapTo(mutableSetOf()) { it.packageName } }
 
     // Bağlamsal dock: sabitlenmiş uygulamalar + saat/kullanım bazlı öneriler.
     // Birleştirme SAF buildContextualDockPackages ile yapılır (orijinal dock motorunun
@@ -271,6 +281,7 @@ fun HomeV2Screen(
                                                 },
                                                 onQuickLaunch = { vm.launchApp(context, it) },
                                                 onAppClick = { vm.launchApp(context, it) },
+                                                onAppLongClick = { contextMenuPkg = it },
                                                 onReorder = { from, to ->
                                                     // Sayfa-içi indeksleri global sıraya çevir;
                                                     // kalıcılık LauncherViewModel.reorderFolders'da.
@@ -301,6 +312,7 @@ fun HomeV2Screen(
                 dockPackages = finalDockPackages,
                 appsByPackage = appsByPackage,
                 onAppClick = { vm.launchApp(context, it) },
+                onAppLongClick = { contextMenuPkg = it },
             )
         },
         folderOverlay = {
@@ -318,9 +330,50 @@ fun HomeV2Screen(
                     onSearchQueryChange = vm::setSearchQuery,
                     onClose = vm::closeAllApps,
                     onAppClick = { vm.launchApp(context, it) },
+                    onAppLongClick = { app -> contextMenuPkg = app.packageName },
                     focusSearchOnOpen = focusSearchOnOpen,
                     onFocusSearchConsumed = vm::resetFocusSearchOnOpen,
                     categories = categories,
+                )
+            }
+            // Bağlam menüsü + kategori seçici — dock, klasör önizlemeleri ve çekmeceden
+            // uzun basma ile açılır; mevcut AppContextMenu/CategoryPickerSheet korunur.
+            contextMenuApp?.let { app ->
+                AppContextMenu(
+                    app = app,
+                    isFavorite = app.packageName in favoritePackages,
+                    isDocked = app.packageName in finalDockPackages,
+                    onDismiss = { contextMenuPkg = null },
+                    onLaunch = { vm.launchApp(context, app.packageName) },
+                    onAddToDock = { vm.addToDock(context, app.packageName) },
+                    onRemoveFromDock = { vm.removeFromDock(context, app.packageName) },
+                    onChangeCategory = {
+                        categoryPickerApp = app
+                        contextMenuPkg = null
+                    },
+                    onHideApp = { hidden ->
+                        vm.setAppHidden(app.packageName, hidden)
+                        contextMenuPkg = null
+                    },
+                    onSaveNote = { note -> vm.saveAppNote(app.packageName, note) },
+                    onToggleFavorite = { vm.toggleFavorite(context, app.packageName) },
+                    showRemoveFromNotifications = smartAccessState.notificationApps.any { it.app.packageName == app.packageName },
+                    showRemoveFromRecents = smartAccessState.recentApps.any { it.packageName == app.packageName },
+                    showRemoveFromNow = smartAccessState.nowApps.any { it.packageName == app.packageName },
+                    onRemoveFromNotifications = { vm.hideAppFromNotifications(context, app.packageName) },
+                    onRemoveFromRecents = { vm.hideAppFromRecents(context, app.packageName) },
+                    onRemoveFromNow = { vm.hideAppFromNow(context, app.packageName) },
+                )
+            }
+            categoryPickerApp?.let { app ->
+                CategoryPickerSheet(
+                    app = app,
+                    categories = categories,
+                    onDismiss = { categoryPickerApp = null },
+                    onCategorySelected = { catId ->
+                        vm.updateAppCategory(app.packageName, catId)
+                        categoryPickerApp = null
+                    },
                 )
             }
         },
