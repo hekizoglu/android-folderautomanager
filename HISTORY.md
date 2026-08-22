@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 15: Maestro cihaz doğrulama runbook'u)
+**Yapılanlar:** Kullanıcının seçtiği sıranın 3. maddesi. Home V2'nin gerçek cihazda canlı doğrulaması için hazırlık tamamlandı:
+- 7 Maestro akışının YAML sözdizimi doğrulandı (07 dahil hepsi geçerli).
+- `.maestro/README.md`: 07 akışı tabloya eklendi + "Görsel Doğrulama Nasıl Kullanılır" bölümü (görüntü konumları + inceleme kontrol listesi).
+- Yeni `docs/testing/MAESTRO_DEVICE_RUNBOOK.md`: kurulum → APK → launcher ayarı → akış koşusu → görsel inceleme tablosu → ek senaryolar (font ölçeği %150/200, yatay, tema, duvar kağıdı) → jest doğrulama tablosu → sorun bulunca izlenecek yol (Robolectric'de reproduce pratiği dahil) → CI notu.
+**Kanıt:** Doküman turu; 7/7 akış YAML parse OK. Otomatik kanıt zinciri: 1392 unit test (Robolectric görsel testler dahil) CI'da + Maestro cihazda.
+**Sonraki:** Kullanıcının cihazında runbook'un koşturulması; sonuçlara göre düzeltme turları.
+
 ## Döngü — 2026-08-22 (Tur 14: legacy HomeScreen god-dosyaları temizlendi)
 **Yapılanlar:** Kullanıcının seçtiği sıranın 2. maddesi. HomeV2 aktif olduktan sonra ölü kod kalan eski ana ekran tamamen kaldırıldı:
 - Silinen ana kaynak dosyaları (9 dosya, ~5.000 satır): HomeScreen.kt, HomeScreenComponents.kt, HomeScreenFolderPager.kt, HomeScreenOverlays.kt, HomeScreenPageIndicator.kt, HomeGestureCoordinator.kt, HomePagerHost.kt, HomeContentWidthTokens.kt, GlobalSearchHost.kt.

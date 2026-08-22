@@ -35,6 +35,20 @@ maestro test --device emulator-5554 .maestro/02_all_apps_drawer.yaml
 | `04_folder_interaction.yaml` | Klasör tıklama (FolderSheet), uzun basış context menü |
 | `05_dock_edit.yaml` | Dock uzun basış, DockEditSheet açma/kapama |
 | `06_notification_badge.yaml` | Badge görünürlük: HomeScreen + AllAppsDrawer + sayfa 2 |
+| `07_home_v2_visual_check.yaml` | Home V2 görsel kanıt: 6 ekran görüntüsü (açılış, çekmece, uzun basma menüsü, header) — taşma/hizalama insan gözüyle incelenir |
+
+## Görsel Doğrulama (07) Nasıl Kullanılır?
+
+1. `maestro test .maestro/07_home_v2_visual_check.yaml` çalıştırılır.
+2. Ekran görüntüleri `~/.maestro/tests/<run-id>/` altına `homev2_01..06` adlarıyla kaydedilir.
+3. Her görüntü için kontrol listesi:
+   - Metinler kart/ekran dışına taşıyor mu? (özellikle uzun klasör adları)
+   - Klasör kartları eşit boyutta mı, önizleme ikonları hizalı mı?
+   - Dock pill'i ekran genişliğine sığıyor mu, ikonlar kesiliyor mu?
+   - Saat başlığı büyük font ölçeğinde (cihaz ayarı %150/%200 yapıp tekrar koşun) taşıyor mu?
+   - Uzun basma menüsü ve çekmece animasyonları düzgün kapanıyor mu?
+4. Sorun bulunursa Robolectric görsel testleriyle (`HomeV2VisualUiTest`) reproduce edilir,
+   düzeltme sonrası hem otomatik testler hem bu akış tekrar koşulur.
 
 ## Notlar
 
