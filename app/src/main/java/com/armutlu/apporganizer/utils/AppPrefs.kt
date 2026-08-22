@@ -1423,6 +1423,16 @@ object AppPrefs {
     fun isContextualDockEnabled(context: Context) = prefs(context).getBoolean(KEY_CONTEXTUAL_DOCK, true)
     fun setContextualDockEnabled(context: Context, v: Boolean) = prefs(context).edit().putBoolean(KEY_CONTEXTUAL_DOCK, v).apply()
 
+    // Contextual Dock — akıllı slot oranı: dock'ta bağlamsal önerilere AYRILAN slot sayısı.
+    // Kalan slotlar kullanıcının sabitlediği uygulamalara aittir. 0 = tamamen sabit dock.
+    const val KEY_DOCK_SMART_SLOTS = "dock_smart_slots"
+    const val DOCK_SMART_SLOTS_DEFAULT = 2
+    const val DOCK_SMART_SLOTS_MAX = 3
+    fun getDockSmartSlots(context: Context) =
+        prefs(context).getInt(KEY_DOCK_SMART_SLOTS, DOCK_SMART_SLOTS_DEFAULT).coerceIn(0, DOCK_SMART_SLOTS_MAX)
+    fun setDockSmartSlots(context: Context, v: Int) =
+        prefs(context).edit().putInt(KEY_DOCK_SMART_SLOTS, v.coerceIn(0, DOCK_SMART_SLOTS_MAX)).apply()
+
     // Dock varsayılan kategori — kullanıcı tarafından seçilen klasör categoryId'si
     // Boş string = kategori seçilmemiş (uygulamalar cinsinden dock)
     const val KEY_DOCK_DEFAULT_CATEGORY = "dock_default_category"

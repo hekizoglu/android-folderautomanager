@@ -156,14 +156,18 @@ internal fun buildContextualDockPackages(
     fixed: List<String>,
     suggested: List<String>,
     contextualEnabled: Boolean,
-    maxSize: Int = DOCK_MAX_SIZE
+    maxSize: Int = DOCK_MAX_SIZE,
+    smartSlots: Int = Int.MAX_VALUE,
 ): List<String> {
     val fixedSlots = fixed.take(maxSize)
     if (!contextualEnabled || fixedSlots.size >= maxSize) return fixedSlots
-    val smartSlots = suggested
+    // smartSlots: bağlamsal önerilere AYRILAN slot sayısı (varsayılan sınırsız = eski
+    // davranış: sabitlerden artan tüm boşluk önerilerle dolar). Sabitler her zaman önceliklidir.
+    val smartLimit = smartSlots.coerceIn(0, maxSize - fixedSlots.size)
+    val smartPicks = suggested
         .filter { it !in fixedSlots }
-        .take(maxSize - fixedSlots.size)
-    return fixedSlots + smartSlots
+        .take(smartLimit)
+    return fixedSlots + smartPicks
 }
 
 @HiltViewModel

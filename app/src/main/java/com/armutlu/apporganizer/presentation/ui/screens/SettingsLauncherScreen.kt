@@ -129,6 +129,18 @@ fun SettingsLauncherScreen(
                         AppPrefs.setContextualDockEnabled(context, it)
                     }
                 )
+                if (contextualDock) {
+                    var smartSlots by remember(context) {
+                        mutableIntStateOf(AppPrefs.getDockSmartSlots(context))
+                    }
+                    SettingsDockSmartSlotsRow(
+                        smartSlots = smartSlots,
+                        onChange = { value ->
+                            smartSlots = value
+                            AppPrefs.setDockSmartSlots(context, value)
+                        },
+                    )
+                }
             }
         }
         item {
@@ -524,4 +536,49 @@ private fun FolderCarouselPositionChip(
             selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ),
     )
+}
+
+/**
+ * Akıllı dock slot oranı — bağlamsal önerilere ayrılan slot sayısı (0..3).
+ * Sabitlenmiş uygulamalar her zaman önceliklidir; kalan slotlar önerilerle dolar.
+ */
+@Composable
+private fun SettingsDockSmartSlotsRow(
+    smartSlots: Int,
+    onChange: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Akıllı slot sayısı",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Text(
+                text = if (smartSlots == 0) "Dock tamamen sabit uygulamalardan oluşur"
+                else "$smartSlots slot saat ve kullanım alışkanlığına göre dolar",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        IconButton(onClick = { onChange((smartSlots - 1).coerceAtLeast(0)) }, enabled = smartSlots > 0) {
+            Text("−", fontSize = 20.sp)
+        }
+        Text(
+            text = "$smartSlots",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 8.dp),
+        )
+        IconButton(
+            onClick = { onChange((smartSlots + 1).coerceAtMost(AppPrefs.DOCK_SMART_SLOTS_MAX)) },
+            enabled = smartSlots < AppPrefs.DOCK_SMART_SLOTS_MAX,
+        ) {
+            Text("+", fontSize = 20.sp)
+        }
+    }
 }

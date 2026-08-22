@@ -256,6 +256,67 @@ class LauncherViewModelLogicTest {
     }
 
     @Test
+    fun `buildContextualDockPackages_smartSlots_onerilere_ayrilan_slotu_sinirlar`() {
+        val fixed = listOf("fixed.1", "fixed.2", "fixed.3")
+        val suggested = listOf("smart.1", "smart.2", "smart.3")
+
+        // 5 slot, 3 sabit, smartSlots=1 → yalnız 1 öneri girer
+        val result = buildContextualDockPackages(
+            fixed = fixed,
+            suggested = suggested,
+            contextualEnabled = true,
+            smartSlots = 1,
+        )
+
+        assertEquals(listOf("fixed.1", "fixed.2", "fixed.3", "smart.1"), result)
+    }
+
+    @Test
+    fun `buildContextualDockPackages_smartSlots_sifir_iken_dock_tamamen_sabittir`() {
+        val fixed = listOf("fixed.1", "fixed.2")
+        val suggested = listOf("smart.1", "smart.2")
+
+        val result = buildContextualDockPackages(
+            fixed = fixed,
+            suggested = suggested,
+            contextualEnabled = true,
+            smartSlots = 0,
+        )
+
+        assertEquals(listOf("fixed.1", "fixed.2"), result)
+    }
+
+    @Test
+    fun `buildContextualDockPackages_smartSlots_sabitler_docku_doldurmusken_etkisizdir`() {
+        val fixed = listOf("f.1", "f.2", "f.3", "f.4", "f.5")
+        val suggested = listOf("smart.1")
+
+        val result = buildContextualDockPackages(
+            fixed = fixed,
+            suggested = suggested,
+            contextualEnabled = true,
+            smartSlots = 3,
+        )
+
+        assertEquals(fixed, result)
+    }
+
+    @Test
+    fun `buildContextualDockPackages_smartSlots_negatif_degerde_sifira_sikisir`() {
+        val fixed = listOf("fixed.1")
+        val suggested = listOf("smart.1")
+
+        val result = buildContextualDockPackages(
+            fixed = fixed,
+            suggested = suggested,
+            contextualEnabled = true,
+            smartSlots = -2,
+        )
+
+        assertEquals(listOf("fixed.1"), result)
+    }
+
+    @Test
     fun `dock edit sheet bes slotta bir oge cikarilinca yeni eklemeye izin verir`() {
         assertFalse(isDockAdditionBlocked(dockSize = DOCK_MAX_SIZE - 1, itemInDock = false))
         assertTrue(isDockAdditionBlocked(dockSize = DOCK_MAX_SIZE, itemInDock = false))

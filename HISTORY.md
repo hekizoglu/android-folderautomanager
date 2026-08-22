@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-21 (Home V2 tur 5: bağlamsal dock wiring'i + akıllı slot oranı ayarı)
+**Yapılanlar:** Yazılmış ve testli ama HİÇ BAĞLANMAMIŞ bağlamsal dock motoru ilk kez gerçek akışa bağlandı ve ayarlanabilir yapıldı:
+- `buildContextualDockPackages` artık `smartSlots` parametresi alıyor (varsayılan = eski davranış; mevcut testler değişmedi): bağlamsal önerilere ayrılan slot sayısı; sabitlenmiş uygulamalar her zaman öncelikli.
+- HomeV2Screen: `vm.dockPackages` (sabit) + `vm.suggestedApps` (saat dilimi + kullanım bazlı öneri motoru) saf fonksiyonla birleştirilip DockBarV2'ye veriliyor — öneriler dock'ta GERÇEKTEN görünür.
+- Yeni ayar: `KEY_DOCK_SMART_SLOTS` (0..3, varsayılan 2) + Ayarlar → Dock bölümünde "Akıllı slot sayısı" −/+ sayacı (yalnız Akıllı Dock açıkken görünür).
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1437 test, 0 fail, 0 hata** (19 skipped) — 4 yeni dock testi dahil; BUILD SUCCESSFUL.
+**Sonraki:** bağlam menüsü (onAppLongClick), layout editörü reaktivitesi, klasör birleştirme önerisinin HomeV2 yüzeyi.
+
 ## Döngü — 2026-08-21 (Home V2 tur 4: klasör sürükle-sırala)
 **Yapılanlar:** HomeV2 klasör grid'ine sürükle-bırak sıralama eklendi:
 - Jest sistemi hücre seviyesinde TEK pointerInput'ta birleştirildi (çakışma yok): uzun bas + sürükle → SIRA TAŞIMA (hedef kart primary halkayla vurgulanır); hızlı yukarı kaydır → hızlı başlat; kısa dokun → klasörü aç.

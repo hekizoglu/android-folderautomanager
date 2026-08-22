@@ -99,6 +99,24 @@ fun HomeV2Screen(
     val widgetIds by vm.widgetIds.collectAsState()
     val smartAccessState by vm.smartAccessState.collectAsState()
     val recentNotificationCounts by vm.recentNotificationCounts.collectAsState()
+    val suggestedApps by vm.suggestedApps.collectAsState()
+
+    // Bağlamsal dock: sabitlenmiş uygulamalar + saat/kullanım bazlı öneriler.
+    // Birleştirme SAF buildContextualDockPackages ile yapılır (orijinal dock motorunun
+    // ilk gerçek wiring'i); akıllı slot oranı ayarlardan okunur.
+    val contextualDockEnabled = remember { AppPrefs.isContextualDockEnabled(context) }
+    val dockSmartSlots = remember { AppPrefs.getDockSmartSlots(context) }
+    val finalDockPackages = remember(
+        dockPackages, suggestedApps, contextualDockEnabled, dockSmartSlots,
+    ) {
+        com.armutlu.apporganizer.presentation.ui.launcher.buildContextualDockPackages(
+            fixed = dockPackages,
+            suggested = suggestedApps.map { it.packageName },
+            contextualEnabled = contextualDockEnabled,
+            maxSize = com.armutlu.apporganizer.presentation.ui.launcher.DOCK_MAX_SIZE,
+            smartSlots = dockSmartSlots,
+        )
+    }
 
     // Hero sayfasi (sayfa 0): eski ekranin Dashboard sayfasi. Layout siralamasi
     // HomeLayoutPrefs'ten statik okunur (editör entegrasyonu HomeV2 v3 kapsaminda).
@@ -280,7 +298,7 @@ fun HomeV2Screen(
         },
         dock = {
             DockBarV2(
-                dockPackages = state.dockPackages,
+                dockPackages = finalDockPackages,
                 appsByPackage = appsByPackage,
                 onAppClick = { vm.launchApp(context, it) },
             )
