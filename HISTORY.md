@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 12: README, Home V2 gerçeğine güncellendi)
+**Yapılanlar:** Backlog'un son maddesi tamamlandı — README artık Home V2'yi anlatıyor:
+- Ana ekran bölümü yeniden yazıldı: pager düzeni (Hero → Widget → Klasörler), hızlı başlat, sürükle-sırala, bağlam menüsü, uzun basma yönetim menüsü, bağlamsal dock + akıllı slot ayarı, öneri merkezi, görünüm ayarları.
+- Mimari ağacına homev2 paketi eklendi; yeni Test bölümü (1449 birim testi, Robolectric görsel testler, Maestro akışları) eklendi.
+- Gelecek Özellikler: tamamlananlar işaretlendi (contextual dock, hızlı başlat, sürükle-sırala, bağlamsal ana ekran), kalanlar güncellendi.
+**Kanıt:** Doküman değişikliği; son derleme/test kanıtı bu döngünün 11. maddesinde (1449 test, 0 fail).
+**Sonraki:** Backlog boş — yeni istek bekleniyor.
+
 ## Döngü — 2026-08-22 (Home V2 tur 11: arka plan/görünüm ayarları taşındı)
 **Yapılanlar:** Eski ekranın görünüm tercihleri HomeV2'ye bağlandı (backlog madde 2):
 - `homeRootBackground` HomeShell kök modifier'ına uygulandı: "Duvar kağıdı" seçiliyken transparan (sistem duvar kağıdı sızar), düz renk/gradyan stillerinde opak — dock dahil tüm yüzeyi kapsar; eski ekranla aynı pref anahtarları (KEY_BG_TYPE/KEY_BG_COLOR/KEY_HOME_BACKGROUND_STYLE).
