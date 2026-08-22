@@ -62,6 +62,20 @@ Gerekli kanıtlar:
 - App Bundle Explorer yükleme sonucu
 - Pre-launch raporu ve track/release durumu
 
+## 4. İzole ortam R8/release pipeline doğrulaması (tur 18 — 22 Ağustos 2026)
+
+`bundleRelease`, daha önce hiçbir izole ortamda uçtan uca doğrulanamamıştı (R8 OOM).
+Bu döngüde kanıtlandı:
+
+- Komut: `./gradlew :app:bundleRelease -PskipGoogleServices=true -PallowDebugReleaseSigning=true -Dorg.gradle.jvmargs="-Xmx2560m ..."`
+- Sonuç: **BUILD SUCCESSFUL (20 dk 19 sn)** — R8 minify + resource shrink tamam.
+- Çıktı: `app/build/outputs/bundle/release/app-release.aab`, **27 MB**, versionCode 181 / v1.4.57.
+- SHA-256: `4560efe2f461bcae5998fa2380978560a6df7e1aba7cd4a55d94256023ba60a5`
+- İmza: DEBUG imza (`allowDebugReleaseSigning`) — bu AAB Play'e YÜKLENEMEZ; yalnız R8
+  pipeline kanıtıdır. Gerçek yayın AAB'si `keystore.properties` + release anahtarı ile üretilir.
+- Bellek notu: R8 full mode bu kod tabanında ~2.5 GB heap gerektirir; 896 MB ve 1536 MB
+  heap ile OOM repro edildi. CI/release makineleri `org.gradle.jvmargs`'ı buna göre ayarlamalı.
+
 ## Tamamlanma kuralı
 
 Bu üç başlık, yalnız Play Console readback ve kanıt dosyaları mevcut olduğunda tamamlandı olarak işaretlenir. Yerel build, taslak metin veya ekran görüntüsü hazırlığı tek başına yayın kapısını kapatmaz.

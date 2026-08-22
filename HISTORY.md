@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 18: Play Store hazırlık — release pipeline kanıtı + veri güvenliği denetimi)
+**Yapılanlar:** Play Store yayın hazırlığının sandbox'ta yapılabilir maddeleri tamamlandı:
+- **R8/release pipeline ilk kez izole ortamda uçtan uca doğrulandı:** `bundleRelease -PskipGoogleServices=true -PallowDebugReleaseSigning=true` → BUILD SUCCESSFUL (20dk19sn), `app-release.aab` 27MB (SHA-256: 4560efe2…, v1.4.57/181). Önceki denemelerde 896MB ve 1536MB heap ile R8 OOM repro edildi; ~2.5GB heap gerekti — CI/release makineleri için not düşüldü. DEBUG imzalı bu AAB Play'e yüklenemez; pipeline kanıtıdır.
+- **Veri güvenliği beyanı çapraz denetimi (v1.3.67/90 → v1.4.57/181):** manifest izinleri koda karşı tarandı. EKSİK bulunan madde eklendi: hava durumu kartı ACCESS_COARSE_LOCATION ile kaba konumu şehir adına çevirip open-meteo API'sine enlem/boylam gönderiyor → "Konum > Yaklaşık konum" satırı beyana eklendi (isteğe bağlı; hava kartı/elle şehir alternatifi var; hassas konum istenmez). Kişiler/dosya/medya indekslerinin cihazdan çıkmadığı teyit edildi. Doğrulama damgası 22 Ağustos 2026 olarak güncellendi.
+- `docs/PLAY_RELEASE_EVIDENCE_CHECKLIST.md`'e "İzole ortam R8 doğrulaması" bölümü + kanıtlar eklendi.
+**Kanıt:** bundleRelease BUILD SUCCESSFUL + AAB SHA-256; beyan/checklist doküman güncellemeleri.
+**Sonraki (dış aksiyon — hesap sahibi):** Play App Signing, gerçek release anahtarı ile final AAB, Play Console formları (QUERY_ALL_PACKAGES gerekçesi metni hazır), privacy policy URL yayını.
+
 ## Döngü — 2026-08-22 (Tur 17: ktlint-format toplu temizleme)
 **Yapılanlar:** Formatlama borcunun büyük bölümü tek turda temizlendi:
 - `.editorconfig` eklendi (max_line_length=140, detekt.yml ile hizalı; önceden yoktu).

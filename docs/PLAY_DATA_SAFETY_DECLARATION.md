@@ -2,6 +2,7 @@
 
 > Durum: Kod ve SDK envanterine göre yerel taslak. Play Console'a girilmiş veya gönderilmiş değildir.
 > Son doğrulama: 16 Temmuz 2026, AppOrganizer 1.3.67 (versionCode 90).
+> Kod denetimi yenileme: 22 Ağustos 2026, AppOrganizer 1.4.57 (versionCode 181) — tur 18 çapraz denetimi.
 
 ## Form özeti
 
@@ -21,11 +22,13 @@
 | Uygulama bilgileri ve performansı > Diğer performans verileri | Günlük anonim sağlık özeti: sabit uyarı kodları, indeks yaşı ve sınırlı sayaç/kovalar | Analiz; hata teşhisi | İsteğe bağlı; anahtar kapatılınca worker iptal edilir |
 | Cihaz veya diğer kimlikler | Firebase Installation ID ve FCM kayıt tokenı | Uygulama işlevselliği (backend bağlantısı ve kategori veritabanı güncelleme bildirimi); Firebase telemetrisi açıkken analiz/hata teşhisi | FCM, telemetri anahtarından bağımsızdır; telemetri amaçlı kullanım isteğe bağlıdır |
 | Uygulama etkinliği > Yüklü uygulamalar | Kullanıcı DeepSeek sınıflandırmasını açıkça etkinleştirip kendi API anahtarını girerse yalnız sınıflandırılacak uygulamanın adı ve paket adı | Uygulama işlevselliği | İsteğe bağlı; özellik kullanılmadığında gönderilmez |
+| Konum > Yaklaşık konum | Hava durumu kartı: ACCESS_COARSE_LOCATION ile alınan kaba konum şehir adına çevrilir ve hava verisi için open-meteo API'sine iletilir (enlem/boylam dahil) | Uygulama işlevselliği (ana ekran hava kartı) | İsteğe bağlı; hava kartı kapalıyken veya elle şehir seçildiğinde konum izni hiç istenmez/kullanılmaz; kullanıcı onayı gerektirir |
 
 ## Cihazdan çıkmayan ve “toplanan” sayılmayan veriler
 
 Kurulu uygulama envanteri (DeepSeek istisnası dışında), UsageStats geçmişi, bildirim içeriği, kişiler,
-dosya adları, özel klasör adları ve yerel raporlar cihazda işlenir. SAF ile seçilen bulut belge sağlayıcısına
+dosya adları, özel klasör adları ve yerel raporlar cihazda işlenir. Konum verisi yalnız hava durumu
+özelliği açıkken ve kullanıcı izin verdiğinde işlenir; hassas (precise) konum istenmez. SAF ile seçilen bulut belge sağlayıcısına
 kullanıcının açık eylemiyle yazılan yedek, sağlayıcının koşullarına tabidir ve Firebase telemetrisi değildir.
 
 ## Play Console readback kontrolü
