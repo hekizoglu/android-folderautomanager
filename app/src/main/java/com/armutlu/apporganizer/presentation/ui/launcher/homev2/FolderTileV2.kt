@@ -2,12 +2,12 @@ package com.armutlu.apporganizer.presentation.ui.launcher.homev2
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,18 +20,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,64 +33,58 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import com.armutlu.apporganizer.presentation.ui.launcher.AppIconView
 
 /**
- * Home V2 klasör kartı.
+ * Home V2 klasör kartı — SAF GÖRSEL bileşen.
  *
- * - Dokunma → klasörü açar
- * - Kart üzerinde YUKARI kaydırma → hızlı başlatma (klasörün en sık açılan uygulaması)
- * - Acil bildirim varsa kart halkası önem renginde çizilir
+ * Tüm jestler (açma, hızlı başlat, sürükle-sırala) [FolderPageV2] hücre sarmalayıcısında
+ * yaşar; kart yalnız render durumlarını alır:
+ *  - [lifted]: sürüklenen kart (büyütme + yükseklik)
+ *  - [dropHighlight]: bırakma hedefi kart (vurgu halkası)
+ *  - [interactionsEnabled]: false iken tıklama kapalı (sıralama sürerken)
  */
 @Composable
 internal fun FolderTileV2(
     tile: FolderTileState,
     previewApps: List<AppInfo>,
     onOpen: () -> Unit,
-    onQuickLaunch: (String) -> Unit,
     onAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    lifted: Boolean = false,
+    dropHighlight: Boolean = false,
+    interactionsEnabled: Boolean = true,
 ) {
-    val haptic = LocalHapticFeedback.current
     val accent = remember(tile.colorHex) { parseFolderColor(tile.colorHex) }
-    var dragOffsetY by remember { mutableFloatStateOf(0f) }
 
     Card(
         onClick = onOpen,
+        enabled = interactionsEnabled,
         modifier = modifier
-            .fillMaxWidth()
-            .graphicsLayer { translationY = dragOffsetY.coerceIn(-24f, 0f) },
+            .fillMaxSize()
+            .graphicsLayer {
+                scaleX = if (lifted) 1.04f else 1f
+                scaleY = if (lifted) 1.04f else 1f
+            },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (lifted) 8.dp else 0.dp),
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(tile.categoryId) {
-                    detectDragGestures(
-                        onDragEnd = {
-                            if (dragOffsetY < -18f) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                tile.quickLaunchPackage?.let(onQuickLaunch)
-                            }
-                            dragOffsetY = 0f
-                        },
-                        onDragCancel = { dragOffsetY = 0f },
-                    ) { change, dragAmount ->
-                        change.consume()
-                        // Yalnız yukarı yönlü taşıma kartı kaldırır; aşağı/yanal jest pager'a aittir.
-                        if (dragAmount.y < 0) dragOffsetY += dragAmount.y
-                    }
-                }
+                .fillMaxSize()
                 .then(
-                    if (tile.hasUrgentNotification) {
-                        Modifier.border(
+                    when {
+                        dropHighlight -> Modifier.border(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(24.dp),
+                        )
+                        tile.hasUrgentNotification -> Modifier.border(
                             width = 1.5.dp,
                             color = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
                             shape = RoundedCornerShape(24.dp),
                         )
-                    } else {
-                        Modifier
+                        else -> Modifier
                     }
                 )
                 .padding(12.dp),
@@ -156,7 +144,7 @@ internal fun FolderTileV2(
                     previewApps.forEach { app ->
                         AppIconView(
                             app = app,
-                            onClick = { onAppClick(app.packageName) },
+                            onClick = { if (interactionsEnabled) onAppClick(app.packageName) },
                             modifier = Modifier.size(38.dp),
                             showLabel = false,
                             iconSize = 38.dp,

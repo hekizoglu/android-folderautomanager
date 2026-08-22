@@ -242,6 +242,8 @@ fun HomeV2Screen(
                                     else -> {
                                         val pageIndex = page - heroPageCount - widgetPageCount
                                         folderPages.getOrNull(pageIndex)?.let { tiles ->
+                                            // Sayfanın global klasör listesindeki başlangıç ofseti
+                                            val chunkOffset = folderPages.take(pageIndex).sumOf { it.size }
                                             FolderPageV2(
                                                 tiles = tiles,
                                                 appsByPackage = appsByPackage,
@@ -251,6 +253,16 @@ fun HomeV2Screen(
                                                 },
                                                 onQuickLaunch = { vm.launchApp(context, it) },
                                                 onAppClick = { vm.launchApp(context, it) },
+                                                onReorder = { from, to ->
+                                                    // Sayfa-içi indeksleri global sıraya çevir;
+                                                    // kalıcılık LauncherViewModel.reorderFolders'da.
+                                                    val reordered = moveItem(
+                                                        folders,
+                                                        chunkOffset + from,
+                                                        chunkOffset + to,
+                                                    )
+                                                    vm.reorderFolders(context, reordered)
+                                                },
                                             )
                                         }
                                     }

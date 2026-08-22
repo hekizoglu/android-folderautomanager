@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-21 (Home V2 tur 4: klasör sürükle-sırala)
+**Yapılanlar:** HomeV2 klasör grid'ine sürükle-bırak sıralama eklendi:
+- Jest sistemi hücre seviyesinde TEK pointerInput'ta birleştirildi (çakışma yok): uzun bas + sürükle → SIRA TAŞIMA (hedef kart primary halkayla vurgulanır); hızlı yukarı kaydır → hızlı başlat; kısa dokun → klasörü aç.
+- Grid, sabit hücre boyutlu (124.dp) manuel Column/Row düzenine geçti — hit-test matematiği saf `hitTestFolderIndex()` fonksiyonunda (birim testli).
+- Kalıcılık mevcut `vm.reorderFolders` (SharedPreferences KEY_FOLDER_ORDER) üzerinden; sayfa-içi indeksler `moveItem()` (saf, testli) ile global sıraya çevrilir.
+- FolderTileV2 saf görsele indirgendi (lifted/dropHighlight/interactionsEnabled durumları).
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1433 test, 0 fail, 0 hata** (19 skipped) — 9 yeni FolderDragTest dahil; BUILD SUCCESSFUL.
+**Sonraki:** dock sabit/akıllı slot oranı ayarı, bağlam menüsü (onAppLongClick), layout editörü reaktivitesi.
+
 ## Döngü — 2026-08-21 (Home V2 tur 3: Hero Dashboard sayfası yeni tasarıma taşındı)
 **Yapılanlar:** Eski ekranın Dashboard (Hero) sayfası HomeV2 pager'ına SAYFA 0 olarak entegre edildi:
 - Sayfa düzeni artık: [Hero Dashboard] → [Widget?] → [Klasörler…] — tek yatay pager korunur.
