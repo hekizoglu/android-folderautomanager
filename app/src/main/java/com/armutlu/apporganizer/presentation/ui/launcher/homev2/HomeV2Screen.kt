@@ -46,13 +46,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.armutlu.apporganizer.domain.home.safeRecentNotificationTotal
+import com.armutlu.apporganizer.presentation.ui.MainActivity
+import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunchContract
+import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.launcher.AllAppsDrawer
 import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
+import com.armutlu.apporganizer.presentation.ui.launcher.DashboardActions
+import com.armutlu.apporganizer.presentation.ui.launcher.DashboardUiState
 import com.armutlu.apporganizer.presentation.ui.launcher.FolderScreen
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeShell
 import com.armutlu.apporganizer.presentation.ui.launcher.LauncherViewModel
+import com.armutlu.apporganizer.presentation.ui.launcher.SmartDashboardPage
 import com.armutlu.apporganizer.presentation.ui.launcher.WidgetPage
+import com.armutlu.apporganizer.presentation.ui.launcher.dashboardContentOrder
 import com.armutlu.apporganizer.utils.AppPrefs
+import com.armutlu.apporganizer.utils.HomeLayoutPrefs
 import timber.log.Timber
 
 /**
@@ -88,6 +97,37 @@ fun HomeV2Screen(
     val pulseSummary by vm.homePulseSummary.collectAsState()
     val missionSummary by vm.homeMissionSummary.collectAsState()
     val widgetIds by vm.widgetIds.collectAsState()
+    val smartAccessState by vm.smartAccessState.collectAsState()
+    val recentNotificationCounts by vm.recentNotificationCounts.collectAsState()
+
+    // Hero sayfasi (sayfa 0): eski ekranin Dashboard sayfasi. Layout siralamasi
+    // HomeLayoutPrefs'ten statik okunur (editör entegrasyonu HomeV2 v3 kapsaminda).
+    val heroContentOrder = remember { dashboardContentOrder(HomeLayoutPrefs.read(context).config) }
+    val notificationCount24h = safeRecentNotificationTotal(recentNotificationCounts)
+    val dashboardActions = remember(context) {
+        fun openRoute(route: String) {
+            val intent = Intent(context, MainActivity::class.java).apply {
+                putExtra(MainActivity.EXTRA_OPEN_ROUTE, route)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            runCatching { context.startActivity(intent) }
+        }
+        DashboardActions(
+            onOpenWeeklyReport = { openRoute(Routes.WRAPPED_REPORT) },
+            onClockLongPress = { vm.openManager(context) },
+            onPulseClick = { openRoute(Routes.WRAPPED_REPORT) },
+            onOpenUsageAccessSettings = { openRoute(Routes.SETTINGS_USAGE_DATA) },
+            onOpenNotificationAccessSettings = {
+                runCatching { context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+            },
+            onOpenClassificationReview = { openRoute(Routes.CLASSIFICATION_REVIEW) },
+            onOpenMissions = { openRoute(Routes.MISSIONS) },
+            onOpenFolderReview = { openRoute(Routes.CLASSIFICATION_REVIEW) },
+            onOpenNotificationHistory = { NotificationReportLaunchContract.openHistory(context) },
+            onLaunchApp = { pkg -> vm.launchApp(context, pkg) },
+            onAppLongClick = { /* HomeV2 v3: baglam menüsü */ },
+        )
+    }
 
     val pageSize = remember { AppPrefs.getPageSize(context) }
     val widgetAreaEnabled = remember { AppPrefs.isWidgetAreaEnabled(context) }
@@ -157,31 +197,22 @@ fun HomeV2Screen(
                     onDismiss = { dismissedBanners = dismissedBanners + it },
                 )
                 when {
+                    // Hero sayfasi her zaman icerik sunar; ilk yukleme tamamlanana kadar
+                    // klasör grid'i yerine yükleme göstergesi gösterilir.
                     state.loading -> Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) { CircularProgressIndicator() }
-                    state.folders.isEmpty() && !showWidgetPage -> Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Text("📂", fontSize = 40.sp)
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            "Klasörler hazırlanıyor",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
                     else -> BoxWithConstraints(modifier = Modifier.fillMaxWidth().weight(1f)) {
                         val columns = (maxWidth / 168.dp).toInt().coerceIn(1, 4)
                         val folderPages = remember(state.folders, state.pageSize, columns) {
                             folderChunks(state.folders, state.pageSize, columns)
                         }
+                        // Sayfa düzeni: [0] Hero Dashboard → [1?] Widget → [2+?] Klasörler
+                        val heroPageCount = 1
                         val widgetPageCount = if (showWidgetPage) 1 else 0
-                        val pageCount = widgetPageCount + folderPages.size
+                        val pageCount = heroPageCount + widgetPageCount + folderPages.size
                         val pagerState = rememberPagerState(pageCount = { pageCount })
 
                         Column(modifier = Modifier.fillMaxSize()) {
@@ -189,26 +220,39 @@ fun HomeV2Screen(
                                 state = pagerState,
                                 modifier = Modifier.fillMaxWidth().weight(1f),
                             ) { page ->
-                                if (showWidgetPage && page == 0) {
-                                    WidgetPage(
+                                when {
+                                    page == 0 -> SmartDashboardPage(
+                                        state = DashboardUiState(
+                                            pulse = pulseSummary,
+                                            smartAccess = smartAccessState,
+                                            pendingClassificationCount = pendingClassificationsCount,
+                                            contentOrder = heroContentOrder,
+                                            missionSummary = missionSummary,
+                                            notificationCount24h = notificationCount24h,
+                                        ),
+                                        actions = dashboardActions,
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                    showWidgetPage && page == 1 -> WidgetPage(
                                         widgetIds = widgetIds,
                                         widgetFreeGridEnabled = widgetFreeGridEnabled,
                                         onRemoveWidget = { vm.removeWidgetId(context, it) },
                                         modifier = Modifier.fillMaxSize(),
                                     )
-                                } else {
-                                    val pageIndex = page - widgetPageCount
-                                    folderPages.getOrNull(pageIndex)?.let { tiles ->
-                                        FolderPageV2(
-                                            tiles = tiles,
-                                            appsByPackage = appsByPackage,
-                                            onOpenFolder = { tile ->
-                                                folders.firstOrNull { it.category.categoryId == tile.categoryId }
-                                                    ?.let(vm::openFolder)
-                                            },
-                                            onQuickLaunch = { vm.launchApp(context, it) },
-                                            onAppClick = { vm.launchApp(context, it) },
-                                        )
+                                    else -> {
+                                        val pageIndex = page - heroPageCount - widgetPageCount
+                                        folderPages.getOrNull(pageIndex)?.let { tiles ->
+                                            FolderPageV2(
+                                                tiles = tiles,
+                                                appsByPackage = appsByPackage,
+                                                onOpenFolder = { tile ->
+                                                    folders.firstOrNull { it.category.categoryId == tile.categoryId }
+                                                        ?.let(vm::openFolder)
+                                                },
+                                                onQuickLaunch = { vm.launchApp(context, it) },
+                                                onAppClick = { vm.launchApp(context, it) },
+                                            )
+                                        }
                                     }
                                 }
                             }

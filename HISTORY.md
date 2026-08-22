@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-21 (Home V2 tur 3: Hero Dashboard sayfası yeni tasarıma taşındı)
+**Yapılanlar:** Eski ekranın Dashboard (Hero) sayfası HomeV2 pager'ına SAYFA 0 olarak entegre edildi:
+- Sayfa düzeni artık: [Hero Dashboard] → [Widget?] → [Klasörler…] — tek yatay pager korunur.
+- `SmartDashboardPage` + `DashboardUiState`/`DashboardActions` sözleşmesi değişmeden yeniden kullanıldı; tüm rota callback'leri (Wrapped rapor, görevler, sınıflandırma incelemesi, kullanım verisi ayarları, bildirim geçmişi) eski ekranla birebir aynı wiring ile taşındı.
+- `notificationCount24h` saf `safeRecentNotificationTotal` ile üretiliyor; içerik sırası `HomeLayoutPrefs` + `dashboardContentOrder`'dan okunuyor.
+- İlk yükleme göstergesi korundu; klasörler boşken bile Hero içerik sunduğu için gereksiz boş-durum ekranı kaldırıldı.
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1424 test, 0 fail, 0 hata** (19 skipped); `compileDebugKotlin` + test BUILD SUCCESSFUL.
+**Sonraki:** klasör sürükleme (düzenleme modu), dock sabit/akıllı slot oranı ayarı, bağlam menüsü (onAppLongClick v3).
+
 ## Döngü — 2026-08-21 (Home V2 tur 2: widget sayfası geri taşındı)
 **Yapılanlar:** HomeV2 v1'de kapsam dışı bırakılan widget alanı yeni tasarıma taşındı:
 - Pager mimarisi ekran seviyesine çıkarıldı: TEK yatay pager [Widget sayfası?] → [Klasör sayfaları...] — iç içe yatay pager yok, jest çakışması yok.
