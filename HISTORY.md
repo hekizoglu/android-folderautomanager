@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 16: detekt kalite kapısı yeşile alındı — baseline politikası)
+**Yapılanlar:** Workspace kota sorunu çözüldü ve statik analiz kapısı işletildi:
+- Kota düzeltmesi: proje `.gradle` cache'i silindi (56MB) ve build'ler artık `--project-cache-dir=/opt/gradle-project-cache` ile workspace dışına yazıyor; toolchain zaten /usr ve /opt'ta — workspace ~55MB'ye indi (limit 128MB).
+- `:app:detekt` 5244 bulguyla kızılda idi (4115 main + 1129 test; dağılım: ~4200 otomatik düzeltilebilir formatlama — ArgumentListWrapping/Wrapping/Indentation/ImportOrdering — + MagicNumber/MaxLineLength/complexity). Mevcut borç `config/detekt/baseline.xml` olarak donduruldu (detektBaseline görevi); konfigürasyon zaten bu yolu bekliyordu ancak dosya bayattı.
+- Politika: mevcut borç baseline'da donuk, YENİ ihlaller maxIssues:0 ile anında kırmızıya düşer. Büyük formatlama borcunun toplu ktlint-format ile temizlenmesi ayrı bir tur olarak önerilir (binlerce dosyalık diff gürültüsü nedeniyle bu turda bilinçli yapılmadı).
+**Kanıt:** `:app:detekt` BUILD SUCCESSFUL; `testDebugUnitTest` → **1392 test, 0 fail, 0 hata**.
+**Sonraki:** (öneri) ktlint-format toplu temizleme turu veya Play Store hazırlık maddeleri.
+
 ## Döngü — 2026-08-22 (Tur 15: Maestro cihaz doğrulama runbook'u)
 **Yapılanlar:** Kullanıcının seçtiği sıranın 3. maddesi. Home V2'nin gerçek cihazda canlı doğrulaması için hazırlık tamamlandı:
 - 7 Maestro akışının YAML sözdizimi doğrulandı (07 dahil hepsi geçerli).
