@@ -346,7 +346,7 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                         ) {
                             items(draftDockItems, key = { "dock_$it" }) { dockItem ->
                                 DockOrderCard(
-                                    modifier = Modifier.animateItemPlacement(),
+                                    modifier = Modifier.animateItem(),
                                     item = dockItem,
                                     folder = DockPrefs.folderId(dockItem)?.let { id ->
                                         folders.firstOrNull { it.category.categoryId == id }
@@ -371,7 +371,7 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                 }
                 items(visibleDashboardItems, key = { it.sectionId.name }) { item ->
                     EditableHomeSection(
-                        modifier = if (reduceMotion) Modifier else Modifier.animateItemPlacement(),
+                        modifier = if (reduceMotion) Modifier else Modifier.animateItem(),
                         item = item,
                         position = visibleDashboardItems.indexOf(item) + 1,
                         reorderState = reorderState,
@@ -435,7 +435,7 @@ fun HomeLayoutEditorScreen(viewModel: LauncherViewModel, onClose: () -> Unit) {
                     items(draftFolderIds, key = { "folder_$it" }) { folderId ->
                         folders.firstOrNull { it.category.categoryId == folderId }?.let { folder ->
                             FolderOrderCard(
-                                modifier = Modifier.animateItemPlacement(),
+                                modifier = Modifier.animateItem(),
                                 folder = folder,
                                 reorderState = folderReorderState,
                                 onDragStarted = { haptics.performHapticFeedback(HapticFeedbackType.LongPress) },

@@ -1,5 +1,15 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 13: Kotlin 2.x'e geçiş — K2 derleyici)
+**Yapılanlar:** Kullanıcının seçtiği sıranın 1. maddesi: teknoloji yığını güncellendi.
+- Kotlin **1.9.25 → 2.1.20** (K2 derleyici) + `org.jetbrains.kotlin.plugin.compose` eklendi; `composeOptions.kotlinCompilerExtensionVersion` kaldırıldı (Kotlin 2.x'te Compose compiler'ı plugin yönetir).
+- KSP **1.9.25-1.0.20 → 2.1.20-1.0.32** (KSP1): Kotlin 2.2.21 + KSP2 denendi ancak "unexpected jvm signature V" hatası repro edildi; Kotlin 2.2 için KSP1 yayınlanmadığından en yeni KSP1 kombinasyonu seçildi (karar koda yorumlandı).
+- Compose BOM **2024.12.01 → 2026.06.01** (Compose 1.11.4): 2026.08.00 compileSdk 37 gerektirdiği ve AGP 8.13.2 limiti 36 olduğu için AAR metadata karşılaştırmasıyla en yeni uyumlu BOM belirlendi.
+- Hilt **2.52 → 2.57.2**: 2.52 Kotlin 2.1 metadata'sını okuyamıyordu; 2.59.x AGP 9 şartı koştuğu için AGP 8.13 uyumlu en yeni sürüm seçildi.
+- `animateItemPlacement` → `animateItem` (Compose 1.11 API değişimi, 3 kullanım); eski FIR flag'i gradle.properties'ten kaldırıldı.
+**Kanıt:** `testDebugUnitTest + assembleDebug -PskipGoogleServices=true` → **1449 test, 0 fail, 0 hata**; BUILD SUCCESSFUL.
+**Sonraki:** Tur 14 — eski HomeScreen god-dosyalarının temizlenmesi; Tur 15 — Maestro cihaz akışı dokümantasyonu.
+
 ## Döngü — 2026-08-22 (Tur 12: README, Home V2 gerçeğine güncellendi)
 **Yapılanlar:** Backlog'un son maddesi tamamlandı — README artık Home V2'yi anlatıyor:
 - Ana ekran bölümü yeniden yazıldı: pager düzeni (Hero → Widget → Klasörler), hızlı başlat, sürükle-sırala, bağlam menüsü, uzun basma yönetim menüsü, bağlamsal dock + akıllı slot ayarı, öneri merkezi, görünüm ayarları.

@@ -7,6 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("io.gitlab.arturbosch.detekt")
     id("androidx.baselineprofile")
 }
@@ -136,9 +137,6 @@ android {
         buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
 
     packaging {
         resources {
@@ -304,14 +302,11 @@ dependencies {
     // Jetpack Compose
     // Fix EX03/FAZ A-1 (2026-07-19) — 2024.09.03 -> 2024.12.01: canlı Samsung tablet testinde
     // "measure is called on a deactivated node" (Compose 1.7.x LazyGrid/Pager deactivation race,
-    // rotasyon + hızlı klasör sayfası swipe kombinasyonunda tetikleniyordu) HorizontalPager
-    // graphicsLayer deferred-read fix'i VE beyondViewportPageCount=1 tamponuyla dahi
-    // giderilemedi (canlı repro'da hâlâ crash atıyordu) — kod seviyesi workaround yetersiz
-    // kaldığı için CLAUDE.md §5 uyumluluk matrisi doğrulanarak BOM yükseltildi. 2024.12.01 hâlâ
-    // Kotlin 1.9.25 / kotlinCompilerExtensionVersion 1.5.15 ile uyumlu (Kotlin 2.x GEÇİŞİ
-    // GEREKMEDİ) — sadece Compose Foundation'ın sonraki 1.7.x nokta sürümündeki
-    // deactivated-node/layer-reuse düzeltmelerini alır.
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    // Tur 13 (2026-08-22): Kotlin 2.1.20 (K2) + org.jetbrains.kotlin.plugin.compose +
+    // BOM 2026.06.01 (Compose 1.11.4, minCompileSdk 35 — AGP 8.13.2 limiti 36; 2026.08.00
+    // compileSdk 37 istediği için seçilmedi). KSP1 (2.1.20-1.0.32) korunur: KSP2'nin
+    // "unexpected jvm signature V" hatası bu kod tabanında repro edildi.
+    implementation(platform("androidx.compose:compose-bom:2026.06.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -328,8 +323,8 @@ dependencies {
     // Bundled SQLite with FTS5 â€” platform SQLite'da FTS5 eksikse fallback LIKE kullanÄ±lÄ±r
 
     // Hilt Dependency Injection
-    implementation("com.google.dagger:hilt-android:2.52")
-    ksp("com.google.dagger:hilt-compiler:2.52")
+    implementation("com.google.dagger:hilt-android:2.57.2")
+    ksp("com.google.dagger:hilt-compiler:2.57.2")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Coroutines
@@ -358,7 +353,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("androidx.room:room-testing:2.6.1")
     // Tur 9 — Robolectric + Compose UI testleri: görsel tasirma/sigma kontrolleri
-    testImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    testImplementation(platform("androidx.compose:compose-bom:2026.06.01"))
     testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("org.robolectric:robolectric:4.13")
@@ -370,10 +365,10 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.room:room-testing:2.6.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.06.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
-    kspAndroidTest("com.google.dagger:hilt-compiler:2.52")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.2")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.57.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     // LeakCanary unit test'te ASM transform ile classpath wiring bozuyor â€” kaldÄ±rÄ±ldÄ±
