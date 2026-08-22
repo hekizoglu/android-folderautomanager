@@ -155,7 +155,8 @@ android {
     testOptions {
         unitTests {
             isReturnDefaultValues = true
-            isIncludeAndroidResources = false
+            // Robolectric tabanlı Compose UI testleri (tur 9) kaynaklara erismeli.
+            isIncludeAndroidResources = true
             all { test ->
                 test.jvmArgs("-XX:+EnableDynamicAgentLoading", "-Xshare:off")
             }
@@ -356,6 +357,13 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("androidx.room:room-testing:2.6.1")
+    // Tur 9 — Robolectric + Compose UI testleri: görsel tasirma/sigma kontrolleri
+    testImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation("org.robolectric:robolectric:4.13")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.test.ext:junit:1.2.1")
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
 

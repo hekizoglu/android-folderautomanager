@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Home V2 tur 9: Robolectric görsel UI test altyapısı + taşma dedektörü)
+**Yapılanlar:** Kullanıcı arayüzü için otomatik GÖRSEL test yöntemi kuruldu (istem: kayma/ekrana sığmama gibi hataların testi):
+- `HomeV2VisualUiTest` (9 test): Robolectric + Compose UI ile bileşenler gerçek ölçüleriyle render ediliyor; semantics ağacı yürünerek her düğümün ekran sınırları içinde kaldığı doğrulanıyor (taşma dedektörü). Kapsam: uzun başlık/rozetli kart, 8 klasörlü grid (360x800), dar ekran (320x568), büyük font ölçeği (1.5x grid / 2.0x saat başlığı), 5 ikonlu dar dock, dokunma jestleri (açma, hızlı başlat swipe-up, uzun bas+sürükle sıralama).
+- Test keşifleri kalıcı bilgiye çevrildi: (1) Robolectric qualifier biçimi wNNNdp-hNNNdp; (2) performTouchInput içinde olay zamanları mainClock'tan bağımsız +16ms artar — uzun basış simülasyonu bölünmüş çağrılarla yapılır; (3) birleşik semantics düğüm merkezi alt tıklanabilir öğeye (önizleme ikonu) denk gelebilir — dokunuş hedefi bölge bazlı seçilir.
+- `isIncludeAndroidResources = true` + robolectric 4.13 / ui-test-junit4 / ui-test-manifest bağımlılıkları eklendi.
+- Cihazda canlı görsel doğrulama için `.maestro/07_home_v2_visual_check.yaml` eklendi: açılış, çekmece, uzun basma menüsü ve header bölgesinde 6 ekran görüntüsü kanıtı üretir.
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1446 test, 0 fail, 0 hata** (19 skipped; 1437 mevcut + 9 yeni görsel test); BUILD SUCCESSFUL.
+**Sonraki:** klasör birleştirme önerisi yüzeyi, arka plan/tema ayarlarının HomeV2'ye taşınması, README güncellemesi; Maestro akışının gerçek cihazda koşturulup ekran görüntülerinin incelenmesi.
+
 ## Döngü — 2026-08-22 (Home V2 tur 8: layout editörü reaktivitesi + build ortamı kalıcı çözümü)
 **Yapılanlar:**
 1. HomeV2'de `heroContentOrder` artık REAKTIF: "Ana Ekranı Düzenle" editöründe yapılan sıralama/gizlilik değişiklikleri SharedPreferences dinleyicisiyle anında Hero Dashboard'a yansır (eski ekranla aynı mekanizma; KEY_HEADER/FOOTER/CONTENT_ORDER, HIDDEN_SECTIONS, LAYOUT_VERSION, CUSTOMIZED izlenir).

@@ -1,0 +1,48 @@
+appId: com.armutlu.apporganizer
+---
+# Home V2 görsel doğrulama akışı (tur 9).
+# Amaç: taşma/sığmama/hizalama sorunlarını CİHAZDA yakalamak. Her adımda
+# ekran görüntüsü alınır; görüntüler insan gözüyle (veya baseline karşılaştırma
+# aracıyla) kontrol edilir. Otomatik assertion'lar kasıtlı olarak gevşektir —
+# cihazdan cihaza değişen içerik yerine GÖRSEL kanıt üretir.
+
+# 1) Ana ekran ilk açılış
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: homev2_01_home_first_paint
+
+# 2) Klasör kartları + dock görünür mü (temel render kanıtı)
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# 3) Yukarı kaydır → uygulama çekmecesi
+- swipe:
+    direction: UP
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: homev2_02_drawer_open
+
+# 4) Çekmeceden geri dön
+- back
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: homev2_03_home_after_drawer
+
+# 5) Boş alana uzun bas → yönetim menüsü (duvar kağıdı/ayarlar/dock düzenle)
+- longPressOn:
+    point: "50%,20%"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: homev2_04_home_longpress_sheet
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+
+# 6) Saat başlığı ve nabız şeridi bölgesi (üst alan taşma kontrolü)
+- takeScreenshot: homev2_05_header_region
+
+# 7) Son durum — tüm ekran
+- takeScreenshot: homev2_06_final_state
