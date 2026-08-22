@@ -393,4 +393,24 @@ class HomeV2VisualUiTest {
         assertNoOverflow("öneri merkezi kartı (uyarı yok)")
     }
 
+
+    @Test
+    fun `folder tile respects reduced text alpha without breaking layout`() {
+        rule.setContent {
+            MaterialTheme {
+                FolderTileV2(
+                    tile = tile("alpha", "Düşük Alfa Klasörü", appCount = 5),
+                    previewApps = listOf(app("com.a"), app("com.b")),
+                    onOpen = {},
+                    onAppClick = {},
+                    textAlpha = 0.3f,
+                    modifier = Modifier.fillMaxWidth().height(FOLDER_CELL_HEIGHT),
+                )
+            }
+        }
+        rule.waitForIdle()
+        rule.onNodeWithText("Düşük Alfa Klasörü").assertIsDisplayed()
+        assertNoOverflow("düşük metin alfası")
+    }
+
 }

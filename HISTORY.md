@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Home V2 tur 11: arka plan/görünüm ayarları taşındı)
+**Yapılanlar:** Eski ekranın görünüm tercihleri HomeV2'ye bağlandı (backlog madde 2):
+- `homeRootBackground` HomeShell kök modifier'ına uygulandı: "Duvar kağıdı" seçiliyken transparan (sistem duvar kağıdı sızar), düz renk/gradyan stillerinde opak — dock dahil tüm yüzeyi kapsar; eski ekranla aynı pref anahtarları (KEY_BG_TYPE/KEY_BG_COLOR/KEY_HOME_BACKGROUND_STYLE).
+- Ayarlar > Görünüm değişiklikleri SharedPreferences dinleyicisiyle ANINDA ana ekrana yansır (eski ekranla aynı mekanizma).
+- `textAlpha` (Görünüm > Metin saydamlığı) FolderPageV2 → FolderTileV2'ye plumbing'lendi; başlık ve uygulama sayıları seçilen alfayla render edilir.
+- Görsel test: düşük metin alfasıyla kart düzeni bozulmuyor (+1 test).
+**Kanıt:** `testDebugUnitTest -PskipGoogleServices=true` → **1449 test, 0 fail, 0 hata** (19 skipped); BUILD SUCCESSFUL.
+**Sonraki:** README güncellemesi (backlog son madde).
+
 ## Döngü — 2026-08-22 (Home V2 tur 10: klasör birleştirme önerisi yüzeyi — Düzenleme/Öneri Merkezi)
 **Yapılanlar:** Eski ekranın "Düzenleme/Öneri Merkezi" kartı HomeV2'ye taşındı (backlog madde 1):
 - `EditingCenterCard` banner'ların altında, pager'ın üstünde render ediliyor; uyarı yoksa kart kendini gizler (`hasAnyAlert`), `isEditingCenterEnabled` ayarı korunur.

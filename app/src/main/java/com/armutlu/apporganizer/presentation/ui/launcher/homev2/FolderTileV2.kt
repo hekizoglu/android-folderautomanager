@@ -48,6 +48,7 @@ internal fun FolderTileV2(
     onOpen: () -> Unit,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((String) -> Unit)? = null,
+    textAlpha: Float = 1f,
     modifier: Modifier = Modifier,
     lifted: Boolean = false,
     dropHighlight: Boolean = false,
@@ -106,14 +107,14 @@ internal fun FolderTileV2(
                         Text(
                             text = tile.title,
                             style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = textAlpha.coerceIn(0f, 1f)),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                         Text(
                             text = "${tile.appCount} uygulama",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = textAlpha.coerceIn(0f, 1f)),
                         )
                     }
                     if (tile.notificationTotal > 0) {

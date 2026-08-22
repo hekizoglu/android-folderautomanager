@@ -54,6 +54,7 @@ internal fun FolderPageV2(
     onAppClick: (String) -> Unit,
     onReorder: (from: Int, to: Int) -> Unit,
     onAppLongClick: ((String) -> Unit)? = null,
+    textAlpha: Float = 1f,
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -135,6 +136,7 @@ internal fun FolderPageV2(
                                 onOpen = { onOpenFolder(tile) },
                                 onAppClick = onAppClick,
                                 onAppLongClick = onAppLongClick,
+                                textAlpha = textAlpha,
                                 lifted = isDragged,
                                 dropHighlight = dropTarget == index && dragIndex != null && dragIndex != index,
                                 interactionsEnabled = dragIndex == null,

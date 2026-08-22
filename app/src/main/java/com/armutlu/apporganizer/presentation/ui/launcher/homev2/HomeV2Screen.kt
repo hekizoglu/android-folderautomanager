@@ -64,6 +64,7 @@ import com.armutlu.apporganizer.presentation.ui.launcher.DashboardActions
 import com.armutlu.apporganizer.presentation.ui.launcher.DashboardUiState
 import com.armutlu.apporganizer.presentation.ui.launcher.FolderScreen
 import com.armutlu.apporganizer.presentation.ui.launcher.HomeShell
+import com.armutlu.apporganizer.presentation.ui.launcher.homeRootBackground
 import com.armutlu.apporganizer.presentation.ui.launcher.LauncherViewModel
 import com.armutlu.apporganizer.presentation.ui.launcher.SmartDashboardPage
 import com.armutlu.apporganizer.presentation.ui.launcher.WidgetPage
@@ -180,6 +181,28 @@ fun HomeV2Screen(
         layoutPrefs.registerOnSharedPreferenceChangeListener(layoutListener)
         onDispose { layoutPrefs.unregisterOnSharedPreferenceChangeListener(layoutListener) }
     }
+    // Arka plan / görünüm tercihleri (tur 11) — eski ekranla aynı pref anahtarları,
+    // Ayarlar > Görünüm değişiklikleri SharedPreferences dinleyicisiyle anlık yansır.
+    var bgType by remember { mutableStateOf(AppPrefs.getBgType(context)) }
+    var bgColorInt by remember { mutableStateOf(AppPrefs.getBgColor(context)) }
+    var bgGradientStyle by remember { mutableStateOf(AppPrefs.getHomeBackgroundStyle(context)) }
+    var textAlpha by remember { mutableStateOf(AppPrefs.getTextAlpha(context)) }
+    DisposableEffect(context) {
+        val appearancePrefs = context.getSharedPreferences(
+            AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE
+        )
+        val appearanceListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                AppPrefs.KEY_BG_TYPE -> bgType = AppPrefs.getBgType(context)
+                AppPrefs.KEY_BG_COLOR -> bgColorInt = AppPrefs.getBgColor(context)
+                AppPrefs.KEY_HOME_BACKGROUND_STYLE -> bgGradientStyle = AppPrefs.getHomeBackgroundStyle(context)
+                AppPrefs.KEY_TEXT_ALPHA -> textAlpha = AppPrefs.getTextAlpha(context)
+            }
+        }
+        appearancePrefs.registerOnSharedPreferenceChangeListener(appearanceListener)
+        onDispose { appearancePrefs.unregisterOnSharedPreferenceChangeListener(appearanceListener) }
+    }
+
     val notificationCount24h = safeRecentNotificationTotal(recentNotificationCounts)
     val dashboardActions = remember(context) {
         fun openRoute(route: String) {
@@ -235,6 +258,10 @@ fun HomeV2Screen(
     val swipeThresholdPx = with(density) { 72.dp.toPx() }
 
     HomeShell(
+        // Kök yüzey: Ayarlar > Görünüm > Arka Plan seçimi. "Duvar kağıdı" seçiliyken
+        // transparan kalır (windowShowWallpaper=true ile sistem duvar kağıdı sızar);
+        // diğer stillerde opak boyanır. Dock dahil tüm yüzeyi kapsar.
+        modifier = Modifier.homeRootBackground(bgType, bgColorInt, bgGradientStyle),
         pager = {
             Column(
                 modifier = Modifier
@@ -345,6 +372,7 @@ fun HomeV2Screen(
                                             FolderPageV2(
                                                 tiles = tiles,
                                                 appsByPackage = appsByPackage,
+                                                textAlpha = textAlpha,
                                                 onOpenFolder = { tile ->
                                                     folders.firstOrNull { it.category.categoryId == tile.categoryId }
                                                         ?.let(vm::openFolder)
