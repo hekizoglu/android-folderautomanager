@@ -388,6 +388,8 @@
     <ID>ArgumentListWrapping:HomeTickerRow.kt$(index)</ID>
     <ID>ArgumentListWrapping:HomeTickerRow.kt$(items[index.coerceIn(0, items.lastIndex)].type.toWireType())</ID>
     <ID>ArgumentListWrapping:HomeTickerRow.kt$(latestCurrent.type.toWireType(), positionBucketOf(index))</ID>
+    <ID>ArgumentListWrapping:HomeV2GeneralVisualTest.kt$HomeV2GeneralVisualTest$(androidx.compose.ui.geometry.Rect(p.x, p.y, p.x + node.size.width.toFloat(), p.y + node.size.height.toFloat()))</ID>
+    <ID>ArgumentListWrapping:HomeV2GeneralVisualTest.kt$HomeV2GeneralVisualTest$(p.x, p.y, p.x + node.size.width.toFloat(), p.y + node.size.height.toFloat())</ID>
     <ID>ArgumentListWrapping:HomeV2Screen.kt$(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)</ID>
     <ID>ArgumentListWrapping:LauncherActivity.kt$LauncherActivity$(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)</ID>
     <ID>ArgumentListWrapping:LauncherActivity.kt$LauncherActivity$(com.armutlu.apporganizer.R.string.widget_bind_failed)</ID>
@@ -869,7 +871,6 @@
     <ID>CyclomaticComplexMethod:ClassificationDiagnosticsCalculator.kt$ClassificationDiagnosticsCalculator$fun calculate(apps: List&lt;AppInfo&gt;, now: Long = System.currentTimeMillis()): ClassificationDiagnostics</ID>
     <ID>CyclomaticComplexMethod:ContextualPermissionDialog.kt$@Composable fun ContextualPermissionDialog( permission: ContextualPermission, onGranted: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:DiagnosticsReportManager.kt$internal fun workerPlanHealth( enabled: Boolean, hasWork: Boolean, kind: WorkerKind, requested: Boolean = false, telemetry: WorkerTelemetryPrefs.Snapshot? = null, states: List&lt;WorkInfo.State&gt; = emptyList(), nextScheduleTimes: List&lt;Long?&gt; = emptyList(), now: Long = System.currentTimeMillis(), ): WorkerPlanHealth</ID>
-    <ID>CyclomaticComplexMethod:DiagnosticsReportManager.kt$private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List&lt;AiDiagnosticIssue&gt;</ID>
     <ID>CyclomaticComplexMethod:DigitalAdviceEngine.kt$DigitalAdviceEngine$fun evaluate(input: DigitalAdviceInput, nowMillis: Long): DigitalAdvice?</ID>
     <ID>CyclomaticComplexMethod:DockEditSheet.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DockEditSheet( allApps: List&lt;AppInfo&gt;, dockPackages: List&lt;String&gt;, dockDefaultCategory: String = "", onAdd: (String) -&gt; Unit, onRemove: (String) -&gt; Unit, onDismiss: () -&gt; Unit, maxDock: Int = DockPrefs.MAX_SLOTS, )</ID>
     <ID>CyclomaticComplexMethod:EnsureCurrentWeekAdaptiveGoalsUseCase.kt$EnsureCurrentWeekAdaptiveGoalsUseCase$suspend fun execute()</ID>
@@ -948,6 +949,7 @@
     <ID>FunctionNaming:PrivacyPolicyScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun PrivacyPolicyScreen(onBack: () -&gt; Unit)</ID>
     <ID>FunctionNaming:SettingsHomeScreenSection.kt$@Composable fun SettingsHomeScreenSection( onNavigateToSearchSettings: () -&gt; Unit = {}, onNavigateToSmartTickerSettings: () -&gt; Unit = {}, )</ID>
     <ID>FunctionNaming:SettingsHomeScreenSection.kt$@Composable private fun HomeSettingsGroupTitle(title: String)</ID>
+    <ID>ImportOrdering:HomeV2GeneralVisualTest.kt$import androidx.compose.foundation.layout.fillMaxWidth import androidx.compose.foundation.layout.height import androidx.compose.material3.MaterialTheme import androidx.compose.ui.Modifier import androidx.compose.ui.test.assertIsDisplayed import androidx.compose.ui.test.junit4.createComposeRule import androidx.compose.ui.test.onNodeWithText import androidx.compose.ui.test.onRoot import androidx.compose.ui.semantics.SemanticsNode import androidx.test.ext.junit.runners.AndroidJUnit4 import com.armutlu.apporganizer.domain.models.AppInfo import com.armutlu.apporganizer.presentation.ui.launcher.AllAppsDrawer import org.junit.Assert.assertEquals import org.junit.Assert.assertTrue import org.junit.Rule import org.junit.Test import org.junit.runner.RunWith import org.robolectric.annotation.Config import org.robolectric.annotation.GraphicsMode</ID>
     <ID>LargeClass:AppListViewModel.kt$AppListViewModel : AndroidViewModel</ID>
     <ID>LargeClass:AppPrefs.kt$AppPrefs</ID>
     <ID>LargeClass:LauncherViewModel.kt$LauncherViewModel : AndroidViewModel</ID>
@@ -970,8 +972,6 @@
     <ID>LongMethod:ContextualPermissionDialog.kt$@Composable fun ContextualPermissionDialog( permission: ContextualPermission, onGranted: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
     <ID>LongMethod:DiagnosticsReportManager.kt$DiagnosticsReportManager$private suspend fun buildReport(now: Long): String</ID>
     <ID>LongMethod:DiagnosticsReportManager.kt$internal fun renderReport(snapshot: DiagnosticsReportSnapshot): String</ID>
-    <ID>LongMethod:DiagnosticsReportManager.kt$private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportSnapshot)</ID>
-    <ID>LongMethod:DiagnosticsReportManager.kt$private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List&lt;AiDiagnosticIssue&gt;</ID>
     <ID>LongMethod:DiagnosticsReportManagerTest.kt$DiagnosticsReportManagerTest$private fun sampleSnapshot()</ID>
     <ID>LongMethod:DigitalAdviceEngine.kt$DigitalAdviceEngine$fun evaluate(input: DigitalAdviceInput, nowMillis: Long): DigitalAdvice?</ID>
     <ID>LongMethod:DigitalLifeCard.kt$@Composable internal fun DigitalLifeCard( summary: HomePulseSummary?, onClick: () -&gt; Unit, modifier: Modifier = Modifier, onReasonAction: (PulseAction) -&gt; Unit = {}, )</ID>
@@ -1949,6 +1949,7 @@
     <ID>MaxLineLength:DiagnosticsReportManager.kt$"taskScore.positive=${snapshot.positiveTaskScore}, negative=${snapshot.negativeTaskScore}, net=${snapshot.positiveTaskScore + snapshot.negativeTaskScore}"</ID>
     <ID>MaxLineLength:DiagnosticsReportManager.kt$DiagnosticsReportManager$startupSummary = "Son cold=${startup.coldMs.asMetric()}, warm=${startup.warmMs.asMetric()}, ana ekran hazir=${startup.homeReadyMs.asMetric()}"</ID>
     <ID>MaxLineLength:DiagnosticsReportManager.kt$nextAction = "Dosya arama kaynagi acikken FilesIndexWorker.schedule(context) app startup ve restore sonrasi yeniden garanti altina alinmali"</ID>
+    <ID>MaxLineLength:DiagnosticsReportManager.kt$private</ID>
     <ID>MaxLineLength:DrawerAndCsvExportTest.kt$DrawerAndCsvExportTest$val csvLine = "$id,\"$pkg\",\"$appName\",\"$formattedTitle\",\"$formattedText\",$timestamp,\"$dateStr\",\"$category\",$importanceScore,$wasSuppressed"</ID>
     <ID>MaxLineLength:FolderScreen.kt$"'${customName.ifBlank { f.category.categoryName }}' klasörü silinsin mi? İçindeki uygulamalar 'Diğer' klasörüne taşınacaktır."</ID>
     <ID>MaxLineLength:FolderSuggestionsScreen.kt$"Buyuk, cok kucuk veya uzun suredir atil kalan klasorleri bulur. Dusuk guvenli siniflandirmalar otomatik uygulanmaz; Kontrol Bekleyenler akisina gider."</ID>
@@ -2041,6 +2042,7 @@
     <ID>MaximumLineLength:AppRepositoryTest.kt$AppRepositoryTest$ </ID>
     <ID>MaximumLineLength:DiagnosticsReportManager.kt$ </ID>
     <ID>MaximumLineLength:DiagnosticsReportManager.kt$DiagnosticsReportManager$ </ID>
+    <ID>MaximumLineLength:DiagnosticsReportManager.kt$private</ID>
     <ID>MaximumLineLength:DrawerAndCsvExportTest.kt$DrawerAndCsvExportTest$ </ID>
     <ID>MaximumLineLength:FolderScreen.kt$ </ID>
     <ID>MaximumLineLength:FolderSuggestionsScreen.kt$ </ID>
@@ -2187,6 +2189,7 @@
     <ID>TooManyFunctions:AppRepository.kt$AppRepository</ID>
     <ID>TooManyFunctions:CategoryDao.kt$CategoryDao</ID>
     <ID>TooManyFunctions:DiagnosticsReportManager.kt$DiagnosticsReportManager</ID>
+    <ID>TooManyFunctions:DiagnosticsReportManager.kt$com.armutlu.apporganizer.utils.DiagnosticsReportManager.kt</ID>
     <ID>TooManyFunctions:LauncherViewModel.kt$LauncherViewModel : AndroidViewModel</ID>
     <ID>TooManyFunctions:MissionEngine.kt$MissionEngine</ID>
     <ID>TooManyFunctions:SearchRepository.kt$SearchRepository</ID>

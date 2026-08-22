@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 20: complexity borcu refactor'ü — ilk dalga)
+**Yapılanlar:** Baseline'daki en yoğun hedeflerden DiagnosticsReportManager.kt refactor edildi:
+- `aiDiagnosticIssues` (~95 satır, CC+LongMethod) → 7 küçük saf fonksiyona bölündü: classificationIssues, homeIntelligenceIssues, notificationFreshnessIssue, workerIssues, crashPresenceIssue, postNotificationsIssue + birleştirici. Sıra ve içerik birebir korundu.
+- `appendAiDiagnosticSection` (~105 satır LongMethod) → 8 bölüm fonksiyonuna ayrıldı: header, AI_SUMMARY, AI_ISSUES, AI_METRICS, AI_HOME_INTELLIGENCE, AI_WORKERS, AI_CRASHES + orkestratör. Çıktı bayt-bayt özdeş.
+- Davranış özdeşliği mevcut DiagnosticsReportManagerTest ile kanıtlandı (rapor çıktısı değişmedi).
+- Dosyanın complexity girişi 6 → 3 (kalanlar: workerPlanHealth dal tablosu, buildReport/renderReport orkestratörleri — meşru). Yeni küçük fonksiyonlar TooManyFunctions eşiğine takıldı; baseline'a donduruldu (kapı yeşil, yeni ihlaller yine kırmızı).
+**Kanıt:** `testDebugUnitTest` → **1401 test, 0 fail, 0 hata**; `:app:detekt` BUILD SUCCESSFUL; baseline yenilendi.
+**Sonraki:** complexity 2. dalga (AllAppsDrawer.kt 4 CC + 4 LongMethod), MissionEngine/MissionSummaryUseCase CC yoğunluğu.
+
 ## Döngü — 2026-08-22 (Tur 19: genel görsel/mantık test paketi + tam uygulama smoke akışı)
 **Yapılanlar:** Kullanıcının "genel test" isteği — canlı cihaz/emülatör bu sandbox'ta mümkün değil (KVM yok, 1.9GB RAM); Robolectric gerçek-render katmanı genişletildi ve cihaz tarafı için smoke akışı eklendi:
 - `HomeV2GeneralVisualTest` (+9 test): uygulama çekmecesi (40 uygulama dar ekran, 320x568 küçük ekran, %150 font ölçeği, arama sonuçları), klasör kartı uç durumları (boş önizleme, 120 bildirim → "9+" rozeti), dar ekranda uzun görev başlıklı saat/nabız şeridi, sayfa-arası sıralama matematiği (global indeks eşleme + moveItem tutarlılığı).

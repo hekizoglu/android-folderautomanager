@@ -896,6 +896,17 @@ private fun StringBuilder.appendProfessionalSummary(snapshot: DiagnosticsReportS
 }
 
 private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportSnapshot) {
+    appendAiDiagnosticHeader(snapshot)
+    val issues = aiDiagnosticIssues(snapshot)
+    appendAiSummaryBlock(snapshot, issues)
+    appendAiIssuesBlock(issues)
+    appendAiMetricsBlock(snapshot)
+    appendAiHomeIntelligenceBlock(snapshot)
+    appendAiWorkersBlock(snapshot)
+    appendAiCrashesBlock(snapshot)
+}
+
+private fun StringBuilder.appendAiDiagnosticHeader(snapshot: DiagnosticsReportSnapshot) {
     appendLine("[AI Tani Paketi]")
     appendLine("Amac: Bu bolum yapay zeka analizine uygun, gizlilik-korumali ve yapilandirilmis hata sinyalleri icerir.")
     appendLine("Gizlilik siniri: Paket adi, bildirim metni, kisi, dosya adi ve arama sorgusu yoktur.")
@@ -906,14 +917,17 @@ private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportS
     appendLine("Device=${snapshot.deviceName}, Android=${snapshot.androidVersion}")
     appendLine("ConsentDerivedSignals=diagnostics_only")
     appendLine()
+}
 
+private fun StringBuilder.appendAiSummaryBlock(snapshot: DiagnosticsReportSnapshot, issues: List<AiDiagnosticIssue>) {
     appendLine("## AI_SUMMARY")
-    val issues = aiDiagnosticIssues(snapshot)
     appendLine("issueCount=${issues.size}")
     appendLine("highestSeverity=${issues.maxByOrNull { it.rank }?.severity ?: "INFO"}")
     appendLine("warningCodes=${snapshot.homeIntelligenceHealth.allWarningCodes.sorted().joinToString().ifBlank { "-" }}")
     appendLine()
+}
 
+private fun StringBuilder.appendAiIssuesBlock(issues: List<AiDiagnosticIssue>) {
     appendLine("## AI_ISSUES")
     if (issues.isEmpty()) {
         appendLine(
@@ -928,7 +942,9 @@ private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportS
         }
     }
     appendLine()
+}
 
+private fun StringBuilder.appendAiMetricsBlock(snapshot: DiagnosticsReportSnapshot) {
     appendLine("## AI_METRICS")
     appendLine("classification.totalUserApps=${snapshot.classificationDiagnostics.totalUserApps}")
     appendLine("classification.reconciledTotal=${snapshot.classificationDiagnostics.reconciledTotal}")
@@ -982,17 +998,23 @@ private fun StringBuilder.appendAiDiagnosticSection(snapshot: DiagnosticsReportS
     appendLine("exit=${snapshot.exitSummary}")
     appendLine("storage=${snapshot.storageSummary}")
     appendLine()
+}
 
+private fun StringBuilder.appendAiHomeIntelligenceBlock(snapshot: DiagnosticsReportSnapshot) {
     appendLine("## AI_HOME_INTELLIGENCE")
     appendAiSectionLines("mission", snapshot.homeIntelligenceHealth.missionSystem)
     appendAiSectionLines("digitalLife", snapshot.homeIntelligenceHealth.digitalLife)
     appendAiSectionLines("smartPulseTicker", snapshot.homeIntelligenceHealth.smartPulseTicker)
     appendLine()
+}
 
+private fun StringBuilder.appendAiWorkersBlock(snapshot: DiagnosticsReportSnapshot) {
     appendLine("## AI_WORKERS")
     snapshot.workerSummary.forEach { appendLine(it) }
     appendLine()
+}
 
+private fun StringBuilder.appendAiCrashesBlock(snapshot: DiagnosticsReportSnapshot) {
     appendLine("## AI_CRASHES")
     if (snapshot.crashSummary.isEmpty()) {
         appendLine("-")
@@ -1018,9 +1040,16 @@ private data class AiDiagnosticIssue(
     val nextAction: String,
 )
 
-private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiagnosticIssue> {
+private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiagnosticIssue> =
+    classificationIssues(snapshot.classificationDiagnostics) +
+        homeIntelligenceIssues(snapshot.homeIntelligenceHealth) +
+        notificationFreshnessIssue(snapshot) +
+        workerIssues(snapshot.workerSummary) +
+        crashPresenceIssue(snapshot.crashSummary) +
+        postNotificationsIssue(snapshot)
+
+private fun classificationIssues(classification: ClassificationDiagnostics): List<AiDiagnosticIssue> {
     val issues = mutableListOf<AiDiagnosticIssue>()
-    val classification = snapshot.classificationDiagnostics
     if (!classification.isConsistent) {
         issues += AiDiagnosticIssue(
             severity = "ERROR",
@@ -1051,8 +1080,12 @@ private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiag
             nextAction = "Dikkat nedenlerini ve otomatik kategori kabul kosullarini incele",
         )
     }
-    snapshot.homeIntelligenceHealth.allWarningCodes.sorted().forEach { code ->
-        issues += AiDiagnosticIssue(
+    return issues
+}
+
+private fun homeIntelligenceIssues(health: com.armutlu.apporganizer.domain.home.HomeIntelligenceHealthReport.Report): List<AiDiagnosticIssue> =
+    health.allWarningCodes.sorted().map { code ->
+        AiDiagnosticIssue(
             severity = "WARN",
             rank = 2,
             area = "home_intelligence",
@@ -1061,17 +1094,26 @@ private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiag
             nextAction = homeHealthNextAction(code),
         )
     }
+
+private fun notificationFreshnessIssue(snapshot: DiagnosticsReportSnapshot): List<AiDiagnosticIssue> =
     if (snapshot.notificationFreshness != "NORMAL") {
-        issues += AiDiagnosticIssue(
-            severity = "WARN",
-            rank = 2,
-            area = "notifications",
-            signal = "freshness_not_normal",
-            evidence = snapshot.notificationFreshness,
-            nextAction = "Notification listener izni, son event zamani ve NotificationEventDao yazimlarini kontrol et",
+        listOf(
+            AiDiagnosticIssue(
+                severity = "WARN",
+                rank = 2,
+                area = "notifications",
+                signal = "freshness_not_normal",
+                evidence = snapshot.notificationFreshness,
+                nextAction = "Notification listener izni, son event zamani ve NotificationEventDao yazimlarini kontrol et",
+            ),
         )
+    } else {
+        emptyList()
     }
-    if (snapshot.workerSummary.any {
+
+private fun workerIssues(workerSummary: List<String>): List<AiDiagnosticIssue> {
+    val issues = mutableListOf<AiDiagnosticIssue>()
+    if (workerSummary.any {
             it.contains("Files index periodic: enabled=evet") &&
                 it.contains("eligible=evet") &&
                 it.contains("work=yok")
@@ -1086,39 +1128,51 @@ private fun aiDiagnosticIssues(snapshot: DiagnosticsReportSnapshot): List<AiDiag
             nextAction = "Dosya arama kaynagi acikken FilesIndexWorker.schedule(context) app startup ve restore sonrasi yeniden garanti altina alinmali",
         )
     }
-    if (snapshot.workerSummary.any { it.contains("HATA:") || it.contains("UYARI:") || it.contains("basarisiz") }) {
+    if (workerSummary.any { it.contains("HATA:") || it.contains("UYARI:") || it.contains("basarisiz") }) {
         issues += AiDiagnosticIssue(
             severity = "WARN",
             rank = 2,
             area = "workers",
             signal = "worker_health_not_normal",
-            evidence = snapshot.workerSummary.filter { it.contains("HATA:") || it.contains("UYARI:") || it.contains("basarisiz") }
+            evidence = workerSummary.filter { it.contains("HATA:") || it.contains("UYARI:") || it.contains("basarisiz") }
                 .joinToString(" || "),
             nextAction = "WorkManager unique work kayitlari, tercih kapilari ve WorkerTelemetryPrefs durumlarini karsilastir",
         )
     }
-    if (snapshot.crashSummary.isNotEmpty()) {
-        issues += AiDiagnosticIssue(
-            severity = "WARN",
-            rank = 2,
-            area = "crash",
-            signal = "recent_crash_log_present",
-            evidence = "crashCountShown=${snapshot.crashSummary.size}",
-            nextAction = "Crash ozetindeki exception sinifini ilgili feature degisikligiyle eslestir",
-        )
-    }
-    if (snapshot.postNotificationsState == "denied" && snapshot.notificationAnalyticsEnabled == "evet") {
-        issues += AiDiagnosticIssue(
-            severity = "INFO",
-            rank = 1,
-            area = "permissions",
-            signal = "post_notifications_denied",
-            evidence = "POST_NOTIFICATIONS=denied, analytics=${snapshot.notificationAnalyticsEnabled}",
-            nextAction = "Bildirim ozelliklerinde izin kapali deneyimin beklenen fallback'e dustugunu dogrula",
-        )
-    }
     return issues
 }
+
+private fun crashPresenceIssue(crashSummary: List<String>): List<AiDiagnosticIssue> =
+    if (crashSummary.isNotEmpty()) {
+        listOf(
+            AiDiagnosticIssue(
+                severity = "WARN",
+                rank = 2,
+                area = "crash",
+                signal = "recent_crash_log_present",
+                evidence = "crashCountShown=${crashSummary.size}",
+                nextAction = "Crash ozetindeki exception sinifini ilgili feature degisikligiyle eslestir",
+            ),
+        )
+    } else {
+        emptyList()
+    }
+
+private fun postNotificationsIssue(snapshot: DiagnosticsReportSnapshot): List<AiDiagnosticIssue> =
+    if (snapshot.postNotificationsState == "denied" && snapshot.notificationAnalyticsEnabled == "evet") {
+        listOf(
+            AiDiagnosticIssue(
+                severity = "INFO",
+                rank = 1,
+                area = "permissions",
+                signal = "post_notifications_denied",
+                evidence = "POST_NOTIFICATIONS=denied, analytics=${snapshot.notificationAnalyticsEnabled}",
+                nextAction = "Bildirim ozelliklerinde izin kapali deneyimin beklenen fallback'e dustugunu dogrula",
+            ),
+        )
+    } else {
+        emptyList()
+    }
 
 private fun homeHealthNextAction(code: String): String = when (code) {
     com.armutlu.apporganizer.domain.common.HomeErrorCodes.MISSION_SETTLEMENT_STALE ->
