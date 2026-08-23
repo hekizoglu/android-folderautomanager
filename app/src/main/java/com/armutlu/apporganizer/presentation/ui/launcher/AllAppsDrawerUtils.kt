@@ -286,6 +286,25 @@ internal fun buildSidebarEntries(
 }
 
 // ── State holder ──────────────────────────────────────────────────────────────
+/** Çekmece hızlı erişim bölüm verileri + tercihleri (tur 5: parametre daraltma). */
+data class DrawerQuickAccessConfig(
+    val recentAppsEnabled: Boolean = false,
+    val recentApps: List<AppInfo> = emptyList(),
+    val favoritesEnabled: Boolean = false,
+    val favoriteApps: List<AppInfo> = emptyList(),
+    val recentNotificationAppsEnabled: Boolean = false,
+    val recentNotificationApps: List<AppInfo> = emptyList(),
+    val todayInstalledAppsEnabled: Boolean = false,
+    val todayInstalledApps: List<AppInfo> = emptyList(),
+    val maxShownAppsCount: Int = 4,
+) {
+    val hasAnySection: Boolean
+        get() = (recentAppsEnabled && recentApps.isNotEmpty()) ||
+            (favoritesEnabled && favoriteApps.isNotEmpty()) ||
+            (recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) ||
+            (todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty())
+}
+
 internal data class DrawerState(
     val sortedApps: List<AppInfo>,
     val grouped: Map<Char, List<AppInfo>>,

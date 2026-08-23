@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 26: 5. dalga — parametre daraltma + çekmece hızlı erişim wiring'i)
+**Yapılanlar:**
+- `DrawerQuickAccessConfig` data class eklendi: favoriler/son kullanılanlar/bildirim alanlar/bugün yüklenenler veri+tamah tercihleri tek nesnede. AllAppsDrawer, DrawerAppList ve drawerQuickAccessSections imzaları 9'ar parametre daraldı (config nesnesiyle).
+- **Kullanıcı görünürlüğü kazanımı:** HomeV2 çekmecesi artık hızlı erişim bölümlerini GERÇEKTEN gösteriyor — vm.favoriteApps/recentApps/recentNotificationApps/todayInstalledApps akışları + AllApps tercihleri (isFavoritesEnabledAllApps vb.) wiring'lendi. Önceden bu bölümler HomeV2'de hiç render edilmiyordu (eski evrandan kalan işlev kaybı giderildi).
+- drawerQuickAccessSections gövdesi sadeleşti (erken dönüş + config erişimi).
+**Kanıt:** `testDebugUnitTest` → **1409 test, 0 fail, 0 hata**; `:app:detekt` BUILD SUCCESSFUL; baseline temiz rejenerasyonla 2381 (daraltılan imzalar hâlâ >8 parametre — baseline'da donuk; yapısal kazanç config nesnesi + bölümlerin görünür olması).
+**Sonraki:** cihaz jest/görsel doğrulaması (runbook); AllAppsDrawer/DrawerAppList LongMethod gövdeleri (isteğe bağlı 6. dalga).
+
 ## Döngü — 2026-08-22 (Tur 25: complexity 4. dalga tamamlandı — çekmece listesi parçalandı)
 **Yapılanlar:** Dalganın kalan hedefleri tamamlandı:
 - `DrawerAppList` bölündü: hızlı erişim bölümleri (son kullanılanlar+favoriler, bildirim alanlar, bugün yüklenenler) `LazyListScope.drawerQuickAccessSections`'a (grouped/flat dallardaki ~45 satırlık duplikasyon tek fonksiyonda, keySuffix ile), arama sonuç bölümleri `LazyListScope.drawerSearchResultSections`'a (boş durum + web fallback + kategori/ayar/kişi/dosya grupları + izin kısayolu), web-fallback tercihi `rememberWebFallbackEnabled`'a taşındı. Metot CC'si ÇÖZÜLDÜ.

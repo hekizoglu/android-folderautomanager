@@ -54,6 +54,7 @@ import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunch
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.presentation.ui.launcher.AllAppsDrawer
+import com.armutlu.apporganizer.presentation.ui.launcher.DrawerQuickAccessConfig
 import com.armutlu.apporganizer.presentation.ui.launcher.AppContextMenu
 import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
 import com.armutlu.apporganizer.presentation.ui.launcher.CategoryPickerSheet
@@ -237,6 +238,26 @@ fun HomeV2Screen(
     val pageSize = remember { AppPrefs.getPageSize(context) }
     val widgetAreaEnabled = remember { AppPrefs.isWidgetAreaEnabled(context) }
     val widgetFreeGridEnabled = remember { AppPrefs.isWidgetFreeGridEnabled(context) }
+    // Çekmece hızlı erişim bölümleri (tur 5): favoriler/son kullanılanlar/notification/bugün.
+    val drawerFavoriteApps by vm.favoriteApps.collectAsState()
+    val drawerRecentApps by vm.recentApps.collectAsState()
+    val drawerRecentNotificationApps by vm.recentNotificationApps.collectAsState()
+    val drawerTodayInstalledApps by vm.todayInstalledApps.collectAsState()
+    val drawerQuickAccess = remember(
+        drawerFavoriteApps, drawerRecentApps, drawerRecentNotificationApps, drawerTodayInstalledApps,
+    ) {
+        DrawerQuickAccessConfig(
+            favoritesEnabled = AppPrefs.isFavoritesEnabledAllApps(context),
+            favoriteApps = drawerFavoriteApps,
+            recentAppsEnabled = AppPrefs.isRecentAppsEnabledAllApps(context),
+            recentApps = drawerRecentApps,
+            recentNotificationAppsEnabled = AppPrefs.isRecentNotificationAppsRowEnabled(context),
+            recentNotificationApps = drawerRecentNotificationApps,
+            todayInstalledAppsEnabled = AppPrefs.isRecentInstallsEnabled(context),
+            todayInstalledApps = drawerTodayInstalledApps,
+        )
+    }
+
     var dismissedBanners by remember { mutableStateOf(setOf<String>()) }
     val appsByPackage = remember(allApps) { allApps.associateBy { it.packageName } }
 
@@ -440,6 +461,7 @@ fun HomeV2Screen(
                 AllAppsDrawer(
                     apps = allApps,
                     searchQuery = searchQuery,
+                    quickAccess = drawerQuickAccess,
                     onSearchQueryChange = vm::setSearchQuery,
                     onClose = vm::closeAllApps,
                     onAppClick = { vm.launchApp(context, it) },

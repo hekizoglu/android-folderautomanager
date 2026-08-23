@@ -467,16 +467,9 @@ private fun DrawerAppList(
     listState: LazyListState,
     searchQuery: String,
     iconSize: Dp,
-    favoritesEnabled: Boolean,
-    favoriteApps: List<AppInfo>,
+    quickAccess: DrawerQuickAccessConfig,
     onFavoriteAppClick: (String) -> Unit,
-    recentAppsEnabled: Boolean,
-    recentApps: List<AppInfo>,
     onRecentAppClick: (String) -> Unit,
-    recentNotificationAppsEnabled: Boolean = false,
-    recentNotificationApps: List<AppInfo> = emptyList(),
-    todayInstalledAppsEnabled: Boolean = false,
-    todayInstalledApps: List<AppInfo> = emptyList(),
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)?,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
@@ -487,7 +480,6 @@ private fun DrawerAppList(
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
     onEnableFilesSource: () -> Unit = {},
     onCategoryClick: (String) -> Unit = {},
-    maxShownAppsCount: Int = 4,
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
@@ -531,19 +523,11 @@ private fun DrawerAppList(
             drawerQuickAccessSections(
                 keySuffix = "",
                 searchQuery = searchQuery,
-                recentAppsEnabled = recentAppsEnabled,
-                recentApps = recentApps,
-                favoritesEnabled = favoritesEnabled,
-                favoriteApps = favoriteApps,
-                maxShownAppsCount = maxShownAppsCount,
+                config = quickAccess,
                 iconPackPkg = state.iconPackPkg,
+                recentNotificationCounts = recentNotificationCounts,
                 onRecentAppClick = onRecentAppClick,
                 onFavoriteAppClick = onFavoriteAppClick,
-                recentNotificationAppsEnabled = recentNotificationAppsEnabled,
-                recentNotificationApps = recentNotificationApps,
-                recentNotificationCounts = recentNotificationCounts,
-                todayInstalledAppsEnabled = todayInstalledAppsEnabled,
-                todayInstalledApps = todayInstalledApps,
                 onAppClick = onAppClick,
                 onAppLongClick = onAppLongClick,
             )
@@ -579,19 +563,11 @@ private fun DrawerAppList(
             drawerQuickAccessSections(
                 keySuffix = "_flat",
                 searchQuery = searchQuery,
-                recentAppsEnabled = recentAppsEnabled,
-                recentApps = recentApps,
-                favoritesEnabled = favoritesEnabled,
-                favoriteApps = favoriteApps,
-                maxShownAppsCount = maxShownAppsCount,
+                config = quickAccess,
                 iconPackPkg = state.iconPackPkg,
+                recentNotificationCounts = recentNotificationCounts,
                 onRecentAppClick = onRecentAppClick,
                 onFavoriteAppClick = onFavoriteAppClick,
-                recentNotificationAppsEnabled = recentNotificationAppsEnabled,
-                recentNotificationApps = recentNotificationApps,
-                recentNotificationCounts = recentNotificationCounts,
-                todayInstalledAppsEnabled = todayInstalledAppsEnabled,
-                todayInstalledApps = todayInstalledApps,
                 onAppClick = onAppClick,
                 onAppLongClick = onAppLongClick,
             )
@@ -987,16 +963,9 @@ fun AllAppsDrawer(
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)? = null,
     iconSize: Dp = 40.dp,
-    favoriteApps: List<AppInfo> = emptyList(),
-    favoritesEnabled: Boolean = false,
+    quickAccess: DrawerQuickAccessConfig = DrawerQuickAccessConfig(),
     onFavoriteAppClick: (String) -> Unit = {},
-    recentApps: List<AppInfo> = emptyList(),
-    recentAppsEnabled: Boolean = false,
     onRecentAppClick: (String) -> Unit = {},
-    recentNotificationAppsEnabled: Boolean = false,
-    recentNotificationApps: List<AppInfo> = emptyList(),
-    todayInstalledAppsEnabled: Boolean = false,
-    todayInstalledApps: List<AppInfo> = emptyList(),
     focusSearchOnOpen: Boolean = false,
     onFocusSearchConsumed: () -> Unit = {},
     categories: List<Category> = emptyList(),
@@ -1123,16 +1092,9 @@ fun AllAppsDrawer(
                         listState = listState,
                         searchQuery = searchQuery,
                         iconSize = iconSize,
-                        favoritesEnabled = favoritesEnabled,
-                        favoriteApps = favoriteApps,
+                        quickAccess = quickAccess,
                         onFavoriteAppClick = onFavoriteAppClick,
-                        recentAppsEnabled = recentAppsEnabled,
-                        recentApps = recentApps,
                         onRecentAppClick = onRecentAppClick,
-                        recentNotificationAppsEnabled = recentNotificationAppsEnabled,
-                        recentNotificationApps = recentNotificationApps,
-                        todayInstalledAppsEnabled = todayInstalledAppsEnabled,
-                        todayInstalledApps = todayInstalledApps,
                         onAppClick = onAppClick,
                         onAppLongClick = onAppLongClick,
                         haptic = haptic,
@@ -1142,7 +1104,6 @@ fun AllAppsDrawer(
                         filesIndexState = filesIndexState,
                         onEnableFilesSource = onEnableFilesSource,
                         onCategoryClick = onCategoryClick,
-                        maxShownAppsCount = maxShownAppsCount,
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {
@@ -1486,27 +1447,21 @@ private fun rememberWebFallbackEnabled(context: android.content.Context): Boolea
 private fun LazyListScope.drawerQuickAccessSections(
     keySuffix: String,
     searchQuery: String,
-    recentAppsEnabled: Boolean,
-    recentApps: List<AppInfo>,
-    favoritesEnabled: Boolean,
-    favoriteApps: List<AppInfo>,
-    maxShownAppsCount: Int,
+    config: DrawerQuickAccessConfig,
     iconPackPkg: String,
+    recentNotificationCounts: Map<String, Int>,
     onRecentAppClick: (String) -> Unit,
     onFavoriteAppClick: (String) -> Unit,
-    recentNotificationAppsEnabled: Boolean,
-    recentNotificationApps: List<AppInfo>,
-    recentNotificationCounts: Map<String, Int>,
-    todayInstalledAppsEnabled: Boolean,
-    todayInstalledApps: List<AppInfo>,
     onAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)?,
 ) {
-    if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
+    if (searchQuery.isNotEmpty() || !config.hasAnySection) return
+    val max = config.maxShownAppsCount
+    if (config.recentAppsEnabled && config.recentApps.isNotEmpty() || config.favoritesEnabled && config.favoriteApps.isNotEmpty()) {
         item(key = "recent_fav_section$keySuffix") {
             DrawerRecentFavSection(
-                recentApps = if (recentAppsEnabled) recentApps.take(maxShownAppsCount) else emptyList(),
-                favoriteApps = if (favoritesEnabled) favoriteApps.take(maxShownAppsCount) else emptyList(),
+                recentApps = if (config.recentAppsEnabled) config.recentApps.take(max) else emptyList(),
+                favoriteApps = if (config.favoritesEnabled) config.favoriteApps.take(max) else emptyList(),
                 iconPackPkg = iconPackPkg,
                 onRecentAppClick = onRecentAppClick,
                 onFavoriteAppClick = onFavoriteAppClick,
@@ -1514,10 +1469,10 @@ private fun LazyListScope.drawerQuickAccessSections(
             )
         }
     }
-    if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
+    if (config.recentNotificationAppsEnabled && config.recentNotificationApps.isNotEmpty()) {
         item(key = "recent_notification_apps_section$keySuffix") {
             DrawerRecentNotificationSection(
-                apps = recentNotificationApps.take(maxShownAppsCount),
+                apps = config.recentNotificationApps.take(max),
                 notificationCounts = recentNotificationCounts,
                 iconPackPkg = iconPackPkg,
                 onAppClick = onAppClick,
@@ -1525,10 +1480,10 @@ private fun LazyListScope.drawerQuickAccessSections(
             )
         }
     }
-    if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
+    if (config.todayInstalledAppsEnabled && config.todayInstalledApps.isNotEmpty()) {
         item(key = "today_installed_apps_section$keySuffix") {
             DrawerTodayInstalledSection(
-                apps = todayInstalledApps.take(maxShownAppsCount),
+                apps = config.todayInstalledApps.take(max),
                 iconPackPkg = iconPackPkg,
                 onAppClick = onAppClick,
                 onAppLongClick = onAppLongClick,
