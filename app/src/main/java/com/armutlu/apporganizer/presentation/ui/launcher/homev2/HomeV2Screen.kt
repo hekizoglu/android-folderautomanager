@@ -1,6 +1,7 @@
 package com.armutlu.apporganizer.presentation.ui.launcher.homev2
 
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -283,6 +284,17 @@ fun HomeV2Screen(
     val density = LocalDensity.current
     val swipeThresholdPx = with(density) { 72.dp.toPx() }
 
+    // OEM predictive-back koruması (legacy HomeScreen'den taşındı, tur 28): launcher
+    // kök ekrandır; geri tuşu Activity'yi ASLA bitirmez. Çekmece açıksa kapatır.
+    // ModalBottomSheet'ler (bağlam menüsü/kategori seçici) kendi BackHandler'larıyla
+    // kendilerini kapatır (daha derinde oldukları için öncelik onların).
+    BackHandler(enabled = true) {
+        if (allAppsOpen) {
+            vm.closeAllApps()
+        }
+        // else: kök — geri tuşu yutulur, launcher Activity asla finish edilmez.
+    }
+
     HomeShell(
         // Kök yüzey: Ayarlar > Görünüm > Arka Plan seçimi. "Duvar kağıdı" seçiliyken
         // transparan kalır (windowShowWallpaper=true ile sistem duvar kağıdı sızar);
@@ -324,6 +336,8 @@ fun HomeV2Screen(
                 // kompakt şerit olarak kalır (ClockHeaderV2'deki saat metni olmadan).
                 PulseStripV2(
                     pulse = state.pulse,
+                    onPulseClick = { openMainRoute(Routes.WRAPPED_REPORT) },
+                    onMissionClick = { openMainRoute(Routes.MISSIONS) },
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
                 )
                 BannerRowV2(
@@ -339,6 +353,8 @@ fun HomeV2Screen(
                                     )
                                 }.onFailure { Timber.w(it, "Notification settings açılamadı") }
                             }
+                            HomeV2Assembler.BANNER_ID_PENDING_CLASSIFICATIONS ->
+                                openMainRoute(Routes.APP_LIST_UNCERTAIN)
                             else -> vm.openAllApps()
                         }
                     },
@@ -364,7 +380,15 @@ fun HomeV2Screen(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
-                    ) { CircularProgressIndicator() }
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            "Klasörler hazırlanıyor…",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     else -> BoxWithConstraints(modifier = Modifier.fillMaxWidth().weight(1f)) {
                         val columns = (maxWidth / 168.dp).toInt().coerceIn(1, 4)
                         val folderPages = remember(state.folders, state.pageSize, columns) {

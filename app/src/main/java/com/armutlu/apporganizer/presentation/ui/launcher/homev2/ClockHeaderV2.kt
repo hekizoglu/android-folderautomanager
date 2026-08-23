@@ -71,7 +71,12 @@ internal fun ClockHeaderV2(
 }
 
 @Composable
-internal fun PulseStripV2(pulse: PulseStripState?, modifier: Modifier = Modifier) {
+internal fun PulseStripV2(
+    pulse: PulseStripState?,
+    onPulseClick: (() -> Unit)? = null,
+    onMissionClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
     if (pulse == null) return
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -80,6 +85,8 @@ internal fun PulseStripV2(pulse: PulseStripState?, modifier: Modifier = Modifier
     ) {
         if (pulse.pulseScoreText != null) {
             Surface(
+                onClick = { onPulseClick?.invoke() },
+                enabled = onPulseClick != null,
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
             ) {
@@ -99,6 +106,8 @@ internal fun PulseStripV2(pulse: PulseStripState?, modifier: Modifier = Modifier
         }
         if (pulse.missionTitle != null) {
             Surface(
+                onClick = { onMissionClick?.invoke() },
+                enabled = onMissionClick != null,
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
             ) {

@@ -1,5 +1,16 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-23 (Tur 28: UI/UX akış ve etkileşim denetimi — profesyonel denetim)
+**Yapılanlar:** Home V2 için profesyonel UI/UX akış/etkileşim denetimi yapıldı (`docs/qa/UI_UX_AKIS_ETKILESIM_DENETIMI.md`); 4 bulgu düzeltildi:
+- **B-01 (P0) düzeltildi:** HomeV2Screen'e daima aktif BackHandler eklendi — legacy'deki OEM predictive-back koruması (MIUI/HyperOS/Android 13+) geri taşındı: çekmece açıksa geri tuşu kapatır, kökte geri tuşu yutulur (launcher Activity asla finish edilmez).
+- **B-02 (P1) düzeltildi:** Sınıflandırma banner'ı artık `Routes.APP_LIST_UNCERTAIN` inceleme ekranına yönlendiriyor (önceden çekmeceye açıyordu).
+- **B-03 (P1) düzeltildi:** PulseStripV2 çipleri tıklanabilir — nabız → Wrapped raporu, görev → Görevler ekranı (opsiyonel callback'ler, null ise pasif).
+- **B-04 (P2) düzeltildi:** İlk yükleme spinner'ına "Klasörler hazırlanıyor…" etiketi.
+- B-05/B-06 tasarım notları denetim dokümanında (hızlı başlat eşiği, boş klasör sayfası).
+- Doğrulanan olumlu durumlar dokümanda: jest ayrışması, geri tuşu akışları, erişilebilirlik, boş durumlar, Robolectric taşma dedektörü.
+**Kanıt:** `testDebugUnitTest` → **1409 test, 0 fail, 0 hata** (in-process Kotlin derleme); `:app:detekt` BUILD SUCCESSFUL.
+**Sonraki:** cihazda OEM geri tuşu testi, hızlı başlat eşiği gözlemi, sürükle-sıralama cihaz doğrulaması (denetim dokümanındaki kalan öneriler).
+
 ## Döngü — 2026-08-23 (Tur 27: klasörler sayfası yatay satır düzeni)
 **Yapılanlar (kullanıcı isteği):** Klasörler sayfası grid'den YATAY SATIR düzenine geçti — her klasör sayfaya tam genişlik yayılır:
 - Yeni `FolderRowV2`: sol tarafta emoji rozeti + klasör adı (küçültüldü, 13sp, tek satır, ellipsis) + uygulama sayısı; ortada klasör İÇERİĞİ (uygulama ikonları satır boyunca ADAPTİF sayıda — genişlik arttıkça daha çok ikon sığar); sağda bildirim rozeti + açma oku. Klasör adı küçülürken içerik görünümü öne çıktı.
