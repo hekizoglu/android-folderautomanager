@@ -1,5 +1,12 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 25: complexity 4. dalga tamamlandı — çekmece listesi parçalandı)
+**Yapılanlar:** Dalganın kalan hedefleri tamamlandı:
+- `DrawerAppList` bölündü: hızlı erişim bölümleri (son kullanılanlar+favoriler, bildirim alanlar, bugün yüklenenler) `LazyListScope.drawerQuickAccessSections`'a (grouped/flat dallardaki ~45 satırlık duplikasyon tek fonksiyonda, keySuffix ile), arama sonuç bölümleri `LazyListScope.drawerSearchResultSections`'a (boş durum + web fallback + kategori/ayar/kişi/dosya grupları + izin kısayolu), web-fallback tercihi `rememberWebFallbackEnabled`'a taşındı. Metot CC'si ÇÖZÜLDÜ.
+- `DrawerRecentFavSection` (148 satır) bölündü: `RecentFavRows` (4'lü satırlar) + `RowScope.RecentFavAppCell` (async ikon + etiket) — iki kez yazılmış recent/fav blokları tek parametrik yapıya indi. Metot CC + LongMethod durumu ÇÖZÜLDÜ.
+**Kanıt:** `testDebugUnitTest` → **1409 test, 0 fail, 0 hata**; `:app:detekt` BUILD SUCCESSFUL; AllAppsDrawer.kt CC/LongMethod girişi 8 → **4** (kalanlar: taşınan drawerSearchResultSections bloğu baseline'da + AllAppsDrawer/DrawerAppList LongMethod). Seri toplamı: baseline 5244 → 2378.
+**Sonraki:** AllAppsDrawer/DrawerAppList LongMethod'ları (parametre listeleri daraltma), cihaz jest doğrulaması.
+
 ## Döngü — 2026-08-22 (Tur 24: UX düzeltmeleri + complexity 4. dalga başlangıcı)
 **Yapılanlar (kullanıcı istekleri):**
 1. **Çift tıkla çekmece yeniden aktif:** HomeV2 kök jestine `onDoubleTap → openAllApps()` eklendi — ana ekranda boş alanlara (kart araları, başlık/alt bölge) çift tık uygulama çekmecesini açar; kart/ikon dokunuşları kendi davranışını korur (arena davranışıyla aynı fizik).

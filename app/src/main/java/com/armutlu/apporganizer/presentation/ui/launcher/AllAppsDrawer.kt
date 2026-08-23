@@ -1,5 +1,6 @@
 package com.armutlu.apporganizer.presentation.ui.launcher
 
+
 import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -521,54 +523,30 @@ private fun DrawerAppList(
                 contactMatches.isNotEmpty() || fileMatches.isNotEmpty() || showFilesPermissionHint
             )
     // Web/Play Store fallback — filtrelenmiş liste + SearchDocument sonuçları boşsa gösterilir (Ayarlar > Arama)
-    var webFallbackEnabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
-    DisposableEffect(context) {
-        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED) {
-                webFallbackEnabled = AppPrefs.isSearchWebFallbackEnabled(context)
-            }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
+    val webFallbackEnabled = rememberWebFallbackEnabled(context)
     val showWebFallback = shouldShowWebFallback(webFallbackEnabled, searchQuery.trim(), hasSearchGroups)
 
     if (state.grouped.isNotEmpty()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
-            if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
-                item(key = "recent_fav_section") {
-                    DrawerRecentFavSection(
-                        recentApps = if (recentAppsEnabled) recentApps.take(maxShownAppsCount) else emptyList(),
-                        favoriteApps = if (favoritesEnabled) favoriteApps.take(maxShownAppsCount) else emptyList(),
-                        iconPackPkg = state.iconPackPkg,
-                        onRecentAppClick = onRecentAppClick,
-                        onFavoriteAppClick = onFavoriteAppClick,
-                        onAppLongClick = onAppLongClick,
-                    )
-                }
-            }
-            if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
-                item(key = "recent_notification_apps_section") {
-                    DrawerRecentNotificationSection(
-                        apps = recentNotificationApps.take(maxShownAppsCount),
-                        notificationCounts = recentNotificationCounts,
-                        iconPackPkg = state.iconPackPkg,
-                        onAppClick = onAppClick,
-                        onAppLongClick = onAppLongClick,
-                    )
-                }
-            }
-            if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
-                item(key = "today_installed_apps_section") {
-                    DrawerTodayInstalledSection(
-                        apps = todayInstalledApps.take(maxShownAppsCount),
-                        iconPackPkg = state.iconPackPkg,
-                        onAppClick = onAppClick,
-                        onAppLongClick = onAppLongClick,
-                    )
-                }
-            }
+            drawerQuickAccessSections(
+                keySuffix = "",
+                searchQuery = searchQuery,
+                recentAppsEnabled = recentAppsEnabled,
+                recentApps = recentApps,
+                favoritesEnabled = favoritesEnabled,
+                favoriteApps = favoriteApps,
+                maxShownAppsCount = maxShownAppsCount,
+                iconPackPkg = state.iconPackPkg,
+                onRecentAppClick = onRecentAppClick,
+                onFavoriteAppClick = onFavoriteAppClick,
+                recentNotificationAppsEnabled = recentNotificationAppsEnabled,
+                recentNotificationApps = recentNotificationApps,
+                recentNotificationCounts = recentNotificationCounts,
+                todayInstalledAppsEnabled = todayInstalledAppsEnabled,
+                todayInstalledApps = todayInstalledApps,
+                onAppClick = onAppClick,
+                onAppLongClick = onAppLongClick,
+            )
             state.grouped.forEach { (letter, letterApps) ->
                 item(key = "header_$letter") {
                     Box(Modifier.semantics { heading() }) {
@@ -598,186 +576,51 @@ private fun DrawerAppList(
             // D242-DENETIM FINDING-001 fix: bu iki blok eskiden yalnızca gruplu (A-Z) dalda vardı —
             // kullanıcı sıralamayı Akıllı/Kullanım/Boyut/Yükleme'ye değiştirince (düz dal devreye
             // girince) hızlı erişim bölümleri ayar kapatılmış gibi kayboluyordu.
-            if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
-                item(key = "recent_fav_section_flat") {
-                    DrawerRecentFavSection(
-                        recentApps = if (recentAppsEnabled) recentApps.take(maxShownAppsCount) else emptyList(),
-                        favoriteApps = if (favoritesEnabled) favoriteApps.take(maxShownAppsCount) else emptyList(),
-                        iconPackPkg = state.iconPackPkg,
-                        onRecentAppClick = onRecentAppClick,
-                        onFavoriteAppClick = onFavoriteAppClick,
-                        onAppLongClick = onAppLongClick,
-                    )
-                }
-            }
-            if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
-                item(key = "recent_notification_apps_section_flat") {
-                    DrawerRecentNotificationSection(
-                        apps = recentNotificationApps.take(maxShownAppsCount),
-                        notificationCounts = recentNotificationCounts,
-                        iconPackPkg = state.iconPackPkg,
-                        onAppClick = onAppClick,
-                        onAppLongClick = onAppLongClick,
-                    )
-                }
-            }
-            if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
-                item(key = "today_installed_apps_section_flat") {
-                    DrawerTodayInstalledSection(
-                        apps = todayInstalledApps.take(maxShownAppsCount),
-                        iconPackPkg = state.iconPackPkg,
-                        onAppClick = onAppClick,
-                        onAppLongClick = onAppLongClick,
-                    )
-                }
-            }
-            if (state.sortedApps.isEmpty() && categoryMatches.isEmpty() && settingMatches.isEmpty() &&
-                contactMatches.isEmpty() && fileMatches.isEmpty() && !showFilesPermissionHint
-            ) {
-                item {
-                    Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
-                    }
-                }
-                if (showWebFallback) {
-                    item(key = "web_fallback_rows") {
-                        Column(Modifier.padding(top = 12.dp)) {
-                            DrawerSearchFallbackRows(context = context, query = searchQuery.trim())
-                        }
-                    }
-                }
-            } else {
-                // Arama modunda kaynak bazlı gruplama
-                if (hasSearchGroups && state.sortedApps.isNotEmpty()) {
-                    item(key = "source_header_apps") {
-                        SourceGroupHeader(label = "Uygulamalar", count = state.sortedApps.size)
-                    }
-                }
-                items(items = state.sortedApps, key = { it.packageName }) { app ->
-                    NiagaraAppRow(
-                        app = app, iconSize = iconSize, isActive = false,
-                        sortMode = state.sortMode,
-                        notifTextEnabled = state.notifTextEnabled,
-                        recentNotificationCount = recentNotificationCounts[app.packageName] ?: 0,
-                        unusedGreyDays = state.unusedGreyDays,
-                        iconPackPkg = state.iconPackPkg,
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            AppAnalytics.appLaunched("all_apps")
-                            onAppClick(app.packageName)
-                        },
-                        onLongClick = { onAppLongClick?.invoke(app) },
-                    )
-                }
-                // Kategori eşleşmeleri
-                if (hasSearchGroups && categoryMatches.isNotEmpty()) {
-                    item(key = "source_header_categories") {
-                        SourceGroupHeader(label = "Kategoriler", count = categoryMatches.size)
-                    }
-                    items(items = categoryMatches, key = { "cat_${it.categoryId}" }) { cat ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onCategoryClick(cat.categoryId) }
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(onSurface.copy(alpha = 0.10f)),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(cat.iconEmoji.ifBlank { "📁" }, fontSize = 18.sp)
-                            }
-                            Column {
-                                Text(cat.categoryName, color = onSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                                Text("Kategori", color = textSecondary, fontSize = 11.sp)
-                            }
-                        }
-                    }
-                }
-                if (hasSearchGroups && settingMatches.isNotEmpty()) {
-                    item(key = "source_header_settings") {
-                        SourceGroupHeader(label = "Ayarlar", count = settingMatches.size)
-                    }
-                    itemsIndexed(items = settingMatches, key = { _, doc -> "setting_${doc.sourceId}" }) { index, document ->
-                        SearchDocumentRow(
-                            document = document,
-                            badge = "A",
-                            onClick = {
-                                SearchStatsPrefs.logClick(context, SourceType.SETTING.key, index)
-                                openSearchDocument(context, document)
-                            },
-                        )
-                    }
-                }
-                if (hasSearchGroups && contactMatches.isNotEmpty()) {
-                    item(key = "source_header_contacts") {
-                        SourceGroupHeader(label = "Kisiler", count = contactMatches.size)
-                    }
-                    itemsIndexed(items = contactMatches, key = { _, doc -> "contact_${doc.sourceId}" }) { index, document ->
-                        SearchDocumentRow(
-                            document = document,
-                            badge = "K",
-                            onClick = {
-                                SearchStatsPrefs.logClick(context, SourceType.CONTACT.key, index)
-                                openSearchDocument(context, document)
-                            },
-                            showContactActions = true,
-                        )
-                    }
-                }
-                // P0.3: dosya kaynağı açık ama izin yoksa "0 sonuç" yerine izin kısayolu
-                if (hasSearchGroups && showFilesPermissionHint) {
-                    item(key = "source_files_permission_hint") {
-                        SourceGroupHeader(label = "Dosyalar", count = 0)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                        arrayOf(
-                                            android.Manifest.permission.READ_MEDIA_IMAGES,
-                                            android.Manifest.permission.READ_MEDIA_VIDEO,
-                                            android.Manifest.permission.READ_MEDIA_AUDIO,
-                                        )
-                                    } else {
-                                        arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                                    }
-                                    filesPermLauncher.launch(permissions)
-                                }
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Text(
-                                stringResource(R.string.home_search_files_permission_required),
-                                color = onSurface,
-                                fontSize = 14.sp,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
-                }
-                if (hasSearchGroups && fileMatches.isNotEmpty()) {
-                    item(key = "source_header_files") {
-                        SourceGroupHeader(label = "Dosyalar", count = fileMatches.size)
-                    }
-                    itemsIndexed(items = fileMatches, key = { _, doc -> "file_${doc.sourceId}" }) { index, document ->
-                        SearchDocumentRow(
-                            document = document,
-                            badge = "D",
-                            onClick = {
-                                SearchStatsPrefs.logClick(context, SourceType.FILE.key, index)
-                                openSearchDocument(context, document)
-                            },
-                        )
-                    }
-                }
-            }
+            drawerQuickAccessSections(
+                keySuffix = "_flat",
+                searchQuery = searchQuery,
+                recentAppsEnabled = recentAppsEnabled,
+                recentApps = recentApps,
+                favoritesEnabled = favoritesEnabled,
+                favoriteApps = favoriteApps,
+                maxShownAppsCount = maxShownAppsCount,
+                iconPackPkg = state.iconPackPkg,
+                onRecentAppClick = onRecentAppClick,
+                onFavoriteAppClick = onFavoriteAppClick,
+                recentNotificationAppsEnabled = recentNotificationAppsEnabled,
+                recentNotificationApps = recentNotificationApps,
+                recentNotificationCounts = recentNotificationCounts,
+                todayInstalledAppsEnabled = todayInstalledAppsEnabled,
+                todayInstalledApps = todayInstalledApps,
+                onAppClick = onAppClick,
+                onAppLongClick = onAppLongClick,
+            )
+            drawerSearchResultSections(
+                context = context,
+                onSurface = onSurface,
+                textSecondary = textSecondary,
+                searchQuery = searchQuery,
+                hasSearchGroups = hasSearchGroups,
+                sortedApps = state.sortedApps,
+                categoryMatches = categoryMatches,
+                settingMatches = settingMatches,
+                contactMatches = contactMatches,
+                fileMatches = fileMatches,
+                showFilesPermissionHint = showFilesPermissionHint,
+                filesPermLaunch = { filesPermLauncher.launch(it) },
+                showWebFallback = showWebFallback,
+                iconSize = iconSize,
+                sortMode = state.sortMode,
+                notifTextEnabled = state.notifTextEnabled,
+                unusedGreyDays = state.unusedGreyDays,
+                iconPackPkg = state.iconPackPkg,
+                haptic = haptic,
+                recentNotificationCounts = recentNotificationCounts,
+                onCategoryClick = onCategoryClick,
+                onAppClick = onAppClick,
+                onAppLongClick = onAppLongClick,
+            )
+
         }
     }
 }
@@ -793,144 +636,121 @@ private fun DrawerRecentFavSection(
     onFavoriteAppClick: (String) -> Unit,
     onAppLongClick: ((AppInfo) -> Unit)? = null,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
     val onSurface = MaterialTheme.colorScheme.onSurface
-
     Column(modifier = Modifier.fillMaxWidth()) {
         if (recentApps.isNotEmpty()) {
             NiagaraLetterHeader(letter = '★', label = stringResource(R.string.recent_apps))
-            recentApps.chunked(4).forEach { rowApps ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    val recentHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-                    rowApps.forEach { app ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .weight(1f)
-                                .combinedClickable(
-                                    onClick = { onRecentAppClick(app.packageName) },
-                                    onLongClick = {
-                                        recentHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onAppLongClick?.invoke(app)
-                                    },
-                                ),
-                        ) {
-                            val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
-                                if (iconPackPkg.isNotEmpty()) {
-                                    "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
-                                } else {
-                                    "${app.packageName}_48_${app.lastUpdatedTime}"
-                                }
-                            }
-                            val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
-                                value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                    val cached = iconCacheInternal[cacheKey]
-                                    if (cached != null) {
-                                        cached
-                                    } else {
-                                        val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
-                                        if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
-                                        bmp
-                                    }
-                                }
-                            }
-                            bitmap?.let {
-                                androidx.compose.foundation.Image(
-                                    bitmap = it, contentDescription = app.appName,
-                                    modifier = Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
-                                )
-                            } ?: Box(Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
-                            Spacer(Modifier.height(3.dp))
-                            Text(
-                                app.appName,
-                                color = onSurface,
-                                fontSize = 10.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
-                    }
-                    repeat(4 - rowApps.size) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
+            RecentFavRows(
+                apps = recentApps,
+                iconPackPkg = iconPackPkg,
+                onSurface = onSurface,
+                onClick = onRecentAppClick,
+                onAppLongClick = onAppLongClick,
+            )
         }
         if (favoriteApps.isNotEmpty()) {
             NiagaraLetterHeader(letter = '♥', label = "Favoriler")
-            favoriteApps.chunked(4).forEach { rowApps ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    val favHaptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-                    rowApps.forEach { app ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .weight(1f)
-                                .combinedClickable(
-                                    onClick = { onFavoriteAppClick(app.packageName) },
-                                    onLongClick = {
-                                        favHaptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onAppLongClick?.invoke(app)
-                                    },
-                                ),
-                        ) {
-                            val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
-                                if (iconPackPkg.isNotEmpty()) {
-                                    "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
-                                } else {
-                                    "${app.packageName}_48_${app.lastUpdatedTime}"
-                                }
-                            }
-                            val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
-                                value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                    val cached = iconCacheInternal[cacheKey]
-                                    if (cached != null) {
-                                        cached
-                                    } else {
-                                        val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
-                                        if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
-                                        bmp
-                                    }
-                                }
-                            }
-                            bitmap?.let {
-                                androidx.compose.foundation.Image(
-                                    bitmap = it, contentDescription = app.appName,
-                                    modifier = Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
-                                )
-                            } ?: Box(Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
-                            Spacer(Modifier.height(3.dp))
-                            Text(
-                                app.appName,
-                                color = onSurface,
-                                fontSize = 10.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
-                    }
-                    repeat(4 - rowApps.size) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
+            RecentFavRows(
+                apps = favoriteApps,
+                iconPackPkg = iconPackPkg,
+                onSurface = onSurface,
+                onClick = onFavoriteAppClick,
+                onAppLongClick = onAppLongClick,
+            )
+        }
+    }
+}
+
+/** Son kullanılanlar/favoriler 4'lü satırları (tur 24: DrawerRecentFavSection'dan çıkarıldı). */
+@Composable
+private fun RecentFavRows(
+    apps: List<AppInfo>,
+    iconPackPkg: String,
+    onSurface: Color,
+    onClick: (String) -> Unit,
+    onAppLongClick: ((AppInfo) -> Unit)?,
+) {
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+    apps.chunked(4).forEach { rowApps ->
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.Top,
+        ) {
+            rowApps.forEach { app ->
+                RecentFavAppCell(
+                    app = app,
+                    iconPackPkg = iconPackPkg,
+                    onSurface = onSurface,
+                    context = context,
+                    onClick = { onClick(app.packageName) },
+                    onLongClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onAppLongClick?.invoke(app)
+                    },
+                )
+            }
+            repeat(4 - rowApps.size) {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+/** Tek uygulama hücresi: async ikon (LruCache) + tek satır etiket (tur 24). */
+@Composable
+private fun RowScope.RecentFavAppCell(
+    app: AppInfo,
+    iconPackPkg: String,
+    onSurface: Color,
+    context: android.content.Context,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .weight(1f)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+    ) {
+        val cacheKey = remember(app.packageName, app.lastUpdatedTime, iconPackPkg) {
+            if (iconPackPkg.isNotEmpty()) {
+                "${app.packageName}_48_${app.lastUpdatedTime}_$iconPackPkg"
+            } else {
+                "${app.packageName}_48_${app.lastUpdatedTime}"
+            }
+        }
+        val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, cacheKey) {
+            value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val cached = iconCacheInternal[cacheKey]
+                if (cached != null) {
+                    cached
+                } else {
+                    val bmp = runCatching { com.armutlu.apporganizer.utils.loadAppIcon(context, app.packageName, 96)?.asImageBitmap() }.getOrNull()
+                    if (bmp != null) iconCacheInternal.put(cacheKey, bmp)
+                    bmp
                 }
             }
         }
+        bitmap?.let {
+            androidx.compose.foundation.Image(
+                bitmap = it, contentDescription = app.appName,
+                modifier = Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
+            )
+        } ?: Box(Modifier.size(44.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.1f)))
+        Spacer(Modifier.height(3.dp))
+        Text(
+            app.appName,
+            color = onSurface,
+            fontSize = 10.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -1637,6 +1457,255 @@ private fun DrawerChipRows(
                     fontSize = 11.sp,
                     fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
                     color = if (isActive) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f),
+                )
+            }
+        }
+    }
+}
+
+
+/** Web/Play fallback tercihi — reaktif SharedPreferences dinleyicisiyle (tur 24). */
+@Composable
+private fun rememberWebFallbackEnabled(context: android.content.Context): Boolean {
+    var enabled by remember { mutableStateOf(AppPrefs.isSearchWebFallbackEnabled(context)) }
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == AppPrefs.KEY_SEARCH_WEB_FALLBACK_ENABLED) {
+                enabled = AppPrefs.isSearchWebFallbackEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    return enabled
+}
+
+/** Hızlı erişim bölümleri: son kullanılanlar + favoriler, bildirim alanlar, bugün yüklenenler.
+ *  Gruplu ve düz listelerde aynı içerik farklı key ile render edilir (keySuffix). */
+private fun LazyListScope.drawerQuickAccessSections(
+    keySuffix: String,
+    searchQuery: String,
+    recentAppsEnabled: Boolean,
+    recentApps: List<AppInfo>,
+    favoritesEnabled: Boolean,
+    favoriteApps: List<AppInfo>,
+    maxShownAppsCount: Int,
+    iconPackPkg: String,
+    onRecentAppClick: (String) -> Unit,
+    onFavoriteAppClick: (String) -> Unit,
+    recentNotificationAppsEnabled: Boolean,
+    recentNotificationApps: List<AppInfo>,
+    recentNotificationCounts: Map<String, Int>,
+    todayInstalledAppsEnabled: Boolean,
+    todayInstalledApps: List<AppInfo>,
+    onAppClick: (String) -> Unit,
+    onAppLongClick: ((AppInfo) -> Unit)?,
+) {
+    if (searchQuery.isEmpty() && (recentAppsEnabled && recentApps.isNotEmpty() || favoritesEnabled && favoriteApps.isNotEmpty())) {
+        item(key = "recent_fav_section$keySuffix") {
+            DrawerRecentFavSection(
+                recentApps = if (recentAppsEnabled) recentApps.take(maxShownAppsCount) else emptyList(),
+                favoriteApps = if (favoritesEnabled) favoriteApps.take(maxShownAppsCount) else emptyList(),
+                iconPackPkg = iconPackPkg,
+                onRecentAppClick = onRecentAppClick,
+                onFavoriteAppClick = onFavoriteAppClick,
+                onAppLongClick = onAppLongClick,
+            )
+        }
+    }
+    if (searchQuery.isEmpty() && recentNotificationAppsEnabled && recentNotificationApps.isNotEmpty()) {
+        item(key = "recent_notification_apps_section$keySuffix") {
+            DrawerRecentNotificationSection(
+                apps = recentNotificationApps.take(maxShownAppsCount),
+                notificationCounts = recentNotificationCounts,
+                iconPackPkg = iconPackPkg,
+                onAppClick = onAppClick,
+                onAppLongClick = onAppLongClick,
+            )
+        }
+    }
+    if (searchQuery.isEmpty() && todayInstalledAppsEnabled && todayInstalledApps.isNotEmpty()) {
+        item(key = "today_installed_apps_section$keySuffix") {
+            DrawerTodayInstalledSection(
+                apps = todayInstalledApps.take(maxShownAppsCount),
+                iconPackPkg = iconPackPkg,
+                onAppClick = onAppClick,
+                onAppLongClick = onAppLongClick,
+            )
+        }
+    }
+}
+
+/** Arama modu sonuç bölümleri: boş durum + web fallback + kaynak grupları (tur 24). */
+private fun LazyListScope.drawerSearchResultSections(
+    context: android.content.Context,
+    onSurface: Color,
+    textSecondary: Color,
+    searchQuery: String,
+    hasSearchGroups: Boolean,
+    sortedApps: List<AppInfo>,
+    categoryMatches: List<Category>,
+    settingMatches: List<SearchDocument>,
+    contactMatches: List<SearchDocument>,
+    fileMatches: List<SearchDocument>,
+    showFilesPermissionHint: Boolean,
+    filesPermLaunch: (Array<String>) -> Unit,
+    showWebFallback: Boolean,
+    iconSize: Dp,
+    sortMode: AllAppsSortMode,
+    notifTextEnabled: Boolean,
+    unusedGreyDays: Int,
+    iconPackPkg: String,
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    recentNotificationCounts: Map<String, Int>,
+    onCategoryClick: (String) -> Unit,
+    onAppClick: (String) -> Unit,
+    onAppLongClick: ((AppInfo) -> Unit)?,
+) {
+    if (sortedApps.isEmpty() && categoryMatches.isEmpty() && settingMatches.isEmpty() &&
+        contactMatches.isEmpty() && fileMatches.isEmpty() && !showFilesPermissionHint
+    ) {
+        item {
+            Box(Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.no_results), color = textSecondary, fontSize = 14.sp)
+            }
+        }
+        if (showWebFallback) {
+            item(key = "web_fallback_rows") {
+                Column(Modifier.padding(top = 12.dp)) {
+                    DrawerSearchFallbackRows(context = context, query = searchQuery.trim())
+                }
+            }
+        }
+    } else {
+        // Arama modunda kaynak bazlı gruplama
+        if (hasSearchGroups && sortedApps.isNotEmpty()) {
+            item(key = "source_header_apps") {
+                SourceGroupHeader(label = "Uygulamalar", count = sortedApps.size)
+            }
+        }
+        items(items = sortedApps, key = { it.packageName }) { app ->
+            NiagaraAppRow(
+                app = app, iconSize = iconSize, isActive = false,
+                sortMode = sortMode,
+                notifTextEnabled = notifTextEnabled,
+                recentNotificationCount = recentNotificationCounts[app.packageName] ?: 0,
+                unusedGreyDays = unusedGreyDays,
+                iconPackPkg = iconPackPkg,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    AppAnalytics.appLaunched("all_apps")
+                    onAppClick(app.packageName)
+                },
+                onLongClick = { onAppLongClick?.invoke(app) },
+            )
+        }
+        // Kategori eşleşmeleri
+        if (hasSearchGroups && categoryMatches.isNotEmpty()) {
+            item(key = "source_header_categories") {
+                SourceGroupHeader(label = "Kategoriler", count = categoryMatches.size)
+            }
+            items(items = categoryMatches, key = { "cat_${it.categoryId}" }) { cat ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onCategoryClick(cat.categoryId) }
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(onSurface.copy(alpha = 0.10f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(cat.iconEmoji.ifBlank { "📁" }, fontSize = 18.sp)
+                    }
+                    Column {
+                        Text(cat.categoryName, color = onSurface, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                        Text("Kategori", color = textSecondary, fontSize = 11.sp)
+                    }
+                }
+            }
+        }
+        if (hasSearchGroups && settingMatches.isNotEmpty()) {
+            item(key = "source_header_settings") {
+                SourceGroupHeader(label = "Ayarlar", count = settingMatches.size)
+            }
+            itemsIndexed(items = settingMatches, key = { _, doc -> "setting_${doc.sourceId}" }) { index, document ->
+                SearchDocumentRow(
+                    document = document,
+                    badge = "A",
+                    onClick = {
+                        SearchStatsPrefs.logClick(context, SourceType.SETTING.key, index)
+                        openSearchDocument(context, document)
+                    },
+                )
+            }
+        }
+        if (hasSearchGroups && contactMatches.isNotEmpty()) {
+            item(key = "source_header_contacts") {
+                SourceGroupHeader(label = "Kisiler", count = contactMatches.size)
+            }
+            itemsIndexed(items = contactMatches, key = { _, doc -> "contact_${doc.sourceId}" }) { index, document ->
+                SearchDocumentRow(
+                    document = document,
+                    badge = "K",
+                    onClick = {
+                        SearchStatsPrefs.logClick(context, SourceType.CONTACT.key, index)
+                        openSearchDocument(context, document)
+                    },
+                    showContactActions = true,
+                )
+            }
+        }
+        // P0.3: dosya kaynağı açık ama izin yoksa "0 sonuç" yerine izin kısayolu
+        if (hasSearchGroups && showFilesPermissionHint) {
+            item(key = "source_files_permission_hint") {
+                SourceGroupHeader(label = "Dosyalar", count = 0)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                arrayOf(
+                                    android.Manifest.permission.READ_MEDIA_IMAGES,
+                                    android.Manifest.permission.READ_MEDIA_VIDEO,
+                                    android.Manifest.permission.READ_MEDIA_AUDIO,
+                                )
+                            } else {
+                                arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                            }
+                            filesPermLaunch(permissions)
+                        }
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.home_search_files_permission_required),
+                        color = onSurface,
+                        fontSize = 14.sp,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+        if (hasSearchGroups && fileMatches.isNotEmpty()) {
+            item(key = "source_header_files") {
+                SourceGroupHeader(label = "Dosyalar", count = fileMatches.size)
+            }
+            itemsIndexed(items = fileMatches, key = { _, doc -> "file_${doc.sourceId}" }) { index, document ->
+                SearchDocumentRow(
+                    document = document,
+                    badge = "D",
+                    onClick = {
+                        SearchStatsPrefs.logClick(context, SourceType.FILE.key, index)
+                        openSearchDocument(context, document)
+                    },
                 )
             }
         }
