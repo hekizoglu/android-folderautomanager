@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 22: complexity 3. dalga — mission motoru + dispatcher muafiyeti)
+**Yapılanlar:**
+- `detekt.yml`: CyclomaticComplexMethod'a `ignoreSingleWhenExpression: true` eklendi — tek bir when'den oluşan dispatcher metotları (görev/rota eşleme tabloları) yapısal olarak dal sayısınca CC üretir; karmaşık mantık değiller. Bu, kod geneline 17 dispatcher girişini meşru şekilde baseline'dan çıkardı (MissionEngine.evaluate/progressKindForMission/isEligible, MissionSummaryUseCase.actionFor/titleRes dahil).
+- `MissionSummaryUseCase.compute` (~280 satır) küçültüldü: uygulama-limiti çözümü `resolveAppLimit`'e (Döngü G3b/M07 sözleşmesi korunarak), kategori hedef dengesi `computeCategoryGoalsBalance`'a taşındı.
+- Mission dosyalarının CC/LongMethod girişi 7 → 2. Kalan `compute` gövdesi ÖZELLİKLE baseline'da bırakıldı: bu metodu daha fazla bölmek yıldız-ödül yan etkilerini değiştirme riski taşır ve MissionSummaryUseCase'in birim testi YOK — önce test eklenmesi gerekir (öneri olarak notlandı).
+**Kanıt:** `testDebugUnitTest` → **1404 test, 0 fail, 0 hata**; `:app:detekt` BUILD SUCCESSFUL; baseline 2393 → **2377** (CyclomaticComplexMethod 79 → 62).
+**Sonraki:** (öneri) MissionSummaryUseCase için test yazıp compute'u tamamen bölme; DrawerSearchBar/DrawerAppList/DrawerRecentFavSection uzun gövdeleri.
+
 ## Döngü — 2026-08-22 (Tur 21: complexity 2. dalga — AllAppsDrawer parçalandı)
 **Yapılanlar:** Baseline'ın en yoğun dosyası AllAppsDrawer.kt (4 CC + 4 LongMethod) refactor edildi:
 - `AllAppsDrawer` orkestratörünün **CyclomaticComplexMethod durumu çözüldü**: görünüm tercihleri (bg alfa, bildirim metni, gri gün, ikon paketi, Pixel modu + SharedPreferences dinleyicisi) `rememberDrawerAppearancePrefs` composable'ına, arka plan `DrawerBackground`'a, filtre/sıralama dropdown'u (~90 satır) `DrawerFilterSortMenu`'ye taşındı.

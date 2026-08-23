@@ -28,6 +28,10 @@ comments:
 
 complexity:
   active: true
+  CyclomaticComplexMethod:
+    # Tek bir when ifadesinden oluşan dispatcher metotları (görev/rota eşleme tabloları)
+    # yapısal olarak dal sayısınca CC üretir; bunlar karmaşık mantık değildir (tur 22).
+    ignoreSingleWhenExpression: true
   LongMethod:
     threshold: 90
   LongParameterList:

@@ -140,68 +140,25 @@ class MissionSummaryUseCase @Inject constructor(
         // secilir ve HEMEN pin edilir (sonraki cagrilarda ayni paket kullanilsin diye) — aday
         // yoksa (esik altinda/kategori disi) pin edilecek bir sey YOKTUR, appLimitTargetMinutes
         // null kalir ve MissionEngine.isEligible() gorevi havuza almaz.
-        var pinnedAppLimitPackage = com.armutlu.apporganizer.utils.AppPrefs.getAppLimitTargetPackage(context, epochDay)
-        var appLimitUsageMinutesToday = snapshot.appLimitUsageMinutesToday
-        val appLimitTargetMinutes: Long? = if (pinnedAppLimitPackage != null) {
-            existingDailyInstances[MissionEngine.DAILY_APP_LIMIT]?.targetValue
-                ?: AppLimitCandidateSelector.calculateTarget(
-                    snapshot.appLimitCandidates.firstOrNull { it.packageName == pinnedAppLimitPackage }
-                        ?.dailyMinutesLast7Days ?: emptyList(),
-                    tempo,
-                )
-        } else {
-            val selected = AppLimitCandidateSelector.selectCandidate(snapshot.appLimitCandidates, tempo)
-            if (selected != null) {
-                // Dongu M07 sozlesmesi: awardStars=false (Ana ekran karti sessiz refresh) HICBIR
-                // DB/prefs YAN ETKISI YARATMAZ — bu yuzden pin YAZIMI SADECE awardStars=true iken
-                // yapilir (MissionsViewModel, kullanicinin ekrani actigi an). false cagrida aday
-                // yine de GORUNTULENIR (gecici, o cagriya ozel) ama SONRAKI cagrida FARKLI bir
-                // aday secilebilir — bu, DB'ye hicbir sey yazilmadigi surece kabul edilebilir
-                // (Ana ekran karti zaten "en guncel durumu" gosterir, sabitlik garantisi vermez).
-                if (awardStars) {
-                    com.armutlu.apporganizer.utils.AppPrefs.setAppLimitTargetPackage(context, epochDay, selected.packageName)
-                }
-                pinnedAppLimitPackage = selected.packageName
-                // Yeni pin: bugunku kullanim provider'da HENUZ bu paket icin okunmadi (o an
-                // pinlenmemisti). 0 dakika ile baslamak guvenlidir — gercek 0 (kullanim yok) ile
-                // veri-yok ayrimini bozmaz, cunku appLimitCandidates zaten izin VARKEN doldu
-                // (izin yoksa selectCandidate zaten null doner, bu dala hic girilmez).
-                appLimitUsageMinutesToday = 0L
-                selected.targetMinutes
-            } else {
-                null
-            }
-        }
+        // Dongu G3b — uygulama-spesifik ust sinir cozumu ayri fonksiyonda (tur 22).
+        val appLimitResolution = resolveAppLimit(
+            epochDay = epochDay,
+            existingDailyInstances = existingDailyInstances,
+            snapshot = snapshot,
+            tempo = tempo,
+            awardStars = awardStars,
+        )
+        val pinnedAppLimitPackage = appLimitResolution.pinnedPackage
+        val appLimitUsageMinutesToday = appLimitResolution.usageMinutesToday
+        val appLimitTargetMinutes = appLimitResolution.targetMinutes
 
         // P6 — WEEKLY_CATEGORY_BALANCE girdisi: aktif AUTO kategori hedeflerinin GERÇEK ZAMANLI
         // aşım durumu (WeeklyGoal.status DB alanı yalnız hafta sonunda SettlePreviousWeekAdaptiveGoalsUseCase
         // tarafından güncellenir — hafta içinde hep ACTIVE kalır, bu yüzden anlık aşımı
         // CategoryUsageSnapshotProvider'dan taze okumak gerekir). Kategori kimlikleri
         // MissionCheckInput'a TAŞINMAZ (U02) — sadece sayaç.
-        val categoryGoalsBalance = runCatching {
-            val currentWeekStart = weekBoundary.weekStartEpochDay ?: WeekUtils.currentWeekStartEpochDay()
-            val autoGoals = weeklyGoalDao.getAutoGoalsForWeek(currentWeekStart)
-            if (autoGoals.isEmpty()) {
-                null
-            } else {
-                val usageSnapshot = categoryUsageSnapshotProvider.capture()
-                var exceeded = 0
-                var unavailable = 0
-                autoGoals.forEach { goal ->
-                    val used = usageSnapshot.currentWeekMinutes(goal.categoryId)
-                    when {
-                        used == null -> unavailable++
-                        used > goal.targetMinutes -> exceeded++
-                    }
-                }
-                MissionEngine.CategoryGoalsBalanceInput(
-                    activeAutoGoalCount = autoGoals.size,
-                    goalsWithinTargetCount = autoGoals.size - exceeded - unavailable,
-                    goalsExceededCount = exceeded,
-                    goalsWithUnavailableDataCount = unavailable,
-                )
-            }
-        }.getOrNull()
+        // P6 — WEEKLY_CATEGORY_BALANCE girdisi ayri fonksiyonda (tur 22).
+        val categoryGoalsBalance = computeCategoryGoalsBalance(weekBoundary)
 
         val input = snapshot.toMissionCheckInput().copy(
             personalScreenTargetMinutes = personalScreenTarget,
@@ -382,6 +339,76 @@ class MissionSummaryUseCase @Inject constructor(
         }
         return context.getString(labelRes, durationText)
     }
+
+    /** Uygulama-spesifik üst sınır görevi çözüm sonucu (Döngü G3b). */
+    private data class AppLimitResolution(
+        val pinnedPackage: String?,
+        val usageMinutesToday: Long?,
+        val targetMinutes: Long?,
+    )
+
+    /**
+     * Uygulama-spesifik üst sınır girdilerini çözer: dönem boyunca sabit kalan pin'li paket
+     * kullanılır; pin yoksa yeni aday seçilir ve YALNIZ awardStars=true iken pinlenir
+     * (Döngü M07 sözleşmesi: sessiz refresh hiçbir DB/prefs yan etkisi yaratmaz).
+     */
+    private fun resolveAppLimit(
+        epochDay: Long,
+        existingDailyInstances: Map<String, MissionInstanceEntity>,
+        snapshot: MissionMetricSnapshot,
+        tempo: Double,
+        awardStars: Boolean,
+    ): AppLimitResolution {
+        val pinned = com.armutlu.apporganizer.utils.AppPrefs.getAppLimitTargetPackage(context, epochDay)
+        if (pinned != null) {
+            val target = existingDailyInstances[MissionEngine.DAILY_APP_LIMIT]?.targetValue
+                ?: AppLimitCandidateSelector.calculateTarget(
+                    snapshot.appLimitCandidates.firstOrNull { it.packageName == pinned }
+                        ?.dailyMinutesLast7Days ?: emptyList(),
+                    tempo,
+                )
+            return AppLimitResolution(pinned, snapshot.appLimitUsageMinutesToday, target)
+        }
+        val selected = AppLimitCandidateSelector.selectCandidate(snapshot.appLimitCandidates, tempo)
+            ?: return AppLimitResolution(null, snapshot.appLimitUsageMinutesToday, null)
+        if (awardStars) {
+            com.armutlu.apporganizer.utils.AppPrefs.setAppLimitTargetPackage(context, epochDay, selected.packageName)
+        }
+        // Yeni pin: bugünkü kullanım bu paket için henüz okunmadı → 0 dakika ile başlamak
+        // güvenlidir (izin yoksa selectCandidate null döner, bu dala hiç girilmez).
+        return AppLimitResolution(selected.packageName, 0L, selected.targetMinutes)
+    }
+
+    /**
+     * P6 — WEEKLY_CATEGORY_BALANCE girdisi: aktif AUTO kategori hedeflerinin gerçek zamanlı
+     * aşım durumu (WeeklyGoal.status yalnız hafta sonunda güncellenir; anlık aşım taze okunur).
+     * Hata durumunda null döner (önceki runCatching semantiği korunur).
+     */
+    private suspend fun computeCategoryGoalsBalance(weekBoundary: PeriodBoundary): MissionEngine.CategoryGoalsBalanceInput? =
+        runCatching {
+            val currentWeekStart = weekBoundary.weekStartEpochDay ?: WeekUtils.currentWeekStartEpochDay()
+            val autoGoals = weeklyGoalDao.getAutoGoalsForWeek(currentWeekStart)
+            if (autoGoals.isEmpty()) {
+                null
+            } else {
+                val usageSnapshot = categoryUsageSnapshotProvider.capture()
+                var exceeded = 0
+                var unavailable = 0
+                autoGoals.forEach { goal ->
+                    val used = usageSnapshot.currentWeekMinutes(goal.categoryId)
+                    when {
+                        used == null -> unavailable++
+                        used > goal.targetMinutes -> exceeded++
+                    }
+                }
+                MissionEngine.CategoryGoalsBalanceInput(
+                    activeAutoGoalCount = autoGoals.size,
+                    goalsWithinTargetCount = autoGoals.size - exceeded - unavailable,
+                    goalsExceededCount = exceeded,
+                    goalsWithUnavailableDataCount = unavailable,
+                )
+            }
+        }.getOrNull()
 
     private fun actionFor(id: String, appLimitTargetPackageName: String? = null): MissionAction = when (id) {
         MissionEngine.DAILY_CLASSIFICATION_CLEANUP -> MissionAction.OpenClassificationReview
