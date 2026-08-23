@@ -311,8 +311,6 @@
     <ID>ArgumentListWrapping:FolderContextMenuSheet.kt$(20.dp)</ID>
     <ID>ArgumentListWrapping:FolderContextMenuSheet.kt$(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))</ID>
     <ID>ArgumentListWrapping:FolderContextMenuSheet.kt$(folder.category.categoryName, color = onSurface, fontSize = 17.sp, fontWeight = FontWeight.Bold)</ID>
-    <ID>ArgumentListWrapping:FolderGridV2.kt$(index)</ID>
-    <ID>ArgumentListWrapping:FolderGridV2.kt$(onQuickLaunch)</ID>
     <ID>ArgumentListWrapping:FolderMergeRepository.kt$FolderMergeRepository$("Folder merge tx: $sourceCategoryId → $targetCategoryId, %d apps, op=$operationId", packageNames.size)</ID>
     <ID>ArgumentListWrapping:FolderPositionPickerSheet.kt$(0.3f)</ID>
     <ID>ArgumentListWrapping:FolderQuickLaunchResolverTest.kt$FolderQuickLaunchResolverTest$(packageName = pkg, appName = name, launchCount = launchCount, lastUsedTimestamp = lastUsed, isHidden = hidden)</ID>
@@ -864,7 +862,7 @@
     <ID>CyclomaticComplexMethod:EnsureCurrentWeekAdaptiveGoalsUseCase.kt$EnsureCurrentWeekAdaptiveGoalsUseCase$suspend fun execute()</ID>
     <ID>CyclomaticComplexMethod:FilesIndexer.kt$FilesIndexer$private fun loadFiles(): List&lt;SearchDocument&gt;</ID>
     <ID>CyclomaticComplexMethod:FolderFreeGrid.kt$@Composable fun FolderFreeGrid( apps: List&lt;AppInfo&gt;, categoryId: String, onClick: (AppInfo) -&gt; Unit, onLongClick: (AppInfo) -&gt; Unit, iconSize: Dp = 56.dp, labelColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.White, // Faz S4 — opsiyonel: verilirse sürükleme sırasında ekran kenarına yaklaşınca sayfa // otomatik kaydırılır. null (varsayılan) = eski davranış, hiçbir şey değişmez. pagerState: PagerState? = null, viewModel: FolderFreeGridViewModel = hiltViewModel(), )</ID>
-    <ID>CyclomaticComplexMethod:FolderGridV2.kt$private suspend fun androidx.compose.ui.input.pointer.PointerInputScope.folderCellGestures( cellHeightPx: Float, onQuickLaunch: () -&gt; Unit, onDragStart: () -&gt; Unit, onDrag: (Offset) -&gt; Unit, onDragEnd: () -&gt; Unit, onDragCancel: () -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:FolderGridV2.kt$private suspend fun androidx.compose.ui.input.pointer.PointerInputScope.folderRowGestures( rowHeightPx: Float, onQuickLaunch: () -&gt; Unit, onDragStart: () -&gt; Unit, onDrag: (Offset) -&gt; Unit, onDragEnd: () -&gt; Unit, onDragCancel: () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:FolderPositionPickerSheet.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable internal fun FolderPositionPickerSheet( allFolders: List&lt;AppFolder&gt;, currentIndex: Int, selectedIndex: Int, onSelectIndex: (Int) -&gt; Unit, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:FolderRenameDialog.kt$@Composable internal fun FolderRenameDialog( currentName: String, currentEmoji: String, currentColor: String = "", // Dongu G6 — Yildiz Ekonomisi kozmetik acilim: kilit durumu icin toplam ⭐. Varsayilan 0 // (cagiran taraf gecmediyse) TUM yeni setleri kilitli gosterir — GUVENLI varsayilan, mevcut // EMOJI_PICKER hicbir sekilde etkilenmez (kirmizi cizgi). totalStars: Int = 0, onDismiss: () -&gt; Unit, onSave: (name: String, emoji: String, color: String) -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:FolderScreen.kt$@Composable fun FolderScreen( viewModel: LauncherViewModel, onBack: () -&gt; Unit, )</ID>
@@ -955,10 +953,10 @@
     <ID>LongMethod:EditingCenterCard.kt$@Composable fun EditingCenterCard( state: EditingCenterState, onNavigateToClassificationReview: () -&gt; Unit = {}, onNavigateToFolderMerge: () -&gt; Unit = {}, onNavigateToAppCorrections: () -&gt; Unit = {}, onNavigateToPermissions: () -&gt; Unit = {}, onNavigateToStaleApps: () -&gt; Unit = {}, modifier: Modifier = Modifier, )</ID>
     <ID>LongMethod:FolderContextMenuSheet.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun FolderContextMenuSheet( folder: AppFolder, allFolders: List&lt;AppFolder&gt; = emptyList(), onDismiss: () -&gt; Unit, onOpenFolder: () -&gt; Unit, onOpenAllApps: () -&gt; Unit, onMove: ((newIndex: Int) -&gt; Unit)? = null, onDeleteFolder: ((categoryId: String) -&gt; Unit)? = null, )</ID>
     <ID>LongMethod:FolderFreeGrid.kt$@Composable fun FolderFreeGrid( apps: List&lt;AppInfo&gt;, categoryId: String, onClick: (AppInfo) -&gt; Unit, onLongClick: (AppInfo) -&gt; Unit, iconSize: Dp = 56.dp, labelColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.White, // Faz S4 — opsiyonel: verilirse sürükleme sırasında ekran kenarına yaklaşınca sayfa // otomatik kaydırılır. null (varsayılan) = eski davranış, hiçbir şey değişmez. pagerState: PagerState? = null, viewModel: FolderFreeGridViewModel = hiltViewModel(), )</ID>
-    <ID>LongMethod:FolderGridV2.kt$@Composable internal fun FolderPageV2( tiles: List&lt;FolderTileState&gt;, appsByPackage: Map&lt;String, AppInfo&gt;, onOpenFolder: (FolderTileState) -&gt; Unit, onQuickLaunch: (String) -&gt; Unit, onAppClick: (String) -&gt; Unit, onReorder: (from: Int, to: Int) -&gt; Unit, onAppLongClick: ((String) -&gt; Unit)? = null, textAlpha: Float = 1f, modifier: Modifier = Modifier, )</ID>
     <ID>LongMethod:FolderMergeReviewScreen.kt$@Composable fun FolderMergeReviewScreen( viewModel: FolderMergeViewModel, onNavigateBack: () -&gt; Unit, onApproveComplete: () -&gt; Unit, )</ID>
     <ID>LongMethod:FolderPositionPickerSheet.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable internal fun FolderPositionPickerSheet( allFolders: List&lt;AppFolder&gt;, currentIndex: Int, selectedIndex: Int, onSelectIndex: (Int) -&gt; Unit, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
     <ID>LongMethod:FolderRenameDialog.kt$@Composable internal fun FolderRenameDialog( currentName: String, currentEmoji: String, currentColor: String = "", // Dongu G6 — Yildiz Ekonomisi kozmetik acilim: kilit durumu icin toplam ⭐. Varsayilan 0 // (cagiran taraf gecmediyse) TUM yeni setleri kilitli gosterir — GUVENLI varsayilan, mevcut // EMOJI_PICKER hicbir sekilde etkilenmez (kirmizi cizgi). totalStars: Int = 0, onDismiss: () -&gt; Unit, onSave: (name: String, emoji: String, color: String) -&gt; Unit, )</ID>
+    <ID>LongMethod:FolderRowV2.kt$@Composable internal fun FolderRowV2( tile: FolderTileState, previewApps: List&lt;AppInfo&gt;, onOpen: () -&gt; Unit, onAppClick: (String) -&gt; Unit, onAppLongClick: ((String) -&gt; Unit)? = null, textAlpha: Float = 1f, lifted: Boolean = false, dropHighlight: Boolean = false, interactionsEnabled: Boolean = true, modifier: Modifier = Modifier, )</ID>
     <ID>LongMethod:FolderScreen.kt$@Composable fun FolderScreen( viewModel: LauncherViewModel, onBack: () -&gt; Unit, )</ID>
     <ID>LongMethod:FolderSuggestionsScreen.kt$@Composable fun FolderSuggestionsScreen( viewModel: AppListViewModel, onNavigateBack: () -&gt; Unit, )</ID>
     <ID>LongMethod:FolderTile.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun FolderTile( folder: AppFolder, onClick: () -&gt; Unit, onLongClick: (() -&gt; Unit)? = null, onSwipeUp: ((String) -&gt; Unit)? = null, onNotificationTap: ((String) -&gt; Unit)? = null, modifier: Modifier = Modifier, textAlpha: Float = 1f, folderSizeDp: Int = 72, labelColor: Color = Color.White, customName: String? = null, customEmoji: String? = null, customColor: String? = null, folderCountVisible: Boolean = true, folderSwipeHintEnabled: Boolean = true, notifTextEnabled: Boolean = false, unusedInfoEnabled: Boolean = false, folderShape: String = com.armutlu.apporganizer.utils.AppPrefs.DEFAULT_FOLDER_SHAPE, folderBadgeEnabled: Boolean = false, pixelLookEnabled: Boolean = false, folderGlassBorderEnabled: Boolean = true, folderSortMode: AllAppsSortMode = AllAppsSortMode.ALPHA, )</ID>
@@ -1029,7 +1027,8 @@
     <ID>LongParameterList:DigitalPulseEngineTest.kt$DigitalPulseEngineTest$( pkg: String, categoryId: String, usageCount: Long = 10L, lastUsedTimestamp: Long = now - 1 * day, installTime: Long = now - 100 * day, firstInstalledTime: Long = now - 100 * day, isSystemApp: Boolean = false, isHidden: Boolean = false, )</ID>
     <ID>LongParameterList:FirebaseConnectionTester.kt$FirebaseConnectionTester$( testedAt: Long, configurationOk: Boolean = false, networkAvailable: Boolean = false, firebaseRoundTripOk: Boolean = false, analyticsQueued: Boolean = false, crashlyticsReady: Boolean = false, performanceReady: Boolean = false, safeErrorCode: String? = null, )</ID>
     <ID>LongParameterList:FolderFreeGrid.kt$( apps: List&lt;AppInfo&gt;, categoryId: String, onClick: (AppInfo) -&gt; Unit, onLongClick: (AppInfo) -&gt; Unit, iconSize: Dp = 56.dp, labelColor: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.White, // Faz S4 — opsiyonel: verilirse sürükleme sırasında ekran kenarına yaklaşınca sayfa // otomatik kaydırılır. null (varsayılan) = eski davranış, hiçbir şey değişmez. pagerState: PagerState? = null, viewModel: FolderFreeGridViewModel = hiltViewModel(), )</ID>
-    <ID>LongParameterList:FolderGridV2.kt$( tiles: List&lt;FolderTileState&gt;, appsByPackage: Map&lt;String, AppInfo&gt;, onOpenFolder: (FolderTileState) -&gt; Unit, onQuickLaunch: (String) -&gt; Unit, onAppClick: (String) -&gt; Unit, onReorder: (from: Int, to: Int) -&gt; Unit, onAppLongClick: ((String) -&gt; Unit)? = null, textAlpha: Float = 1f, modifier: Modifier = Modifier, )</ID>
+    <ID>LongParameterList:FolderGridV2.kt$( tiles: List&lt;FolderTileState&gt;, appsByPackage: Map&lt;String, AppInfo&gt;, onOpenFolder: (FolderTileState) -&gt; Unit, onQuickLaunch: (String) -&gt; Unit, onAppClick: (String) -&gt; Unit, onReorder: (from: Int, to: Int) -&gt; Unit, onAppLongClick: ((String) -&gt; Unit)? = null, textAlpha: Float = 1f, pageSize: Int = 8, modifier: Modifier = Modifier, )</ID>
+    <ID>LongParameterList:FolderRowV2.kt$( tile: FolderTileState, previewApps: List&lt;AppInfo&gt;, onOpen: () -&gt; Unit, onAppClick: (String) -&gt; Unit, onAppLongClick: ((String) -&gt; Unit)? = null, textAlpha: Float = 1f, lifted: Boolean = false, dropHighlight: Boolean = false, interactionsEnabled: Boolean = true, modifier: Modifier = Modifier, )</ID>
     <ID>LongParameterList:FolderScreen.kt$( previousFolder: AppFolder, nextFolder: AppFolder, context: android.content.Context, onSurface: Color, accent: Color, modifier: Modifier = Modifier, onPrevious: () -&gt; Unit, onNext: () -&gt; Unit, )</ID>
     <ID>LongParameterList:FolderTile.kt$( folder: AppFolder, onClick: () -&gt; Unit, onLongClick: (() -&gt; Unit)? = null, onSwipeUp: ((String) -&gt; Unit)? = null, onNotificationTap: ((String) -&gt; Unit)? = null, modifier: Modifier = Modifier, textAlpha: Float = 1f, folderSizeDp: Int = 72, labelColor: Color = Color.White, customName: String? = null, customEmoji: String? = null, customColor: String? = null, folderCountVisible: Boolean = true, folderSwipeHintEnabled: Boolean = true, notifTextEnabled: Boolean = false, unusedInfoEnabled: Boolean = false, folderShape: String = com.armutlu.apporganizer.utils.AppPrefs.DEFAULT_FOLDER_SHAPE, folderBadgeEnabled: Boolean = false, pixelLookEnabled: Boolean = false, folderGlassBorderEnabled: Boolean = true, folderSortMode: AllAppsSortMode = AllAppsSortMode.ALPHA, )</ID>
     <ID>LongParameterList:FolderTileV2.kt$( tile: FolderTileState, previewApps: List&lt;AppInfo&gt;, onOpen: () -&gt; Unit, onAppClick: (String) -&gt; Unit, onAppLongClick: ((String) -&gt; Unit)? = null, textAlpha: Float = 1f, modifier: Modifier = Modifier, lifted: Boolean = false, dropHighlight: Boolean = false, interactionsEnabled: Boolean = true, )</ID>
@@ -1284,7 +1283,6 @@
     <ID>MagicNumber:FolderContextMenuSheet.kt$0.7f</ID>
     <ID>MagicNumber:FolderFreeGrid.kt$0.85f</ID>
     <ID>MagicNumber:FolderGridV2.kt$0.35f</ID>
-    <ID>MagicNumber:FolderGridV2.kt$4</ID>
     <ID>MagicNumber:FolderMergeCandidateScorer.kt$FolderMergeCandidateScorer$4</ID>
     <ID>MagicNumber:FolderMergeCandidateScorer.kt$FolderMergeCandidateScorer$6</ID>
     <ID>MagicNumber:FolderMergeReviewScreen.kt$20</ID>
@@ -1302,6 +1300,7 @@
     <ID>MagicNumber:FolderRenameDialog.kt$0.2f</ID>
     <ID>MagicNumber:FolderRenameDialog.kt$0.35f</ID>
     <ID>MagicNumber:FolderRenameDialog.kt$0.6f</ID>
+    <ID>MagicNumber:FolderRowV2.kt$1.02f</ID>
     <ID>MagicNumber:FolderScreen.kt$0.6f</ID>
     <ID>MagicNumber:FolderScreen.kt$1000</ID>
     <ID>MagicNumber:FolderScreen.kt$24</ID>
@@ -2057,6 +2056,7 @@
     <ID>NestedBlockDepth:UsageStatsHelper.kt$UsageStatsHelper$fun getWeightedScores(context: Context, days: Int = 28): Map&lt;String, Float&gt;</ID>
     <ID>NoBlankLineBeforeRbrace:AllAppsDrawer.kt$ </ID>
     <ID>NoConsecutiveBlankLines:AllAppsDrawer.kt$ </ID>
+    <ID>NoUnusedImports:FolderGridV2.kt$com.armutlu.apporganizer.presentation.ui.launcher.homev2.FolderGridV2.kt</ID>
     <ID>ParameterListWrapping:AppListViewModel.kt$AppListViewModel$(selectedPackageNames: Set&lt;String&gt; = _suggestedSimilarApps.value.map { it.packageName }.toSet())</ID>
     <ID>ParameterListWrapping:AppPrefs.kt$AppPrefs$(context: Context)</ID>
     <ID>ParameterListWrapping:AppPrefs.kt$AppPrefs$(context: Context, count: Int)</ID>
@@ -2182,6 +2182,7 @@
     <ID>UnusedParameter:AppAnalytics.kt$AppAnalytics$source: String</ID>
     <ID>UnusedParameter:AppOrganizerDashboardScreen.kt$DashboardStats.Companion$sevenDaysMs: Long</ID>
     <ID>UnusedParameter:DockEditSheet.kt$dockDefaultCategory: String = ""</ID>
+    <ID>UnusedParameter:FolderGridV2.kt$pageSize: Int = 8</ID>
     <ID>UnusedParameter:FolderMergeScoreEvent.kt$FolderMergeScoreEvent.Companion$targetCategoryId: String</ID>
     <ID>UnusedParameter:FolderMergeViewModel.kt$FolderMergeViewModel$categories: List&lt;Category&gt;</ID>
     <ID>UnusedParameter:FolderTile.kt$labelColor: Color = Color.White</ID>

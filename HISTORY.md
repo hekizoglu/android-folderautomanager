@@ -1,5 +1,15 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-23 (Tur 27: klasörler sayfası yatay satır düzeni)
+**Yapılanlar (kullanıcı isteği):** Klasörler sayfası grid'den YATAY SATIR düzenine geçti — her klasör sayfaya tam genişlik yayılır:
+- Yeni `FolderRowV2`: sol tarafta emoji rozeti + klasör adı (küçültüldü, 13sp, tek satır, ellipsis) + uygulama sayısı; ortada klasör İÇERİĞİ (uygulama ikonları satır boyunca ADAPTİF sayıda — genişlik arttıkça daha çok ikon sığar); sağda bildirim rozeti + açma oku. Klasör adı küçülürken içerik görünümü öne çıktı.
+- `FolderPageV2` yeniden yazıldı: tek sayfa satır listesi (iç pager kaldırıldı — dış pager HomeV2Screen'de zaten sayfaları chunk'lıyor, çift sayfalama önlendi). Satır yüksekliği sabit 88dp (hit-test matematiği için).
+- Jestler satıra uyarlandı: dokun → aç; hızlı yukarı kaydır → hızlı başlat; uzun bas + DİKEY sürükle → sıra taşı (hedef satır vurgulanır, global indeksler HomeV2Screen'de eşlenir). `hitTestRowIndex` tek sütun matematiği (birim testli).
+- Önerim eklendi: adaptif ikon sayısı (`(maxWidth+gap)/(iconSize+gap)`) — geniş ekranlarda klasör içeriği daha zengin görünür.
+- Testler güncellendi: FolderDragTest satır matematiğine, HomeV2VisualUiTest dikey sürükleme jestine uyarlandı.
+**Kanıt:** `testDebugUnitTest` → **1409 test, 0 fail, 0 hata** (homev2 alt paketi 43/43); `:app:detekt` BUILD SUCCESSFUL.
+**Sonraki:** cihazda satır düzeni görsel doğrulaması; klasör sürükleme sayfa-arası taşıma (isteğe bağlı).
+
 ## Döngü — 2026-08-22 (Tur 26: 5. dalga — parametre daraltma + çekmece hızlı erişim wiring'i)
 **Yapılanlar:**
 - `DrawerQuickAccessConfig` data class eklendi: favoriler/son kullanılanlar/bildirim alanlar/bugün yüklenenler veri+tamah tercihleri tek nesnede. AllAppsDrawer, DrawerAppList ve drawerQuickAccessSections imzaları 9'ar parametre daraldı (config nesnesiyle).

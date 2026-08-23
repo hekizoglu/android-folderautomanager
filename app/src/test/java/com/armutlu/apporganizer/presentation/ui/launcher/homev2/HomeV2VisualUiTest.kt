@@ -293,7 +293,7 @@ class HomeV2VisualUiTest {
     }
 
     @Test
-    fun `long press and drag right reorders folders`() {
+    fun `long press and drag down reorders folder rows`() {
         var reorder: Pair<Int, Int>? = null
         rule.setContent {
             MaterialTheme {
@@ -309,20 +309,20 @@ class HomeV2VisualUiTest {
         }
         rule.waitForIdle()
 
-        val centerX = 16f + 158f / 2f
-        // Başlık bölgesi (önizleme ikonları dokunuşu üstlenmesin)
-        val headerY = 20f
+        val centerX = 180f
+        // Satır düzeni: ilk satırın üst bölgesine dokun (ikonlar dokunuşu üstlenmesin)
+        val rowTopY = 16f
         // Jest zamanlaması: performTouchInput İÇİNDE olay zamanları otomatik +16ms
         // artar (mainClock.advanceTimeBy etki etmez); uzun basış simülasyonu için
         // down / bekleme / devam AYRI çağrılarda yapılır (Compose'un kendi test deseni).
-        rule.onRoot().performTouchInput { down(Offset(centerX, headerY)) }
+        rule.onRoot().performTouchInput { down(Offset(centerX, rowTopY)) }
         rule.mainClock.advanceTimeBy(1200)
         rule.onRoot().performTouchInput { moveBy(Offset(1f, 1f)) } // uzun basış tetiklenir
         rule.onRoot().performTouchInput {
-            // Bir hücre sağa sürükle (slop aşılır → REORDER)
-            moveBy(Offset(40f, 0f))
-            moveBy(Offset(60f, 0f))
-            moveBy(Offset(70f, 0f))
+            // Bir satır aşağı sürükle (slop aşılır → REORDER)
+            moveBy(Offset(0f, 40f))
+            moveBy(Offset(0f, 60f))
+            moveBy(Offset(0f, 70f))
             up()
         }
         rule.waitForIdle()

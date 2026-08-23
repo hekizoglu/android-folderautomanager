@@ -5,13 +5,13 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,18 +29,21 @@ import androidx.compose.ui.unit.dp
 import com.armutlu.apporganizer.domain.models.AppInfo
 import kotlin.math.ceil
 
-/** Hücre yüksekliği sabittir — sürükle-sırala hit-test matematiği bunu gerektirir. */
-internal val FOLDER_CELL_HEIGHT = 112.dp
+/** Satır yüksekliği sabittir — sürükle-sırala hit-test matematiği bunu gerektirir. */
+internal val FOLDER_ROW_HEIGHT = 88.dp
+internal val FOLDER_CELL_HEIGHT = FOLDER_ROW_HEIGHT
 internal const val FOLDER_GRID_SPACING_DP = 8f
 internal const val FOLDER_GRID_PADDING_DP = 12f
 
 /**
- * Tek klasör sayfası — sabit hücreli manuel grid.
+ * Tek klasör sayfası — her klasör tam genişlik YATAY SATIR olarak render edilir.
+ * Sayfa başına [pageSize] satır sığar; fazlası yatay pager ile sayfalara bölünür.
  *
- * Jestler (hücre başına TEK pointerInput, çakışma yok):
+ * Jestler (satır başına TEK pointerInput, çakışma yok):
  *  - Dokun → klasörü aç
- *  - Basılı tut + sürükle → SIRA TAŞI (hedef kart vurgulanır, bırakınca kalıcı sıralama)
+ *  - Basılı tut + dikey sürükle → SIRA TAŞI (hedef satır vurgulanır, bırakınca kalıcı sıralama)
  *  - Hızlı yukarı kaydır → hızlı başlat (klasörün en sık açılan uygulaması)
+ * onReorder GLOBAL indekslerle çağrılır (sayfa ofseti içeride eklenir).
  */
 @Composable
 internal fun FolderPageV2(
@@ -52,111 +55,97 @@ internal fun FolderPageV2(
     onReorder: (from: Int, to: Int) -> Unit,
     onAppLongClick: ((String) -> Unit)? = null,
     textAlpha: Float = 1f,
+    pageSize: Int = 8,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val columns = (maxWidth / 168.dp).toInt().coerceIn(1, 4)
-        val density = LocalDensity.current
-        val spacingPx = with(density) { FOLDER_GRID_SPACING_DP.dp.toPx() }
-        val paddingPx = with(density) { FOLDER_GRID_PADDING_DP.dp.toPx() }
-        val cellHeightPx = with(density) { FOLDER_CELL_HEIGHT.toPx() }
-        val gridWidthPx = with(density) { maxWidth.toPx() }
-        val cellWidthPx = (gridWidthPx - 2 * paddingPx - (columns - 1) * spacingPx) / columns
+    // NOT: Klasör sayfaları HomeV2Screen'deki DIŞ pager tarafından chunk'lanır; bu
+    // fonksiyon tek bir sayfanın satırlarını render eder (iç pager YOK, çift
+    // sayfalama olmaz). onReorder sayfa-içi indekslerle çağrılır; global ofseti
+    // çağıran (HomeV2Screen) ekler.
+    val density = LocalDensity.current
+    val rowHeightPx = with(density) { FOLDER_ROW_HEIGHT.toPx() }
+    val spacingPx = with(density) { FOLDER_GRID_SPACING_DP.dp.toPx() }
 
-        var dragIndex by remember { mutableStateOf<Int?>(null) }
-        var dragOffset by remember { mutableStateOf(Offset.Zero) }
-        var dropTarget by remember { mutableStateOf<Int?>(null) }
-        val haptic = LocalHapticFeedback.current
+    var dragIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var dropTarget by remember { mutableStateOf<Int?>(null) }
+    val haptic = LocalHapticFeedback.current
 
-        val rows = tiles.chunked(columns)
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = FOLDER_GRID_PADDING_DP.dp),
-        ) {
-            rows.forEachIndexed { rowIndex, rowTiles ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    rowTiles.forEachIndexed { colIndex, tile ->
-                        val index = rowIndex * columns + colIndex
-                        val isDragged = dragIndex == index
-                        Box(
-                            modifier = Modifier
-                                .width(with(density) { cellWidthPx.toDp() })
-                                .height(FOLDER_CELL_HEIGHT)
-                                .graphicsLayer {
-                                    if (isDragged) {
-                                        translationX = dragOffset.x
-                                        translationY = dragOffset.y
-                                    }
-                                }
-                                .pointerInput(index, tiles.size, columns) {
-                                    folderCellGestures(
-                                        cellHeightPx = cellHeightPx,
-                                        onQuickLaunch = { tiles.getOrNull(index)?.quickLaunchPackage?.let(onQuickLaunch) },
-                                        onDragStart = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            dragIndex = index
-                                            dragOffset = Offset.Zero
-                                            dropTarget = null
-                                        },
-                                        onDrag = { delta ->
-                                            dragOffset += delta
-                                            dropTarget = hitTestFolderIndex(
-                                                fromIndex = index,
-                                                offset = dragOffset,
-                                                tileCount = tiles.size,
-                                                columns = columns,
-                                                cellWidthPx = cellWidthPx,
-                                                cellHeightPx = cellHeightPx,
-                                                spacingPx = spacingPx,
-                                            )
-                                        },
-                                        onDragEnd = {
-                                            val from = dragIndex
-                                            val to = dropTarget
-                                            dragIndex = null
-                                            dragOffset = Offset.Zero
-                                            dropTarget = null
-                                            if (from != null && to != null && from != to) onReorder(from, to)
-                                        },
-                                        onDragCancel = {
-                                            dragIndex = null
-                                            dragOffset = Offset.Zero
-                                            dropTarget = null
-                                        },
-                                    )
-                                },
-                        ) {
-                            FolderTileV2(
-                                tile = tile,
-                                previewApps = tile.previewPackages.mapNotNull { appsByPackage[it] },
-                                onOpen = { onOpenFolder(tile) },
-                                onAppClick = onAppClick,
-                                onAppLongClick = onAppLongClick,
-                                textAlpha = textAlpha,
-                                lifted = isDragged,
-                                dropHighlight = dropTarget == index && dragIndex != null && dragIndex != index,
-                                interactionsEnabled = dragIndex == null,
-                            )
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = FOLDER_GRID_PADDING_DP.dp, vertical = 4.dp),
+    ) {
+        tiles.forEachIndexed { rowIndex, tile ->
+            val isDragged = dragIndex == rowIndex
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(FOLDER_ROW_HEIGHT)
+                    .graphicsLayer {
+                        if (isDragged) {
+                            translationX = dragOffset.x
+                            translationY = dragOffset.y
                         }
-                        if (colIndex < columns - 1) Spacer(Modifier.width(FOLDER_GRID_SPACING_DP.dp))
                     }
-                }
-                if (rowIndex < rows.lastIndex) Spacer(Modifier.height(FOLDER_GRID_SPACING_DP.dp))
+                    .pointerInput(rowIndex, tiles.size) {
+                        folderRowGestures(
+                            rowHeightPx = rowHeightPx,
+                            onQuickLaunch = { tile.quickLaunchPackage?.let(onQuickLaunch) },
+                            onDragStart = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                dragIndex = rowIndex
+                                dragOffset = Offset.Zero
+                                dropTarget = null
+                            },
+                            onDrag = { delta ->
+                                dragOffset += delta
+                                dropTarget = hitTestRowIndex(
+                                    fromIndex = rowIndex,
+                                    offsetY = dragOffset.y,
+                                    rowCount = tiles.size,
+                                    rowHeightPx = rowHeightPx,
+                                    spacingPx = spacingPx,
+                                )
+                            },
+                            onDragEnd = {
+                                val from = dragIndex
+                                val to = dropTarget
+                                dragIndex = null
+                                dragOffset = Offset.Zero
+                                dropTarget = null
+                                if (from != null && to != null && from != to) onReorder(from, to)
+                            },
+                            onDragCancel = {
+                                dragIndex = null
+                                dragOffset = Offset.Zero
+                                dropTarget = null
+                            },
+                        )
+                    },
+            ) {
+                FolderRowV2(
+                    tile = tile,
+                    previewApps = tile.previewPackages.mapNotNull { appsByPackage[it] },
+                    onOpen = { onOpenFolder(tile) },
+                    onAppClick = onAppClick,
+                    onAppLongClick = onAppLongClick,
+                    textAlpha = textAlpha,
+                    lifted = isDragged,
+                    dropHighlight = dropTarget == rowIndex && dragIndex != null && dragIndex != rowIndex,
+                    interactionsEnabled = dragIndex == null,
+                )
+            }
+            if (rowIndex < tiles.lastIndex) {
+                Spacer(Modifier.height(FOLDER_GRID_SPACING_DP.dp))
             }
         }
     }
 }
 
-/**
- * Hücre jestlerini TEK elde toplayan coroutine:
- * 1) Parmak slop'u AŞMADAN uzun basış süresi dolarsa → SIRA TAŞIMA modu (hareket tüketilir).
- * 2) Uzun basış dolmadan hareket slop'u aşarsa → HIZLI BAŞLAT modu (yalnız yukarı mesafe
- *    ölçülür; eşik aşılırsa bırakışta hızlı başlat tetiklenir).
- * Kısa dokunmalar tüketilmez → Card.onClick klasörü açar.
- */
-private suspend fun androidx.compose.ui.input.pointer.PointerInputScope.folderCellGestures(
-    cellHeightPx: Float,
+/** Tek satır için jestler: hızlı yukarı = hızlı başlat, uzun bas + sürükle = sıra taşı. */
+private suspend fun androidx.compose.ui.input.pointer.PointerInputScope.folderRowGestures(
+    rowHeightPx: Float,
     onQuickLaunch: () -> Unit,
     onDragStart: () -> Unit,
     onDrag: (Offset) -> Unit,
@@ -165,33 +154,29 @@ private suspend fun androidx.compose.ui.input.pointer.PointerInputScope.folderCe
 ) {
     val slop = viewConfiguration.touchSlop
     val longPressTimeout = viewConfiguration.longPressTimeoutMillis
-
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
         var mode = GESTURE_NONE
         var longPressFired = false
         var total = Offset.Zero
         var totalUp = 0f
-
         while (true) {
             val event = awaitPointerEvent()
             val change = event.changes.firstOrNull { it.id == down.id }
             if (change == null) {
-                // Parmak izi kayboldu — iptal
                 if (mode == GESTURE_REORDER) onDragCancel()
                 break
             }
             if (!change.pressed) {
                 when (mode) {
                     GESTURE_REORDER -> onDragEnd()
-                    GESTURE_QUICK -> if (totalUp > cellHeightPx * 0.35f) onQuickLaunch()
+                    GESTURE_QUICK -> if (totalUp > rowHeightPx * 0.35f) onQuickLaunch()
                 }
                 break
             }
             val delta = change.positionChange()
             total += delta
             if (delta.y < 0) totalUp += -delta.y
-
             when (mode) {
                 GESTURE_NONE -> {
                     val heldLongEnough = change.uptimeMillis - down.uptimeMillis >= longPressTimeout
@@ -220,48 +205,32 @@ private suspend fun androidx.compose.ui.input.pointer.PointerInputScope.folderCe
     }
 }
 
-private const val GESTURE_NONE = 0
-private const val GESTURE_REORDER = 1
-private const val GESTURE_QUICK = 2
-
-/**
- * Sürükleme sırasındaki hedef kart indeksini hesaplar — SAF fonksiyon, birim testli.
- * Sürüklenen kartın MERKEZİ + ofset hangi hücreye denk geliyorsa hedef odur.
- */
-internal fun hitTestFolderIndex(
+/** Dikey sürüklemede hedef satır indeksi (tek sütun). */
+internal fun hitTestRowIndex(
     fromIndex: Int,
-    offset: Offset,
-    tileCount: Int,
-    columns: Int,
-    cellWidthPx: Float,
-    cellHeightPx: Float,
+    offsetY: Float,
+    rowCount: Int,
+    rowHeightPx: Float,
     spacingPx: Float,
 ): Int? {
-    if (tileCount <= 0 || columns <= 0) return null
-    val fromCol = fromIndex % columns
-    val fromRow = fromIndex / columns
-    val centerX = fromCol * (cellWidthPx + spacingPx) + cellWidthPx / 2f + offset.x
-    val centerY = fromRow * (cellHeightPx + spacingPx) + cellHeightPx / 2f + offset.y
-    val col = ((centerX) / (cellWidthPx + spacingPx)).toInt().coerceIn(0, columns - 1)
-    val rowCount = ceil(tileCount.toFloat() / columns).toInt()
-    val row = ((centerY) / (cellHeightPx + spacingPx)).toInt().coerceIn(0, rowCount - 1)
-    val target = (row * columns + col).coerceIn(0, tileCount - 1)
-    return target
+    if (rowCount <= 0) return null
+    val centerY = fromIndex * (rowHeightPx + spacingPx) + rowHeightPx / 2f + offsetY
+    val row = (centerY / (rowHeightPx + spacingPx)).toInt().coerceIn(0, rowCount - 1)
+    return row
 }
 
-/**
- * Sayfa başına klasör sayfası adedini sütun sayısına göre yuvarlar (test edilebilir saf yardımcı).
- */
+internal const val GESTURE_NONE = 0
+internal const val GESTURE_REORDER = 1
+internal const val GESTURE_QUICK = 2
+
+/** Sayfa başına klasör sayfası adedini sütun sayısına göre yuvarlar (test uyumu için korunur). */
 internal fun folderChunks(folders: List<FolderTileState>, pageSize: Int, columns: Int): List<List<FolderTileState>> {
     if (folders.isEmpty() || pageSize <= 0 || columns <= 0) return emptyList()
     val rows = ceil(pageSize.toDouble() / columns).toInt().coerceAtLeast(1)
     return folders.chunked(rows * columns)
 }
 
-/**
- * Bir öğeyi listede `from` konumundan `to` konumuna taşır — SAF fonksiyon, birim testli.
- * Geçersiz indekslerde veya from==to'da liste DEĞİŞMEDEN döner (sürükle-bırak no-op güvenliği).
- */
+/** Liste öğesini from'dan to'ya taşır (saf fonksiyon, birim testli). */
 internal fun <T> moveItem(list: List<T>, from: Int, to: Int): List<T> {
     if (from == to || from !in list.indices || to !in list.indices) return list
     val mutable = list.toMutableList()
