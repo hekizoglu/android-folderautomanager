@@ -1,5 +1,13 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 21: complexity 2. dalga — AllAppsDrawer parçalandı)
+**Yapılanlar:** Baseline'ın en yoğun dosyası AllAppsDrawer.kt (4 CC + 4 LongMethod) refactor edildi:
+- `AllAppsDrawer` orkestratörünün **CyclomaticComplexMethod durumu çözüldü**: görünüm tercihleri (bg alfa, bildirim metni, gri gün, ikon paketi, Pixel modu + SharedPreferences dinleyicisi) `rememberDrawerAppearancePrefs` composable'ına, arka plan `DrawerBackground`'a, filtre/sıralama dropdown'u (~90 satır) `DrawerFilterSortMenu`'ye taşındı.
+- Telemetri kararları saf fonksiyonlara çıkarıldı: `searchResultBucket`, `searchSourceMix`, `shouldShowWebFallback` (AllAppsDrawerUtils.kt) — her biri birim testli (+3 test, DrawerLogicTest).
+- Kalan CC/LongMethod (DrawerAppList, DrawerSearchBar, DrawerRecentFavSection) 3. dalgaya bırakıldı; baseline'da donuk.
+**Kanıt:** `testDebugUnitTest` → **1404 test, 0 fail, 0 hata** (19 skipped); `:app:detekt` BUILD SUCCESSFUL; baseline 2397 → **2393** (AllAppsDrawer CC 4 → 3, orkestratör CC'si tamamen çözüldü).
+**Sonraki:** complexity 3. dalga (DrawerSearchBar/DrawerAppList/DrawerRecentFavSection + MissionEngine/MissionSummaryUseCase).
+
 ## Döngü — 2026-08-22 (Tur 20: complexity borcu refactor'ü — ilk dalga)
 **Yapılanlar:** Baseline'daki en yoğun hedeflerden DiagnosticsReportManager.kt refactor edildi:
 - `aiDiagnosticIssues` (~95 satır, CC+LongMethod) → 7 küçük saf fonksiyona bölündü: classificationIssues, homeIntelligenceIssues, notificationFreshnessIssue, workerIssues, crashPresenceIssue, postNotificationsIssue + birleştirici. Sıra ve içerik birebir korundu.

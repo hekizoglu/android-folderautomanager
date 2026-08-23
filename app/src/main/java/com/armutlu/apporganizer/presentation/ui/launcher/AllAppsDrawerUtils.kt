@@ -465,3 +465,32 @@ internal fun rememberDrawerData(
 
     return DrawerComputedData(sortedApps, grouped, sidebarEntries, quickFilterCounts)
 }
+
+// ── Çekmece telemetri/fallback kararları (tur 21: AllAppsDrawer'dan çıkarılan saf mantık) ──
+
+/** Arama sonucu toplam isabet sayısı → telemetri kovası (saf fonksiyon, birim testli). */
+internal fun searchResultBucket(totalHits: Int): com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket =
+    when (totalHits) {
+        0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ZERO
+        in 1..5 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ONE_TO_FIVE
+        in 6..20 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.SIX_TO_TWENTY
+        else -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.TWENTY_ONE_PLUS
+    }
+
+/** Arama kaynak karışımı → telemetri mix'i (saf fonksiyon, birim testli).
+ *  appHits: uygulama isabeti, categoryHits: kategori adı isabeti,
+ *  nonAppHits: kategori + SearchDocument (ayar/kişi/dosya) toplamı. */
+internal fun searchSourceMix(
+    appHits: Int,
+    categoryHits: Int,
+    nonAppHits: Int,
+): com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix = when {
+    appHits > 0 && nonAppHits == 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.APPS_ONLY
+    appHits > 0 || categoryHits > 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.MIXED
+    nonAppHits > 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.FILES_ONLY
+    else -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.OTHER
+}
+
+/** Web/Play Store fallback gösterim kararı (saf fonksiyon, birim testli). */
+internal fun shouldShowWebFallback(enabled: Boolean, trimmedQuery: String, hasSearchGroups: Boolean): Boolean =
+    enabled && trimmedQuery.length >= 2 && !hasSearchGroups

@@ -213,77 +213,17 @@ private fun DrawerSearchBar(
             }
         }
         if (!chipRowsEnabled) {
-            var filterMenuOpen by remember { mutableStateOf(false) }
-            Box {
-                IconButton(
-                    onClick = { filterMenuOpen = true },
-                    modifier = Modifier.size(40.dp),
-                ) {
-                    Icon(
-                        Icons.Default.Tune,
-                        stringResource(R.string.drawer_filter_menu_content_description),
-                        tint = textSecondary,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-                DropdownMenu(expanded = filterMenuOpen, onDismissRequest = { filterMenuOpen = false }) {
-                    Text(
-                        stringResource(R.string.drawer_filter_menu_section_title),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = textSecondary,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    )
-                    quickFilterLabels.forEachIndexed { idx, label ->
-                        val active = quickFilter == idx
-                        DropdownMenuItem(
-                            text = { Text(label, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal) },
-                            leadingIcon = if (active) {
-                                { Icon(Icons.Default.Check, null, tint = secondary, modifier = Modifier.size(18.dp)) }
-                            } else {
-                                null
-                            },
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onQuickFilterChange(idx)
-                                AppPrefs.setAllAppsQuickFilter(context, idx)
-                                filterMenuOpen = false
-                            },
-                        )
-                    }
-                    HorizontalDivider()
-                    Text(
-                        stringResource(R.string.drawer_sort_menu_section_title),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = textSecondary,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    )
-                    listOf(AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
-                        .forEach { baseMode ->
-                            val active = sortMode == baseMode || sortMode == baseMode.opposite()
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label,
-                                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                                    )
-                                },
-                                leadingIcon = if (active) {
-                                    { Icon(Icons.Default.Check, null, tint = secondary, modifier = Modifier.size(18.dp)) }
-                                } else {
-                                    null
-                                },
-                                onClick = {
-                                    val newMode = if (active) sortMode.opposite() else baseMode
-                                    onSortModeChange(newMode)
-                                    AppPrefs.setAllAppsSortMode(context, newMode.name)
-                                    filterMenuOpen = false
-                                },
-                            )
-                        }
-                }
-            }
+            DrawerFilterSortMenu(
+                quickFilter = quickFilter,
+                quickFilterLabels = quickFilterLabels,
+                onQuickFilterChange = onQuickFilterChange,
+                sortMode = sortMode,
+                onSortModeChange = onSortModeChange,
+                haptic = haptic,
+                context = context,
+                tint = textSecondary,
+                secondary = secondary,
+            )
         }
         IconButton(onClick = onOpenDrawerSettings, modifier = Modifier.size(40.dp)) {
             Icon(Icons.Default.MoreVert, stringResource(R.string.drawer_settings_content_description), tint = textSecondary)
@@ -694,7 +634,7 @@ private fun DrawerAppList(
         prefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
-    val showWebFallback = webFallbackEnabled && searchQuery.trim().length >= 2 && !hasSearchGroups
+    val showWebFallback = shouldShowWebFallback(webFallbackEnabled, searchQuery.trim(), hasSearchGroups)
 
     if (state.grouped.isNotEmpty()) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
@@ -1379,27 +1319,8 @@ fun AllAppsDrawer(
     var activeSidebarIdx by remember { mutableIntStateOf(-1) }
     var quickFilter by remember { mutableStateOf(AppPrefs.getAllAppsQuickFilter(context)) }
 
-    var bgAlpha by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
-    var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
-    var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
-    var iconPackPkg by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
-    // Android (Pixel) Görünümü — çekmecede blur yerine düz yüksek-opasite yüzey + hap arama kutusu
-    var pixelLookEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)) }
-
-    DisposableEffect(context) {
-        val prefs = context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            when (key) {
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_ALLAPPS_BG_ALPHA -> bgAlpha = com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED -> notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS -> unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK -> iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
-                com.armutlu.apporganizer.utils.AppPrefs.KEY_PIXEL_LOOK_ENABLED -> pixelLookEnabled = com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)
-            }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
+    // Görünüm tercihleri ayrı composable'da (tur 21): bu metot küçülür, dinleyici izole olur.
+    val appearance = rememberDrawerAppearancePrefs(context)
 
     // Ağır hesaplamalar ayrı composable'da — DEX VerifyError'u önler (çok fazla register)
     val drawerData = rememberDrawerData(apps, searchQuery, quickFilter, sortMode)
@@ -1421,19 +1342,9 @@ fun AllAppsDrawer(
         val nonAppHits = categoryHits + searchResults.values.sumOf { it.size }
         val appHits = sortedApps.size
         AppAnalytics.searchPerformed(
-            resultCount = when (appHits + nonAppHits) {
-                0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ZERO
-                in 1..5 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.ONE_TO_FIVE
-                in 6..20 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.SIX_TO_TWENTY
-                else -> com.armutlu.apporganizer.telemetry.TelemetryEvent.ResultBucket.TWENTY_ONE_PLUS
-            },
+            resultCount = searchResultBucket(appHits + nonAppHits),
             latency = com.armutlu.apporganizer.telemetry.TelemetryEvent.LatencyBucket.UNKNOWN,
-            sourceMix = when {
-                appHits > 0 && nonAppHits == 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.APPS_ONLY
-                appHits > 0 || categoryHits > 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.MIXED
-                nonAppHits > 0 -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.FILES_ONLY
-                else -> com.armutlu.apporganizer.telemetry.TelemetryEvent.SearchSourceMix.OTHER
-            },
+            sourceMix = searchSourceMix(appHits, categoryHits, nonAppHits),
         )
     }
 
@@ -1441,10 +1352,10 @@ fun AllAppsDrawer(
         sortedApps = sortedApps,
         grouped = grouped,
         sidebarEntries = sidebarEntries,
-        bgAlpha = bgAlpha,
-        notifTextEnabled = notifTextEnabled,
-        unusedGreyDays = unusedGreyDays,
-        iconPackPkg = iconPackPkg,
+        bgAlpha = appearance.bgAlpha,
+        notifTextEnabled = appearance.notifTextEnabled,
+        unusedGreyDays = appearance.unusedGreyDays,
+        iconPackPkg = appearance.iconPackPkg,
         sortMode = sortMode,
     )
 
@@ -1464,22 +1375,7 @@ fun AllAppsDrawer(
             )
         },
     ) {
-        if (pixelLookEnabled) {
-            // Stok Android çekmecesi: blur yerine düz, yüksek opasiteli nötr yüzey
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(
-                            alpha = com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.DRAWER_SURFACE_ALPHA,
-                        ),
-                    ),
-            )
-        } else {
-            // blur(20.dp) kaldırıldı: boş bir Box'ın kendi (yok denecek) içeriğini bulanıklaştırıyordu,
-            // arkasındaki gerçek launcher ağacını değil — görsel etkisi yoktu, sadece GPU maliyeti vardı.
-            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = bgAlpha)))
-        }
+        DrawerBackground(pixelLookEnabled = appearance.pixelLookEnabled, bgAlpha = appearance.bgAlpha)
         Box(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
             Row(modifier = Modifier.fillMaxSize()) {
                 Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
@@ -1502,7 +1398,7 @@ fun AllAppsDrawer(
                         onSortModeChange = { sortMode = it },
                         onOpenDrawerSettings = onOpenDrawerSettings,
                         context = context,
-                        pixelLookEnabled = pixelLookEnabled,
+                        pixelLookEnabled = appearance.pixelLookEnabled,
                     )
                     DrawerAppList(
                         state = drawerState,
@@ -1543,6 +1439,156 @@ fun AllAppsDrawer(
                     )
                 }
             }
+        }
+    }
+}
+
+// ── Tur 21: AllAppsDrawer'dan çıkarılan yapı taşları ─────────────────────────
+
+/** Çekmece görünüm tercihleri — reaktif SharedPreferences dinleyicisiyle tek yerde. */
+private data class DrawerAppearancePrefs(
+    val bgAlpha: Float,
+    val notifTextEnabled: Boolean,
+    val unusedGreyDays: Int,
+    val iconPackPkg: String,
+    val pixelLookEnabled: Boolean,
+)
+
+@Composable
+private fun rememberDrawerAppearancePrefs(context: android.content.Context): DrawerAppearancePrefs {
+    var bgAlpha by remember { mutableFloatStateOf(com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)) }
+    var notifTextEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)) }
+    var unusedGreyDays by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)) }
+    var iconPackPkg by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)) }
+    // Android (Pixel) Görünümü — çekmecede blur yerine düz yüksek-opasite yüzey + hap arama kutusu
+    var pixelLookEnabled by remember { mutableStateOf(com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)) }
+
+    DisposableEffect(context) {
+        val prefs = context.getSharedPreferences(com.armutlu.apporganizer.utils.AppPrefs.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            when (key) {
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ALLAPPS_BG_ALPHA ->
+                    bgAlpha = com.armutlu.apporganizer.utils.AppPrefs.getAllAppsBgAlpha(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_NOTIFICATION_TEXT_ENABLED ->
+                    notifTextEnabled = com.armutlu.apporganizer.utils.AppPrefs.isNotificationTextEnabled(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_UNUSED_GREY_DAYS ->
+                    unusedGreyDays = com.armutlu.apporganizer.utils.AppPrefs.getUnusedGreyDays(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_ICON_PACK ->
+                    iconPackPkg = com.armutlu.apporganizer.utils.AppPrefs.getIconPack(context)
+                com.armutlu.apporganizer.utils.AppPrefs.KEY_PIXEL_LOOK_ENABLED ->
+                    pixelLookEnabled = com.armutlu.apporganizer.utils.AppPrefs.isPixelLookEnabled(context)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    return DrawerAppearancePrefs(bgAlpha, notifTextEnabled, unusedGreyDays, iconPackPkg, pixelLookEnabled)
+}
+
+/** Çekmece arka planı: Pixel modunda düz yüksek-opasite yüzey, aksi halde siyah saydam katman. */
+@Composable
+private fun DrawerBackground(pixelLookEnabled: Boolean, bgAlpha: Float) {
+    if (pixelLookEnabled) {
+        // Stok Android çekmecesi: blur yerine düz, yüksek opasiteli nötr yüzey
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    MaterialTheme.colorScheme.surface.copy(
+                        alpha = com.armutlu.apporganizer.presentation.ui.theme.PixelLookPolicy.DRAWER_SURFACE_ALPHA,
+                    ),
+                ),
+        )
+    } else {
+        // blur(20.dp) kaldırıldı: boş bir Box'ın kendi (yok denecek) içeriğini bulanıklaştırıyordu,
+        // arkasındaki gerçek launcher ağacını değil — görsel etkisi yoktu, sadece GPU maliyeti vardı.
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = bgAlpha)))
+    }
+}
+
+
+/** Filtre + sıralama dropdown menüsü (tur 21: DrawerSearchBar'dan çıkarıldı). */
+@Composable
+private fun DrawerFilterSortMenu(
+    quickFilter: Int,
+    quickFilterLabels: List<String>,
+    onQuickFilterChange: (Int) -> Unit,
+    sortMode: AllAppsSortMode,
+    onSortModeChange: (AllAppsSortMode) -> Unit,
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
+    context: android.content.Context,
+    tint: Color,
+    secondary: Color,
+) {
+    var filterMenuOpen by remember { mutableStateOf(false) }
+    Box {
+        IconButton(
+            onClick = { filterMenuOpen = true },
+            modifier = Modifier.size(40.dp),
+        ) {
+            Icon(
+                Icons.Default.Tune,
+                stringResource(R.string.drawer_filter_menu_content_description),
+                tint = tint,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        DropdownMenu(expanded = filterMenuOpen, onDismissRequest = { filterMenuOpen = false }) {
+            Text(
+                stringResource(R.string.drawer_filter_menu_section_title),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = tint,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            quickFilterLabels.forEachIndexed { idx, label ->
+                val active = quickFilter == idx
+                DropdownMenuItem(
+                    text = { Text(label, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal) },
+                    leadingIcon = if (active) {
+                        { Icon(Icons.Default.Check, null, tint = secondary, modifier = Modifier.size(18.dp)) }
+                    } else {
+                        null
+                    },
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onQuickFilterChange(idx)
+                        AppPrefs.setAllAppsQuickFilter(context, idx)
+                        filterMenuOpen = false
+                    },
+                )
+            }
+            HorizontalDivider()
+            Text(
+                stringResource(R.string.drawer_sort_menu_section_title),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = tint,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            listOf(AllAppsSortMode.ALPHA, AllAppsSortMode.USAGE, AllAppsSortMode.SIZE_DESC, AllAppsSortMode.INSTALL_DATE)
+                .forEach { baseMode ->
+                    val active = sortMode == baseMode || sortMode == baseMode.opposite()
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label,
+                                fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                            )
+                        },
+                        leadingIcon = if (active) {
+                            { Icon(Icons.Default.Check, null, tint = secondary, modifier = Modifier.size(18.dp)) }
+                        } else {
+                            null
+                        },
+                        onClick = {
+                            val newMode = if (active) sortMode.opposite() else baseMode
+                            onSortModeChange(newMode)
+                            AppPrefs.setAllAppsSortMode(context, newMode.name)
+                            filterMenuOpen = false
+                        },
+                    )
+                }
         }
     }
 }
