@@ -104,99 +104,22 @@ class MissionSummaryUseCase @Inject constructor(
      * hicbir DB yazimi yapmaz (Ana ekran karti icin).
      */
     suspend fun compute(awardStars: Boolean): Result {
-        missionsRepository.syncLegacyPrefsIfNeeded()
-        if (awardStars) {
-            runCatching { settleMissionInstancesUseCase.settleOverdue(System.currentTimeMillis()) }
-                .onFailure { e -> Timber.w(e, "Catch-up settlement basarisiz") }
-        }
-        val epochDay = LocalDate.now().toEpochDay()
-        val epochWeek = epochDay / 7
-        val snapshot = missionMetricSnapshotProvider.capture()
-
-        val now = LocalTime.now()
-        val dayBoundary = periodBoundaryResolver.currentDay()
-        val weekBoundary = periodBoundaryResolver.currentIsoWeek()
+        val prepared = prepareMissionInput(awardStars)
+        val epochDay = prepared.epochDay
+        val epochWeek = prepared.epochWeek
+        val now = prepared.now
+        val dayBoundary = prepared.dayBoundary
+        val weekBoundary = prepared.weekBoundary
+        val input = prepared.input
+        val appLimitTargetPackageName = prepared.appLimitTargetPackageName
         val dayEnded = false
         val weekEnded = false
 
-        // Dongu G1 — kisisel hedef ONCE bu donem icin daha once pin edilmis mi diye kontrol
-        // edilir (varsa o SABIT deger kullanilir, tanisma/tempo degisikligi donem ortasinda
-        // hedefi degistiremez). Pin edilmemisse tempo tercihine gore YENI hesaplanir; awardStars
-        // ise bu deger asagida pinInstances ile sabitlenir.
-        val existingDailyInstances = missionsRepository.getInstancesForPeriod(
-            MissionInstanceEntity.PERIOD_DAILY,
-            dayBoundary.epochDay,
-        ).associateBy { it.missionId }
-
-        val tempo = com.armutlu.apporganizer.utils.AppPrefs.getMissionTempo(context).coefficient
-        val personalScreenTarget = existingDailyInstances[MissionEngine.DAILY_SCREEN_UNDER_3H]?.targetValue
-            ?: PersonalTargetCalculator.calculateScreenTimeTarget(snapshot.screenTimeMinutesLast7CompletedDays, tempo)
-        val personalUnlockTarget = existingDailyInstances[MissionEngine.DAILY_UNLOCK_UNDER_30]?.targetValue
-            ?: PersonalTargetCalculator.calculateUnlockTarget(snapshot.unlockCountLast7CompletedDays, tempo)
-
-        // Dongu G3b — uygulama-spesifik gorev. ONCE bugun icin daha once pin edilmis PAKET var
-        // mi bakilir (AppPrefs — donem boyunca SABIT, gun ortasinda kullanim degisip farkli bir
-        // uygulama one cikarsa hedef KAYMAZ). Yoksa AppLimitCandidateSelector ile YENI aday
-        // secilir ve HEMEN pin edilir (sonraki cagrilarda ayni paket kullanilsin diye) — aday
-        // yoksa (esik altinda/kategori disi) pin edilecek bir sey YOKTUR, appLimitTargetMinutes
-        // null kalir ve MissionEngine.isEligible() gorevi havuza almaz.
-        // Dongu G3b — uygulama-spesifik ust sinir cozumu ayri fonksiyonda (tur 22).
-        val appLimitResolution = resolveAppLimit(
-            epochDay = epochDay,
-            existingDailyInstances = existingDailyInstances,
-            snapshot = snapshot,
-            tempo = tempo,
-            awardStars = awardStars,
-        )
-        val pinnedAppLimitPackage = appLimitResolution.pinnedPackage
-        val appLimitUsageMinutesToday = appLimitResolution.usageMinutesToday
-        val appLimitTargetMinutes = appLimitResolution.targetMinutes
-
-        // P6 — WEEKLY_CATEGORY_BALANCE girdisi: aktif AUTO kategori hedeflerinin GERÇEK ZAMANLI
-        // aşım durumu (WeeklyGoal.status DB alanı yalnız hafta sonunda SettlePreviousWeekAdaptiveGoalsUseCase
-        // tarafından güncellenir — hafta içinde hep ACTIVE kalır, bu yüzden anlık aşımı
-        // CategoryUsageSnapshotProvider'dan taze okumak gerekir). Kategori kimlikleri
-        // MissionCheckInput'a TAŞINMAZ (U02) — sadece sayaç.
-        // P6 — WEEKLY_CATEGORY_BALANCE girdisi ayri fonksiyonda (tur 22).
-        val categoryGoalsBalance = computeCategoryGoalsBalance(weekBoundary)
-
-        val input = snapshot.toMissionCheckInput().copy(
-            personalScreenTargetMinutes = personalScreenTarget,
-            personalUnlockTarget = personalUnlockTarget,
-            appLimitUsageMinutesToday = appLimitUsageMinutesToday,
-            appLimitTargetMinutes = appLimitTargetMinutes,
-            categoryGoalsBalance = categoryGoalsBalance,
-        )
-        val appLimitTargetPackageName = pinnedAppLimitPackage
-        val dailyCooldownIds = missionsRepository.getRecentlyCompletedDailyIds(
-            currentEpochDay = epochDay,
-            cooldownDays = MissionEngine.dailyCooldownDays(),
-        )
-        val weeklyCooldownIds = missionsRepository.getRecentlyCompletedWeeklyIds(
-            currentEpochWeek = epochWeek,
-            cooldownWeeks = MissionEngine.weeklyCooldownWeeks(),
-        )
-
-        val dailyTargetValues = buildMap {
-            put(MissionEngine.DAILY_SCREEN_UNDER_3H, personalScreenTarget ?: MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES)
-            put(MissionEngine.DAILY_UNLOCK_UNDER_30, personalUnlockTarget ?: MissionEngine.DEFAULT_UNLOCK_TARGET)
-            // Dongu G3b — aday varsa hedefi de instance'a pinle (donem boyunca sabit kalsin).
-            if (appLimitTargetMinutes != null) put(MissionEngine.DAILY_APP_LIMIT, appLimitTargetMinutes)
-        }
-        val weeklyTargetValues = mapOf(
-            MissionEngine.WEEKLY_POSITIVE_ACTIONS to 3L,
-        )
-        val weeklyBaselineValues = mapOf(
-            MissionEngine.WEEKLY_SCREEN_LESS to input.previousWeeklyScreenTimeMinutes,
-        )
-
-        var newStars = 0
-        val dailyDone = missionsRepository.getCompletedDailyIds(epochDay).toMutableSet()
         val dailyMissions = MissionEngine.generateDaily(
             epochDay = epochDay,
             selection = MissionEngine.MissionSelectionInput(
                 checkInput = input,
-                recentlyCompletedMissionIds = dailyCooldownIds,
+                recentlyCompletedMissionIds = prepared.dailyCooldownIds,
             ),
         )
         if (awardStars) {
@@ -204,41 +127,31 @@ class MissionSummaryUseCase @Inject constructor(
                 missions = dailyMissions,
                 periodType = MissionInstanceEntity.PERIOD_DAILY,
                 boundary = dayBoundary,
-                targetValues = dailyTargetValues,
+                targetValues = prepared.dailyTargetValues,
             )
         }
-        val daily = dailyMissions.map { mission ->
-            val already = mission.id in dailyDone
-            val evaluation = MissionEngine.evaluate(mission, input, now, dayEnded, weekEnded)
-            val status = if (already) MissionStatus.COMPLETED else evaluation.status
-            val justCompleted = status == MissionStatus.COMPLETED && !already
-            if (awardStars && justCompleted && mission.id in instantlyCompletableMissionIds) {
-                missionsRepository.markDailyCompleted(epochDay, mission.id)
-                dailyDone += mission.id
-                newStars += mission.starReward
-                val instanceId = MissionInstanceEntity.buildInstanceId(
-                    mission.id,
-                    MissionInstanceEntity.PERIOD_DAILY,
-                    dayBoundary.epochDay,
-                )
-                runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
-                    .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
-            }
-            mission.toOutcome(
-                status,
-                evaluation,
-                dayBoundary,
-                justCompleted = justCompleted,
-                appLimitTargetPackageName = appLimitTargetPackageName,
-            )
-        }
+        val dailyEvaluation = evaluateMissionsWithAwards(
+            missions = dailyMissions,
+            completedIds = missionsRepository.getCompletedDailyIds(epochDay).toMutableSet(),
+            input = input,
+            now = now,
+            dayEnded = dayEnded,
+            weekEnded = weekEnded,
+            awardStars = awardStars,
+            periodType = MissionInstanceEntity.PERIOD_DAILY,
+            boundary = dayBoundary,
+            instanceStartEpoch = dayBoundary.epochDay,
+            markCompleted = { missionId -> missionsRepository.markDailyCompleted(epochDay, missionId) },
+            appLimitTargetPackageName = appLimitTargetPackageName,
+        )
+        val daily = dailyEvaluation.outcomes
+        var newStars = dailyEvaluation.awardedStars
 
-        val weeklyDone = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet()
         val weeklyMissions = MissionEngine.generateWeekly(
             epochWeek = epochWeek,
             selection = MissionEngine.MissionSelectionInput(
                 checkInput = input,
-                recentlyCompletedMissionIds = weeklyCooldownIds,
+                recentlyCompletedMissionIds = prepared.weeklyCooldownIds,
             ),
         )
         if (awardStars) {
@@ -246,30 +159,25 @@ class MissionSummaryUseCase @Inject constructor(
                 missions = weeklyMissions,
                 periodType = MissionInstanceEntity.PERIOD_WEEKLY,
                 boundary = weekBoundary,
-                targetValues = weeklyTargetValues,
-                baselineValues = weeklyBaselineValues,
+                targetValues = prepared.weeklyTargetValues,
+                baselineValues = prepared.weeklyBaselineValues,
             )
         }
-        val weekly = weeklyMissions.map { mission ->
-            val already = mission.id in weeklyDone
-            val evaluation = MissionEngine.evaluate(mission, input, now, dayEnded, weekEnded)
-            val status = if (already) MissionStatus.COMPLETED else evaluation.status
-            val justCompleted = status == MissionStatus.COMPLETED && !already
-            if (awardStars && justCompleted && mission.id in instantlyCompletableMissionIds) {
-                missionsRepository.markWeeklyCompleted(epochWeek, mission.id)
-                weeklyDone += mission.id
-                newStars += mission.starReward
-                val weeklyPeriodStartEpoch = weekBoundary.weekStartEpochDay ?: weekBoundary.epochDay
-                val instanceId = MissionInstanceEntity.buildInstanceId(
-                    mission.id,
-                    MissionInstanceEntity.PERIOD_WEEKLY,
-                    weeklyPeriodStartEpoch,
-                )
-                runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
-                    .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
-            }
-            mission.toOutcome(status, evaluation, weekBoundary, justCompleted = justCompleted)
-        }
+        val weeklyEvaluation = evaluateMissionsWithAwards(
+            missions = weeklyMissions,
+            completedIds = missionsRepository.getCompletedWeeklyIds(epochWeek).toMutableSet(),
+            input = input,
+            now = now,
+            dayEnded = dayEnded,
+            weekEnded = weekEnded,
+            awardStars = awardStars,
+            periodType = MissionInstanceEntity.PERIOD_WEEKLY,
+            boundary = weekBoundary,
+            instanceStartEpoch = weekBoundary.weekStartEpochDay ?: weekBoundary.epochDay,
+            markCompleted = { missionId -> missionsRepository.markWeeklyCompleted(epochWeek, missionId) },
+        )
+        val weekly = weeklyEvaluation.outcomes
+        newStars += weeklyEvaluation.awardedStars
 
         return Result(
             totalStars = missionsRepository.getTotalStars(),
@@ -338,6 +246,194 @@ class MissionSummaryUseCase @Inject constructor(
             R.string.mission_deadline_day
         }
         return context.getString(labelRes, durationText)
+    }
+
+    /** compute() girdi hazırlık fazı (tur 23): settlement, snapshot, sınırlar, kişisel
+     *  hedefler, uygulama-limiti ve kategori dengesi çözümü, cooldown'lar ve hedef haritaları. */
+    private data class PreparedMissionInput(
+        val epochDay: Long,
+        val epochWeek: Long,
+        val now: LocalTime,
+        val dayBoundary: PeriodBoundary,
+        val weekBoundary: PeriodBoundary,
+        val input: MissionEngine.MissionCheckInput,
+        val appLimitTargetPackageName: String?,
+        val dailyCooldownIds: Set<String>,
+        val weeklyCooldownIds: Set<String>,
+        val dailyTargetValues: Map<String, Long>,
+        val weeklyTargetValues: Map<String, Long>,
+        val weeklyBaselineValues: Map<String, Long?>,
+    )
+
+    private suspend fun prepareMissionInput(awardStars: Boolean): PreparedMissionInput {
+        missionsRepository.syncLegacyPrefsIfNeeded()
+        if (awardStars) {
+            runCatching { settleMissionInstancesUseCase.settleOverdue(System.currentTimeMillis()) }
+                .onFailure { e -> Timber.w(e, "Catch-up settlement basarisiz") }
+        }
+        val epochDay = LocalDate.now().toEpochDay()
+        val epochWeek = epochDay / 7
+        val snapshot = missionMetricSnapshotProvider.capture()
+
+        val now = LocalTime.now()
+        val dayBoundary = periodBoundaryResolver.currentDay()
+        val weekBoundary = periodBoundaryResolver.currentIsoWeek()
+        val dayEnded = false
+        val weekEnded = false
+
+        // Dongu G1 — kisisel hedef ONCE bu donem icin daha once pin edilmis mi diye kontrol
+        // edilir (varsa o SABIT deger kullanilir, tanisma/tempo degisikligi donem ortasinda
+        // hedefi degistiremez). Pin edilmemisse tempo tercihine gore YENI hesaplanir; awardStars
+        // ise bu deger asagida pinInstances ile sabitlenir.
+        val existingDailyInstances = missionsRepository.getInstancesForPeriod(
+            MissionInstanceEntity.PERIOD_DAILY,
+            dayBoundary.epochDay,
+        ).associateBy { it.missionId }
+
+        val tempo = com.armutlu.apporganizer.utils.AppPrefs.getMissionTempo(context).coefficient
+        val personalTargets = resolvePersonalTargets(existingDailyInstances, snapshot, tempo)
+        val personalScreenTarget = personalTargets.screenTarget
+        val personalUnlockTarget = personalTargets.unlockTarget
+
+        // Dongu G3b — uygulama-spesifik gorev. ONCE bugun icin daha once pin edilmis PAKET var
+        // mi bakilir (AppPrefs — donem boyunca SABIT, gun ortasinda kullanim degisip farkli bir
+        // uygulama one cikarsa hedef KAYMAZ). Yoksa AppLimitCandidateSelector ile YENI aday
+        // secilir ve HEMEN pin edilir (sonraki cagrilarda ayni paket kullanilsin diye) — aday
+        // yoksa (esik altinda/kategori disi) pin edilecek bir sey YOKTUR, appLimitTargetMinutes
+        // null kalir ve MissionEngine.isEligible() gorevi havuza almaz.
+        // Dongu G3b — uygulama-spesifik ust sinir cozumu ayri fonksiyonda (tur 22).
+        val appLimitResolution = resolveAppLimit(
+            epochDay = epochDay,
+            existingDailyInstances = existingDailyInstances,
+            snapshot = snapshot,
+            tempo = tempo,
+            awardStars = awardStars,
+        )
+        val pinnedAppLimitPackage = appLimitResolution.pinnedPackage
+        val appLimitUsageMinutesToday = appLimitResolution.usageMinutesToday
+        val appLimitTargetMinutes = appLimitResolution.targetMinutes
+
+        // P6 — WEEKLY_CATEGORY_BALANCE girdisi: aktif AUTO kategori hedeflerinin GERÇEK ZAMANLI
+        // aşım durumu (WeeklyGoal.status DB alanı yalnız hafta sonunda SettlePreviousWeekAdaptiveGoalsUseCase
+        // tarafından güncellenir — hafta içinde hep ACTIVE kalır, bu yüzden anlık aşımı
+        // CategoryUsageSnapshotProvider'dan taze okumak gerekir). Kategori kimlikleri
+        // MissionCheckInput'a TAŞINMAZ (U02) — sadece sayaç.
+        // P6 — WEEKLY_CATEGORY_BALANCE girdisi ayri fonksiyonda (tur 22).
+        val categoryGoalsBalance = computeCategoryGoalsBalance(weekBoundary)
+
+        val input = snapshot.toMissionCheckInput().copy(
+            personalScreenTargetMinutes = personalScreenTarget,
+            personalUnlockTarget = personalUnlockTarget,
+            appLimitUsageMinutesToday = appLimitUsageMinutesToday,
+            appLimitTargetMinutes = appLimitTargetMinutes,
+            categoryGoalsBalance = categoryGoalsBalance,
+        )
+        val dailyCooldownIds = missionsRepository.getRecentlyCompletedDailyIds(
+            currentEpochDay = epochDay,
+            cooldownDays = MissionEngine.dailyCooldownDays(),
+        )
+        val weeklyCooldownIds = missionsRepository.getRecentlyCompletedWeeklyIds(
+            currentEpochWeek = epochWeek,
+            cooldownWeeks = MissionEngine.weeklyCooldownWeeks(),
+        )
+
+        val dailyTargetValues = buildDailyTargetValues(personalScreenTarget, personalUnlockTarget, appLimitTargetMinutes)
+        val weeklyTargetValues = mapOf(
+            MissionEngine.WEEKLY_POSITIVE_ACTIONS to 3L,
+        )
+        val weeklyBaselineValues = mapOf(
+            MissionEngine.WEEKLY_SCREEN_LESS to input.previousWeeklyScreenTimeMinutes,
+        )
+
+        return PreparedMissionInput(
+            epochDay = epochDay,
+            epochWeek = epochWeek,
+            now = now,
+            dayBoundary = dayBoundary,
+            weekBoundary = weekBoundary,
+            input = input,
+            appLimitTargetPackageName = pinnedAppLimitPackage,
+            dailyCooldownIds = dailyCooldownIds,
+            weeklyCooldownIds = weeklyCooldownIds,
+            dailyTargetValues = dailyTargetValues,
+            weeklyTargetValues = weeklyTargetValues,
+            weeklyBaselineValues = weeklyBaselineValues,
+        )
+    }
+
+    /** Kişisel hedefler (Döngü G1): pin'li değer varsa o, yoksa tempo bazlı hesaplama. */
+    private data class PersonalTargets(val screenTarget: Long?, val unlockTarget: Long?)
+
+    private fun resolvePersonalTargets(
+        existingDailyInstances: Map<String, MissionInstanceEntity>,
+        snapshot: MissionMetricSnapshot,
+        tempo: Double,
+    ): PersonalTargets = PersonalTargets(
+        screenTarget = existingDailyInstances[MissionEngine.DAILY_SCREEN_UNDER_3H]?.targetValue
+            ?: PersonalTargetCalculator.calculateScreenTimeTarget(snapshot.screenTimeMinutesLast7CompletedDays, tempo),
+        unlockTarget = existingDailyInstances[MissionEngine.DAILY_UNLOCK_UNDER_30]?.targetValue
+            ?: PersonalTargetCalculator.calculateUnlockTarget(snapshot.unlockCountLast7CompletedDays, tempo),
+    )
+
+    /** Günlük instance hedef değerleri (Döngü G3b: aday varsa app-limit hedefi de pinlenir). */
+    private fun buildDailyTargetValues(
+        personalScreenTarget: Long?,
+        personalUnlockTarget: Long?,
+        appLimitTargetMinutes: Long?,
+    ): Map<String, Long> = buildMap {
+        put(MissionEngine.DAILY_SCREEN_UNDER_3H, personalScreenTarget ?: MissionEngine.DEFAULT_SCREEN_TARGET_MINUTES)
+        put(MissionEngine.DAILY_UNLOCK_UNDER_30, personalUnlockTarget ?: MissionEngine.DEFAULT_UNLOCK_TARGET)
+        if (appLimitTargetMinutes != null) put(MissionEngine.DAILY_APP_LIMIT, appLimitTargetMinutes)
+    }
+
+    /** Dönem (günlük/haftalık) değerlendirme sonucu: çıktılar + kazanılan yıldızlar. */
+    private data class PeriodEvaluation(
+        val outcomes: List<MissionOutcome>,
+        val awardedStars: Int,
+    )
+
+    /**
+     * Görev listesini değerlendirir; awardStars=true iken anında tamamlanabilen görevlerin
+     * ödül yan etkilerini (markCompleted + instance senkronu) uygular. Günlük ve haftalık
+     * yolların ortak gövdesi (tur 23).
+     */
+    private suspend fun evaluateMissionsWithAwards(
+        missions: List<MissionEngine.Mission>,
+        completedIds: MutableSet<String>,
+        input: MissionEngine.MissionCheckInput,
+        now: LocalTime,
+        dayEnded: Boolean,
+        weekEnded: Boolean,
+        awardStars: Boolean,
+        periodType: String,
+        boundary: PeriodBoundary,
+        instanceStartEpoch: Long,
+        markCompleted: suspend (missionId: String) -> Unit,
+        appLimitTargetPackageName: String? = null,
+    ): PeriodEvaluation {
+        var awarded = 0
+        val outcomes = missions.map { mission ->
+            val already = mission.id in completedIds
+            val evaluation = MissionEngine.evaluate(mission, input, now, dayEnded, weekEnded)
+            val status = if (already) MissionStatus.COMPLETED else evaluation.status
+            val justCompleted = status == MissionStatus.COMPLETED && !already
+            if (awardStars && justCompleted && mission.id in instantlyCompletableMissionIds) {
+                markCompleted(mission.id)
+                completedIds += mission.id
+                awarded += mission.starReward
+                val instanceId = MissionInstanceEntity.buildInstanceId(mission.id, periodType, instanceStartEpoch)
+                runCatching { settleMissionInstancesUseCase.completeActionMission(instanceId) }
+                    .onFailure { e -> Timber.w(e, "Instance senkronu basarisiz: $instanceId") }
+            }
+            mission.toOutcome(
+                status,
+                evaluation,
+                boundary,
+                justCompleted = justCompleted,
+                appLimitTargetPackageName = appLimitTargetPackageName,
+            )
+        }
+        return PeriodEvaluation(outcomes, awarded)
     }
 
     /** Uygulama-spesifik üst sınır görevi çözüm sonucu (Döngü G3b). */

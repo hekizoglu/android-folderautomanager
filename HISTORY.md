@@ -1,5 +1,12 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 23: MissionSummaryUseCase testleri + compute tam bölme)
+**Yapılanlar:** Önceki turda bilinçli bırakılan son adım tamamlandı — "önce test, sonra böl":
+- **MissionSummaryUseCaseTest (+5 sözleşme testi, Robolectric+mockk):** (1) sessiz refresh (awardStars=false) hiçbir yazma yan etkisi yaratmaz — pinInstances/markDailyCompleted/settleOverdue sıfır çağrı (M07); (2) award modu overdue settlement + günlük/haftalık pin yapar; (3) pin'li kişisel ekran hedefi yeniden hesaplamaya karşı korunur (yakalanan targetValues ile); (4-5) uygulama-limiti adayı sessiz modda pin'LENMEZ, award modda pin'lenir (G3b/M07).
+- **compute 280 → 82 satır:** girdi hazırlık fazı `prepareMissionInput`'a (settlement, snapshot, sınırlar, kişisel hedefler, uygulama-limiti, kategori dengesi, cooldown'lar, hedef haritaları); günlük/haftalık ortak gövde `evaluateMissionsWithAwards`'a (periodType/instanceStartEpoch/markCompleted parametreli); kişisel hedefler `resolvePersonalTargets`'a, günlük hedef haritası `buildDailyTargetValues`'a taşındı. Davranış özdeşliği 5 sözleşme testi + 1409 testlik tam paketle kanıtlandı.
+**Kanıt:** `testDebugUnitTest` → **1409 test, 0 fail, 0 hata**; `:app:detekt` BUILD SUCCESSFUL; MissionSummaryUseCase CC/LongMethod girişi **2 → 0**; baseline 2378.
+**Sonraki:** DrawerSearchBar/DrawerAppList/DrawerRecentFavSection uzun gövdeleri (drawer 4. dalga) veya yeni özellik turu.
+
 ## Döngü — 2026-08-22 (Tur 22: complexity 3. dalga — mission motoru + dispatcher muafiyeti)
 **Yapılanlar:**
 - `detekt.yml`: CyclomaticComplexMethod'a `ignoreSingleWhenExpression: true` eklendi — tek bir when'den oluşan dispatcher metotları (görev/rota eşleme tabloları) yapısal olarak dal sayısınca CC üretir; karmaşık mantık değiller. Bu, kod geneline 17 dispatcher girişini meşru şekilde baseline'dan çıkardı (MissionEngine.evaluate/progressKindForMission/isEligible, MissionSummaryUseCase.actionFor/titleRes dahil).
