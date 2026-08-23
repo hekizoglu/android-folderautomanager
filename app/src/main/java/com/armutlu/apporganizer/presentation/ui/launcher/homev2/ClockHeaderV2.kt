@@ -71,9 +71,10 @@ internal fun ClockHeaderV2(
 }
 
 @Composable
-private fun PulseStripV2(pulse: PulseStripState) {
+internal fun PulseStripV2(pulse: PulseStripState?, modifier: Modifier = Modifier) {
+    if (pulse == null) return
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

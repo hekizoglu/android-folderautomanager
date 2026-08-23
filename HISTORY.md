@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-22 (Tur 24: UX düzeltmeleri + complexity 4. dalga başlangıcı)
+**Yapılanlar (kullanıcı istekleri):**
+1. **Çift tıkla çekmece yeniden aktif:** HomeV2 kök jestine `onDoubleTap → openAllApps()` eklendi — ana ekranda boş alanlara (kart araları, başlık/alt bölge) çift tık uygulama çekmecesini açar; kart/ikon dokunuşları kendi davranışını korur (arena davranışıyla aynı fizik).
+2. **Çift saat sorunu giderildi:** Ana sayfadaki `ClockHeaderV2` kaldırıldı — TEK büyük saat yalnız Hero sayfasında (HeroClockCard). Ana sayfada saat metni yerine kompakt `PulseStripV2` (nabız + görev çipleri, internal'a alındı, modifier kazandı) render ediliyor.
+3. **Klasör grid sıkılaştırma + hizalama:** hücre yüksekliği 124→112dp, kart arası 12→8dp, dış padding 16→12dp, satır arası 8→4dp. Önizleme ikonları ADAPTİF: `((maxWidth-12dp)/adet).coerceAtMost(34dp)` — dar hücrede ikonlar küçülür, taşma/hizalama hatası kalmaz. Sürükle-sırala hit-test matematiği sabitlerle senkron (aynı sabitleri kullanır).
+**Yapılanlar (4. dalga):** `DrawerSearchBar` parçalandı — arama kutusu `RowScope.DrawerSearchBox`'a (odak parlaması/elmas/Pixel pill), chip satırları `DrawerChipRows`'a taşındı; metodun CC + LongMethod durumu ÇÖZÜLDÜ. Kalan: DrawerAppList, DrawerRecentFavSection, AllAppsDrawer LongMethod (4. dalga devamı).
+**Kanıt:** `testDebugUnitTest` → **1409 test, 0 fail, 0 hata**; `:app:detekt` BUILD SUCCESSFUL; baseline 2378 (AllAppsDrawer CC/LongMethod 8 → 5).
+**Sonraki:** 4. dalga devamı (DrawerAppList/DrawerRecentFavSection bölme); cihazda jest doğrulaması (çift tık + swipe) runbook'u.
+
 ## Döngü — 2026-08-22 (Tur 23: MissionSummaryUseCase testleri + compute tam bölme)
 **Yapılanlar:** Önceki turda bilinçli bırakılan son adım tamamlandı — "önce test, sonra böl":
 - **MissionSummaryUseCaseTest (+5 sözleşme testi, Robolectric+mockk):** (1) sessiz refresh (awardStars=false) hiçbir yazma yan etkisi yaratmaz — pinInstances/markDailyCompleted/settleOverdue sıfır çağrı (M07); (2) award modu overdue settlement + günlük/haftalık pin yapar; (3) pin'li kişisel ekran hedefi yeniden hesaplamaya karşı korunur (yakalanan targetValues ile); (4-5) uygulama-limiti adayı sessiz modda pin'LENMEZ, award modda pin'lenir (G3b/M07).

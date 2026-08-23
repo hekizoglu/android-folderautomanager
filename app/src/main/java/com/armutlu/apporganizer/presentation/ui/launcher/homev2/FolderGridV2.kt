@@ -30,9 +30,9 @@ import com.armutlu.apporganizer.domain.models.AppInfo
 import kotlin.math.ceil
 
 /** Hücre yüksekliği sabittir — sürükle-sırala hit-test matematiği bunu gerektirir. */
-internal val FOLDER_CELL_HEIGHT = 124.dp
-internal const val FOLDER_GRID_SPACING_DP = 12f
-internal const val FOLDER_GRID_PADDING_DP = 16f
+internal val FOLDER_CELL_HEIGHT = 112.dp
+internal const val FOLDER_GRID_SPACING_DP = 8f
+internal const val FOLDER_GRID_PADDING_DP = 12f
 
 /**
  * Tek klasör sayfası — sabit hücreli manuel grid.

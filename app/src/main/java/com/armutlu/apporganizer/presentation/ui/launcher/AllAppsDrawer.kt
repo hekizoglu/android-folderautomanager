@@ -150,68 +150,17 @@ private fun DrawerSearchBar(
     }
 
     // Arama + kapat — elmas parlaması dikkat çeker
-    val shineEnabled by rememberBooleanPreferenceState(
-        context = context,
-        key = AppPrefs.KEY_SEARCH_SHINE_ENABLED,
-        read = { AppPrefs.isSearchShineEnabled(context) },
-    )
-    var searchFocused by remember { mutableStateOf(false) }
-    val focusGlowAlpha by animateFloatAsState(
-        targetValue = if (searchFocused) 1f else 0f,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "all_apps_search_focus_glow",
-    )
-    val focusColor = Color(0xFFB6FF4D)
-    // Pixel modunda tam yuvarlatılmış hap (pill) — stok Android arama kutusu hissi.
-    // Percent(50) her yükseklikte gerçek pill üretir (sabit dp yerine).
-    val searchBoxShape = if (pixelLookEnabled) RoundedCornerShape(percent = 50) else RoundedCornerShape(22.dp)
-    val searchBoxOuterShape = if (pixelLookEnabled) RoundedCornerShape(percent = 50) else RoundedCornerShape(24.dp)
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier.weight(1f).height(44.dp)
-                .border(
-                    width = 3.dp,
-                    color = focusColor.copy(alpha = 0.18f * focusGlowAlpha),
-                    shape = searchBoxOuterShape,
-                )
-                .padding(2.dp)
-                .border(
-                    width = 1.5.dp,
-                    color = focusColor.copy(alpha = 0.82f * focusGlowAlpha),
-                    shape = searchBoxShape,
-                )
-                .clip(searchBoxShape).background(
-                    if (pixelLookEnabled) {
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (searchFocused) 0.9f else 0.75f)
-                    } else if (searchFocused) searchBg.copy(alpha = 0.18f) else searchBg,
-                )
-                .diamondShine(shineEnabled, searchBoxShape)
-                .padding(horizontal = 14.dp),
-            contentAlignment = Alignment.CenterStart,
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Search, "Ara", tint = textSecondary, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Box(modifier = Modifier.weight(1f)) {
-                    if (searchQuery.isEmpty()) Text("Uygulama ara...", color = textSecondary, fontSize = 14.sp)
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        singleLine = true,
-                        cursorBrush = SolidColor(primary),
-                        textStyle = TextStyle(color = onSurface, fontSize = 14.sp),
-                        modifier = Modifier
-                            .focusRequester(searchFocusRequester)
-                            .onFocusChanged { searchFocused = it.isFocused },
-                    )
-                }
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, "Temizle", tint = textSecondary, modifier = Modifier.size(15.dp))
-                    }
-                }
-            }
-        }
+        DrawerSearchBox(
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange,
+            searchFocusRequester = searchFocusRequester,
+            pixelLookEnabled = pixelLookEnabled,
+            primary = primary,
+            onSurface = onSurface,
+            textSecondary = textSecondary,
+            searchBg = searchBg,
+        )
         if (!chipRowsEnabled) {
             DrawerFilterSortMenu(
                 quickFilter = quickFilter,
@@ -242,66 +191,15 @@ private fun DrawerSearchBar(
     Spacer(Modifier.height(8.dp))
 
     if (chipRowsEnabled) {
-        // Hızlı filtre chip'leri
-        androidx.compose.foundation.lazy.LazyRow(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            itemsIndexed(quickFilterLabels) { idx, label ->
-                val active = quickFilter == idx
-                Box(
-                    modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                        .background(if (active) secondary.copy(alpha = 0.8f) else onSurface.copy(alpha = 0.08f))
-                        .clickable {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            onQuickFilterChange(idx)
-                        }
-                        .padding(horizontal = 11.dp, vertical = 5.dp),
-                ) {
-                    val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
-                    Text(
-                        label + if (active) countLabel else "",
-                        fontSize = 11.sp,
-                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
-                        color = if (active) MaterialTheme.colorScheme.onSecondary else Color.White.copy(alpha = 0.55f),
-                    )
-                }
-            }
-        }
-
-        // Sıralama chip'leri — 4 temel kategori, aynı butona basınca yön değişir
-        val baseSortChips = listOf(
-            AllAppsSortMode.ALPHA,
-            AllAppsSortMode.USAGE,
-            AllAppsSortMode.SIZE_DESC,
-            AllAppsSortMode.INSTALL_DATE,
+        DrawerChipRows(
+            quickFilterLabels = quickFilterLabels,
+            quickFilter = quickFilter,
+            onQuickFilterChange = onQuickFilterChange,
+            quickFilterCounts = quickFilterCounts,
+            sortMode = sortMode,
+            onSortModeChange = onSortModeChange,
+            context = context,
         )
-        androidx.compose.foundation.lazy.LazyRow(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            itemsIndexed(baseSortChips) { _, baseMode ->
-                val isActive = sortMode == baseMode || sortMode == baseMode.opposite()
-                val displayLabel = if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label
-                Box(
-                    modifier = Modifier.clip(RoundedCornerShape(14.dp))
-                        .background(if (isActive) primary else onSurface.copy(alpha = 0.12f))
-                        .clickable {
-                            val newMode = if (isActive) sortMode.opposite() else baseMode
-                            onSortModeChange(newMode)
-                            AppPrefs.setAllAppsSortMode(context, newMode.name)
-                        }
-                        .padding(horizontal = 11.dp, vertical = 5.dp),
-                ) {
-                    Text(
-                        displayLabel,
-                        fontSize = 11.sp,
-                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isActive) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f),
-                    )
-                }
-            }
-        }
     }
     Spacer(Modifier.height(4.dp))
 }
@@ -1589,6 +1487,158 @@ private fun DrawerFilterSortMenu(
                         },
                     )
                 }
+        }
+    }
+}
+
+
+/** Çekmece arama kutusu: odak parlaması, elmas parlama, Pixel pill şekli (tur 24). */
+@Composable
+private fun RowScope.DrawerSearchBox(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    searchFocusRequester: FocusRequester,
+    pixelLookEnabled: Boolean,
+    primary: Color,
+    onSurface: Color,
+    textSecondary: Color,
+    searchBg: Color,
+) {
+    val context = LocalContext.current
+    val shineEnabled by rememberBooleanPreferenceState(
+        context = context,
+        key = AppPrefs.KEY_SEARCH_SHINE_ENABLED,
+        read = { AppPrefs.isSearchShineEnabled(context) },
+    )
+    var searchFocused by remember { mutableStateOf(false) }
+    val focusGlowAlpha by animateFloatAsState(
+        targetValue = if (searchFocused) 1f else 0f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "all_apps_search_focus_glow",
+    )
+    val focusColor = Color(0xFFB6FF4D)
+    // Pixel modunda tam yuvarlatılmış hap (pill) — stok Android arama kutusu hissi.
+    val searchBoxShape = if (pixelLookEnabled) RoundedCornerShape(percent = 50) else RoundedCornerShape(22.dp)
+    val searchBoxOuterShape = if (pixelLookEnabled) RoundedCornerShape(percent = 50) else RoundedCornerShape(24.dp)
+    Box(
+        modifier = Modifier.weight(1f).height(44.dp)
+            .border(
+                width = 3.dp,
+                color = focusColor.copy(alpha = 0.18f * focusGlowAlpha),
+                shape = searchBoxOuterShape,
+            )
+            .padding(2.dp)
+            .border(
+                width = 1.5.dp,
+                color = focusColor.copy(alpha = 0.82f * focusGlowAlpha),
+                shape = searchBoxShape,
+            )
+            .clip(searchBoxShape).background(
+                if (pixelLookEnabled) {
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (searchFocused) 0.9f else 0.75f)
+                } else if (searchFocused) searchBg.copy(alpha = 0.18f) else searchBg,
+            )
+            .diamondShine(shineEnabled, searchBoxShape)
+            .padding(horizontal = 14.dp),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Search, "Ara", tint = textSecondary, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Box(modifier = Modifier.weight(1f)) {
+                if (searchQuery.isEmpty()) Text("Uygulama ara...", color = textSecondary, fontSize = 14.sp)
+                BasicTextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChange,
+                    singleLine = true,
+                    cursorBrush = SolidColor(primary),
+                    textStyle = TextStyle(color = onSurface, fontSize = 14.sp),
+                    modifier = Modifier
+                        .focusRequester(searchFocusRequester)
+                        .onFocusChanged { searchFocused = it.isFocused },
+                )
+            }
+            if (searchQuery.isNotEmpty()) {
+                IconButton(onClick = { onSearchQueryChange("") }, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Close, "Temizle", tint = textSecondary, modifier = Modifier.size(15.dp))
+                }
+            }
+        }
+    }
+}
+
+/** Hızlı filtre + sıralama chip satırları (chipRowsEnabled açıkken; tur 24). */
+@Composable
+private fun DrawerChipRows(
+    quickFilterLabels: List<String>,
+    quickFilter: Int,
+    onQuickFilterChange: (Int) -> Unit,
+    quickFilterCounts: IntArray,
+    sortMode: AllAppsSortMode,
+    onSortModeChange: (AllAppsSortMode) -> Unit,
+    context: android.content.Context,
+) {
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.secondary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val haptic = LocalHapticFeedback.current
+    // Hızlı filtre chip'leri
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        itemsIndexed(quickFilterLabels) { idx, label ->
+            val active = quickFilter == idx
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                    .background(if (active) secondary.copy(alpha = 0.8f) else onSurface.copy(alpha = 0.08f))
+                    .clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onQuickFilterChange(idx)
+                    }
+                    .padding(horizontal = 11.dp, vertical = 5.dp),
+            ) {
+                val countLabel = if (idx < quickFilterCounts.size) " (${quickFilterCounts[idx]})" else ""
+                Text(
+                    label + if (active) countLabel else "",
+                    fontSize = 11.sp,
+                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                    color = if (active) MaterialTheme.colorScheme.onSecondary else Color.White.copy(alpha = 0.55f),
+                )
+            }
+        }
+    }
+    // Sıralama chip'leri — 4 temel kategori, aynı butona basınca yön değişir
+    val baseSortChips = listOf(
+        AllAppsSortMode.ALPHA,
+        AllAppsSortMode.USAGE,
+        AllAppsSortMode.SIZE_DESC,
+        AllAppsSortMode.INSTALL_DATE,
+    )
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        itemsIndexed(baseSortChips) { _, baseMode ->
+            val isActive = sortMode == baseMode || sortMode == baseMode.opposite()
+            val displayLabel = if (sortMode == baseMode.opposite()) baseMode.opposite().label else baseMode.label
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(14.dp))
+                    .background(if (isActive) primary else onSurface.copy(alpha = 0.12f))
+                    .clickable {
+                        val newMode = if (isActive) sortMode.opposite() else baseMode
+                        onSortModeChange(newMode)
+                        AppPrefs.setAllAppsSortMode(context, newMode.name)
+                    }
+                    .padding(horizontal = 11.dp, vertical = 5.dp),
+            ) {
+                Text(
+                    displayLabel,
+                    fontSize = 11.sp,
+                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isActive) MaterialTheme.colorScheme.onPrimary else Color.White.copy(alpha = 0.55f),
+                )
+            }
         }
     }
 }

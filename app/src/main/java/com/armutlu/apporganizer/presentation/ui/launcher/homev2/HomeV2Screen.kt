@@ -288,13 +288,23 @@ fun HomeV2Screen(
                     // Boş alana uzun basma → ana ekran yönetim menüsü (duvar kağıdı,
                     // ayarlar, dock düzenleme, widget/klasör ekleme, layout editörü).
                     // Hareket slop'u aşarsa drag kazanır ve uzun basma iptal olur.
+                    // Boş alana çift tıklama → uygulama çekmecesi (eski ekranın çift tık
+                    // jesti HomeV2'de yeniden aktif). Tıklanabilir çocuklar (kart/ikon) kendi
+                    // dokunuşlarını üstlenir; çift tık kart araları/başlık/alt boşlukta çalışır.
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onLongPress = { homeLongPressOpen = true },
+                            onDoubleTap = { vm.openAllApps() },
                         )
                     },
             ) {
-                ClockHeaderV2(pulse = state.pulse)
+                // TEK saat ilkesi: büyük saat yalnız Hero sayfasında (HeroClockCard).
+                // Ana sayfada saat başlığı tekrar render edilmez; nabız/görev çipleri
+                // kompakt şerit olarak kalır (ClockHeaderV2'deki saat metni olmadan).
+                PulseStripV2(
+                    pulse = state.pulse,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                )
                 BannerRowV2(
                     banners = state.banners,
                     onAction = { banner ->

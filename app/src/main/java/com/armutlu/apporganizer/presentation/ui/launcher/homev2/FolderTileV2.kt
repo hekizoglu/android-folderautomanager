@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -140,33 +141,33 @@ internal fun FolderTileV2(
                         }
                     }
                 }
-                Spacer(Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(38.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    previewApps.forEach { app ->
-                        AppIconView(
-                            app = app,
-                            onClick = { if (interactionsEnabled) onAppClick(app.packageName) },
-                            onLongClick = if (interactionsEnabled) {
-                                onAppLongClick?.let { callback ->
-                                    {
-                                        callback(
-                                            app.packageName,
-                                        )
+                Spacer(Modifier.height(8.dp))
+                // Adaptif ikon boyutu: hücre daraldıkça ikonlar küçülür, taşma olmaz.
+                BoxWithConstraints(modifier = Modifier.fillMaxWidth().height(38.dp)) {
+                    val previewIconSize = ((maxWidth - 12.dp) / previewApps.size.coerceAtLeast(1)).coerceAtMost(34.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(38.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        previewApps.forEach { app ->
+                            AppIconView(
+                                app = app,
+                                onClick = { if (interactionsEnabled) onAppClick(app.packageName) },
+                                onLongClick = if (interactionsEnabled) {
+                                    onAppLongClick?.let { callback ->
+                                        { callback(app.packageName) }
                                     }
-                                }
-                            } else {
-                                null
-                            },
-                            modifier = Modifier.size(38.dp),
-                            showLabel = false,
-                            iconSize = 38.dp,
-                            newBadgeEnabled = false,
-                            notificationBadgeEnabled = false,
-                        )
+                                } else {
+                                    null
+                                },
+                                modifier = Modifier.size(previewIconSize),
+                                showLabel = false,
+                                iconSize = previewIconSize,
+                                newBadgeEnabled = false,
+                                notificationBadgeEnabled = false,
+                            )
+                        }
                     }
                 }
             }
