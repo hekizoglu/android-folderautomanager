@@ -286,6 +286,20 @@ internal fun buildSidebarEntries(
 }
 
 // ── State holder ──────────────────────────────────────────────────────────────
+/** Çekmece callback grubu (tur 29: parametre daraltma — 10 ayrı lambda tek nesnede). */
+data class DrawerCallbacks(
+    val onSearchQueryChange: (String) -> Unit = {},
+    val onClose: () -> Unit = {},
+    val onAppClick: (String) -> Unit = {},
+    val onAppLongClick: ((com.armutlu.apporganizer.domain.models.AppInfo) -> Unit)? = null,
+    val onFavoriteAppClick: (String) -> Unit = {},
+    val onRecentAppClick: (String) -> Unit = {},
+    val onFocusSearchConsumed: () -> Unit = {},
+    val onOpenDrawerSettings: () -> Unit = {},
+    val onEnableFilesSource: () -> Unit = {},
+    val onCategoryClick: (String) -> Unit = {},
+)
+
 /** Çekmece hızlı erişim bölüm verileri + tercihleri (tur 5: parametre daraltma). */
 data class DrawerQuickAccessConfig(
     val recentAppsEnabled: Boolean = false,

@@ -55,6 +55,7 @@ import com.armutlu.apporganizer.presentation.navigation.NotificationReportLaunch
 import com.armutlu.apporganizer.presentation.navigation.Routes
 import com.armutlu.apporganizer.presentation.ui.MainActivity
 import com.armutlu.apporganizer.presentation.ui.launcher.AllAppsDrawer
+import com.armutlu.apporganizer.presentation.ui.launcher.DrawerCallbacks
 import com.armutlu.apporganizer.presentation.ui.launcher.DrawerQuickAccessConfig
 import com.armutlu.apporganizer.presentation.ui.launcher.AppContextMenu
 import com.armutlu.apporganizer.presentation.ui.launcher.AppFolder
@@ -486,12 +487,14 @@ fun HomeV2Screen(
                     apps = allApps,
                     searchQuery = searchQuery,
                     quickAccess = drawerQuickAccess,
-                    onSearchQueryChange = vm::setSearchQuery,
-                    onClose = vm::closeAllApps,
-                    onAppClick = { vm.launchApp(context, it) },
-                    onAppLongClick = { app -> contextMenuPkg = app.packageName },
+                    callbacks = DrawerCallbacks(
+                        onSearchQueryChange = vm::setSearchQuery,
+                        onClose = vm::closeAllApps,
+                        onAppClick = { vm.launchApp(context, it) },
+                        onAppLongClick = { app -> contextMenuPkg = app.packageName },
+                        onFocusSearchConsumed = vm::resetFocusSearchOnOpen,
+                    ),
                     focusSearchOnOpen = focusSearchOnOpen,
-                    onFocusSearchConsumed = vm::resetFocusSearchOnOpen,
                     categories = categories,
                 )
             }

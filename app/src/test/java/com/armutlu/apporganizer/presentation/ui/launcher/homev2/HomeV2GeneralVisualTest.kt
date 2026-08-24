@@ -92,8 +92,6 @@ class HomeV2GeneralVisualTest {
             MaterialTheme {
                 AllAppsDrawer(
                     apps = manyApps(40),
-                    onClose = {},
-                    onAppClick = {},
                 )
             }
         }
@@ -109,8 +107,6 @@ class HomeV2GeneralVisualTest {
             MaterialTheme {
                 AllAppsDrawer(
                     apps = manyApps(25),
-                    onClose = {},
-                    onAppClick = {},
                 )
             }
         }
@@ -125,8 +121,6 @@ class HomeV2GeneralVisualTest {
             MaterialTheme {
                 AllAppsDrawer(
                     apps = manyApps(15),
-                    onClose = {},
-                    onAppClick = {},
                 )
             }
         }
@@ -141,8 +135,6 @@ class HomeV2GeneralVisualTest {
                 AllAppsDrawer(
                     apps = manyApps(30) + app("com.special.findme", "BulBeni"),
                     searchQuery = "bulbeni",
-                    onClose = {},
-                    onAppClick = {},
                 )
             }
         }

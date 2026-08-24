@@ -468,19 +468,21 @@ private fun DrawerAppList(
     searchQuery: String,
     iconSize: Dp,
     quickAccess: DrawerQuickAccessConfig,
-    onFavoriteAppClick: (String) -> Unit,
-    onRecentAppClick: (String) -> Unit,
-    onAppClick: (String) -> Unit,
-    onAppLongClick: ((AppInfo) -> Unit)?,
+    callbacks: DrawerCallbacks,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     categories: List<Category> = emptyList(),
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
     recentNotificationCounts: Map<String, Int> = emptyMap(),
     filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
-    onEnableFilesSource: () -> Unit = {},
-    onCategoryClick: (String) -> Unit = {},
 ) {
+    // Callback grubundan yerel takma adlar (tur 29).
+    val onFavoriteAppClick = callbacks.onFavoriteAppClick
+    val onRecentAppClick = callbacks.onRecentAppClick
+    val onAppClick = callbacks.onAppClick
+    val onAppLongClick = callbacks.onAppLongClick
+    val onEnableFilesSource = callbacks.onEnableFilesSource
+    val onCategoryClick = callbacks.onCategoryClick
     val onSurface = MaterialTheme.colorScheme.onSurface
     val textSecondary = onSurface.copy(alpha = 0.55f)
     val trLocale = java.util.Locale("tr")
@@ -526,10 +528,7 @@ private fun DrawerAppList(
                 config = quickAccess,
                 iconPackPkg = state.iconPackPkg,
                 recentNotificationCounts = recentNotificationCounts,
-                onRecentAppClick = onRecentAppClick,
-                onFavoriteAppClick = onFavoriteAppClick,
-                onAppClick = onAppClick,
-                onAppLongClick = onAppLongClick,
+                callbacks = callbacks,
             )
             state.grouped.forEach { (letter, letterApps) ->
                 item(key = "header_$letter") {
@@ -566,10 +565,7 @@ private fun DrawerAppList(
                 config = quickAccess,
                 iconPackPkg = state.iconPackPkg,
                 recentNotificationCounts = recentNotificationCounts,
-                onRecentAppClick = onRecentAppClick,
-                onFavoriteAppClick = onFavoriteAppClick,
-                onAppClick = onAppClick,
-                onAppLongClick = onAppLongClick,
+                callbacks = callbacks,
             )
             drawerSearchResultSections(
                 context = context,
@@ -592,9 +588,7 @@ private fun DrawerAppList(
                 iconPackPkg = state.iconPackPkg,
                 haptic = haptic,
                 recentNotificationCounts = recentNotificationCounts,
-                onCategoryClick = onCategoryClick,
-                onAppClick = onAppClick,
-                onAppLongClick = onAppLongClick,
+                callbacks = callbacks,
             )
 
         }
@@ -958,27 +952,28 @@ private fun DrawerSidebar(
 fun AllAppsDrawer(
     apps: List<AppInfo>,
     searchQuery: String = "",
-    onSearchQueryChange: (String) -> Unit = {},
-    onClose: () -> Unit,
-    onAppClick: (String) -> Unit,
-    onAppLongClick: ((AppInfo) -> Unit)? = null,
+    callbacks: DrawerCallbacks = DrawerCallbacks(),
     iconSize: Dp = 40.dp,
     quickAccess: DrawerQuickAccessConfig = DrawerQuickAccessConfig(),
-    onFavoriteAppClick: (String) -> Unit = {},
-    onRecentAppClick: (String) -> Unit = {},
     focusSearchOnOpen: Boolean = false,
-    onFocusSearchConsumed: () -> Unit = {},
     categories: List<Category> = emptyList(),
     searchResults: Map<SourceType, List<SearchDocument>> = emptyMap(),
     recentNotificationCounts: Map<String, Int> = emptyMap(),
-    onOpenDrawerSettings: () -> Unit = {},
     // P0.3: dosya kaynağı izin/indeks durumu — DrawerAppList "izin gerekli" satırı için kullanır
     filesIndexState: com.armutlu.apporganizer.domain.models.FileIndexState =
         com.armutlu.apporganizer.domain.models.FileIndexState.Disabled,
-    onEnableFilesSource: () -> Unit = {},
-    onCategoryClick: (String) -> Unit = {},
-    maxShownAppsCount: Int = 4,
 ) {
+    // Callback grubundan yerel takma adlar — gövde içi değişiklik minimumda kalır (tur 29).
+    val onSearchQueryChange = callbacks.onSearchQueryChange
+    val onClose = callbacks.onClose
+    val onAppClick = callbacks.onAppClick
+    val onAppLongClick = callbacks.onAppLongClick
+    val onFavoriteAppClick = callbacks.onFavoriteAppClick
+    val onRecentAppClick = callbacks.onRecentAppClick
+    val onFocusSearchConsumed = callbacks.onFocusSearchConsumed
+    val onOpenDrawerSettings = callbacks.onOpenDrawerSettings
+    val onEnableFilesSource = callbacks.onEnableFilesSource
+    val onCategoryClick = callbacks.onCategoryClick
     var dragOffset by remember { mutableFloatStateOf(0f) }
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -1093,17 +1088,12 @@ fun AllAppsDrawer(
                         searchQuery = searchQuery,
                         iconSize = iconSize,
                         quickAccess = quickAccess,
-                        onFavoriteAppClick = onFavoriteAppClick,
-                        onRecentAppClick = onRecentAppClick,
-                        onAppClick = onAppClick,
-                        onAppLongClick = onAppLongClick,
+                        callbacks = callbacks,
                         haptic = haptic,
                         categories = categories,
                         searchResults = searchResults,
                         recentNotificationCounts = recentNotificationCounts,
                         filesIndexState = filesIndexState,
-                        onEnableFilesSource = onEnableFilesSource,
-                        onCategoryClick = onCategoryClick,
                     )
                 }
                 if (sidebarEntries.isNotEmpty()) {
@@ -1450,12 +1440,13 @@ private fun LazyListScope.drawerQuickAccessSections(
     config: DrawerQuickAccessConfig,
     iconPackPkg: String,
     recentNotificationCounts: Map<String, Int>,
-    onRecentAppClick: (String) -> Unit,
-    onFavoriteAppClick: (String) -> Unit,
-    onAppClick: (String) -> Unit,
-    onAppLongClick: ((AppInfo) -> Unit)?,
+    callbacks: DrawerCallbacks,
 ) {
     if (searchQuery.isNotEmpty() || !config.hasAnySection) return
+    val onRecentAppClick = callbacks.onRecentAppClick
+    val onFavoriteAppClick = callbacks.onFavoriteAppClick
+    val onAppClick = callbacks.onAppClick
+    val onAppLongClick = callbacks.onAppLongClick
     val max = config.maxShownAppsCount
     if (config.recentAppsEnabled && config.recentApps.isNotEmpty() || config.favoritesEnabled && config.favoriteApps.isNotEmpty()) {
         item(key = "recent_fav_section$keySuffix") {
@@ -1514,10 +1505,11 @@ private fun LazyListScope.drawerSearchResultSections(
     iconPackPkg: String,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
     recentNotificationCounts: Map<String, Int>,
-    onCategoryClick: (String) -> Unit,
-    onAppClick: (String) -> Unit,
-    onAppLongClick: ((AppInfo) -> Unit)?,
+    callbacks: DrawerCallbacks,
 ) {
+    val onCategoryClick = callbacks.onCategoryClick
+    val onAppClick = callbacks.onAppClick
+    val onAppLongClick = callbacks.onAppLongClick
     if (sortedApps.isEmpty() && categoryMatches.isEmpty() && settingMatches.isEmpty() &&
         contactMatches.isEmpty() && fileMatches.isEmpty() && !showFilesPermissionHint
     ) {

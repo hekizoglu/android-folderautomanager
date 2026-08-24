@@ -1,5 +1,14 @@
 # AppOrganizer — Döngü Geçmişi
 
+## Döngü — 2026-08-23 (Tur 29: complexity 5. dalga — DrawerCallbacks parametre daraltma)
+**Yapılanlar:** AllAppsDrawer/DrawerAppList/section fonksiyonlarının callback parametreleri tek nesnede toplandı:
+- `DrawerCallbacks` data class (10 callback: search/close/app/longclick/fav/recent/focus/settings/files/category) eklendi.
+- `AllAppsDrawer` imzası 22 → 10 parametreye indi (ölü `maxShownAppsCount` parametresi de kaldırıldı); gövde içi yerel takma adlarla değişiklik minimumda tutuldu.
+- `DrawerAppList` 17 → 12 parametre; `drawerQuickAccessSections` 10 → 6; `drawerSearchResultSections` 21 → 19 parametre.
+- HomeV2Screen çağrısı `DrawerCallbacks(...)` ile güncellendi; görsel testler varsayılan değerlere sadeleştirildi.
+**Kanıt:** `testDebugUnitTest` → **1409 test, 0 fail, 0 hata** (in-process Kotlin); `:app:detekt` BUILD SUCCESSFUL; AllAppsDrawer.kt LongParameterList 7 → 6 (LongMethod gövdeleri wiring ağırlıklı, bölme önceki dalgalarda yapılmıştı).
+**Sonraki:** Play Store hazırlık maddeleri veya cihaz doğrulama bulguları.
+
 ## Döngü — 2026-08-23 (Tur 28: UI/UX akış ve etkileşim denetimi — profesyonel denetim)
 **Yapılanlar:** Home V2 için profesyonel UI/UX akış/etkileşim denetimi yapıldı (`docs/qa/UI_UX_AKIS_ETKILESIM_DENETIMI.md`); 4 bulgu düzeltildi:
 - **B-01 (P0) düzeltildi:** HomeV2Screen'e daima aktif BackHandler eklendi — legacy'deki OEM predictive-back koruması (MIUI/HyperOS/Android 13+) geri taşındı: çekmece açıksa geri tuşu kapatır, kökte geri tuşu yutulur (launcher Activity asla finish edilmez).
